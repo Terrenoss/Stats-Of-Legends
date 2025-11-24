@@ -24,7 +24,7 @@ const REGION_ROUTING: Record<string, string> = {
   KR: 'asia',
 };
 
-async function riotFetch(url: string) {
+async function riotFetchJson(url: string) {
   if (!RIOT_KEY) {
     throw new Error('RIOT_API_KEY is not configured');
   }
@@ -36,9 +36,18 @@ async function riotFetch(url: string) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Riot API error ${res.status}: ${text}`);
+    const code = res.status;
+    const err = new Error(`RIOT_${code}:${text || res.statusText}`);
+    // @ts-ignore
+    (err as any).status = code;
+    throw err;
   }
   return res.json();
+}
+
+function ddragonVersionFromGame(info: any): string {
+  const [major, minor] = info.gameVersion.split('.');
+  return `${major}.${minor}.1`;
 }
 
 export async function GET(req: NextRequest) {
@@ -57,51 +66,26 @@ export async function GET(req: NextRequest) {
 
     // 1) Résolution du Riot ID vers PUUID (AccountV1)
     const accountUrl = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(summonerName)}/${encodeURIComponent(tag || region)}`;
-    const account = await riotFetch(accountUrl);
+    console.log('[riot] summary accountUrl =', accountUrl);
+    let account: any;
+    try {
+      account = await riotFetchJson(accountUrl);
+    } catch (err: any) {
+      console.error('[riot] summary account error', err?.message || err);
+      // Erreur critique: on renvoie une 400/404 lisible pour le frontend
+      const status = err.status === 404 ? 404 : 400;
+      return NextResponse.json({ error: 'Unable to resolve Riot ID (account).' }, { status });
+    }
 
-    // 2) Infos de base du summoner (SummonerV4)
-    const summonerUrl = `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(account.puuid)}`;
-    const summoner = await riotFetch(summonerUrl);
-
-    // 3) Ranks (LeagueV4)
-    const leagueUrl = `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-summoner/${encodeURIComponent(summoner.id)}`;
-    const leagues = await riotFetch(leagueUrl) as any[];
-
-    const solo = leagues.find(l => l.queueType === 'RANKED_SOLO_5x5');
-    const flex = leagues.find(l => l.queueType === 'RANKED_FLEX_SR');
-
-    const profile = {
-      name: account.gameName || summoner.name,
+    // 2) Infos de base du summoner (SummonerV4) + 3) Ranks + 4) Matches
+    let profile: any = {
+      name: account.gameName,
       tag: account.tagLine || tag || region,
-      level: summoner.summonerLevel,
-      profileIconId: summoner.profileIconId,
+      level: 0,
+      profileIconId: 0,
       ranks: {
-        solo: solo ? {
-          tier: solo.tier,
-          rank: solo.rank,
-          lp: solo.leaguePoints,
-          wins: solo.wins,
-          losses: solo.losses,
-        } : {
-          tier: 'UNRANKED',
-          rank: '',
-          lp: 0,
-          wins: 0,
-          losses: 0,
-        },
-        flex: flex ? {
-          tier: flex.tier,
-          rank: flex.rank,
-          lp: flex.leaguePoints,
-          wins: flex.wins,
-          losses: flex.losses,
-        } : {
-          tier: 'UNRANKED',
-          rank: '',
-          lp: 0,
-          wins: 0,
-          losses: 0,
-        },
+        solo: { tier: 'UNRANKED', rank: '', lp: 0, wins: 0, losses: 0 },
+        flex: { tier: 'UNRANKED', rank: '', lp: 0, wins: 0, losses: 0 },
       },
       pastRanks: [],
       ladderRank: 0,
@@ -109,123 +93,182 @@ export async function GET(req: NextRequest) {
       lastUpdated: Date.now(),
     };
 
-    // 4) Récupération des matchs récents (MatchV5)
-    const matchIdsUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURIComponent(account.puuid)}/ids?start=0&count=20`;
-    const matchIds: string[] = await riotFetch(matchIdsUrl);
-
     const matches: any[] = [];
     const championsAgg: Record<string, any> = {};
     const teammatesAgg: Record<string, any> = {};
 
-    for (const matchId of matchIds) {
-      try {
-        const matchUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}`;
-        const matchJson = await riotFetch(matchUrl);
-        const info = matchJson.info;
-        const participants: any[] = info.participants || [];
+    try {
+      const summonerUrl = `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(account.puuid)}`;
+      const summoner = await riotFetchJson(summonerUrl);
 
-        const me = participants.find(p => p.puuid === account.puuid);
-        if (!me) continue;
+      const leagueUrl = `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-summoner/${encodeURIComponent(summoner.id)}`;
+      const leagues = await riotFetchJson(leagueUrl) as any[];
 
-        const gameId = matchJson.metadata?.matchId || matchId;
+      const solo = leagues.find(l => l.queueType === 'RANKED_SOLO_5x5');
+      const flex = leagues.find(l => l.queueType === 'RANKED_FLEX_SR');
 
-        const gameMode = (() => {
-          switch (info.queueId) {
-            case 420: return 'Ranked Solo/Duo';
-            case 440: return 'Ranked Flex';
-            case 450: return 'ARAM';
-            default: return 'Normal';
-          }
-        })();
+      profile = {
+        name: account.gameName || summoner.name,
+        tag: account.tagLine || tag || region,
+        level: summoner.summonerLevel,
+        profileIconId: summoner.profileIconId,
+        ranks: {
+          solo: solo ? {
+            tier: solo.tier,
+            rank: solo.rank,
+            lp: solo.leaguePoints,
+            wins: solo.wins,
+            losses: solo.losses,
+          } : profile.ranks.solo,
+          flex: flex ? {
+            tier: flex.tier,
+            rank: flex.rank,
+            lp: flex.leaguePoints,
+            wins: flex.wins,
+            losses: flex.losses,
+          } : profile.ranks.flex,
+        },
+        pastRanks: [],
+        ladderRank: 0,
+        topPercent: 0,
+        lastUpdated: Date.now(),
+      };
 
-        const formatParticipant = (p: any) => ({
-          summonerName: p.riotIdGameName || p.summonerName,
-          tagLine: p.riotIdTagline,
-          champion: {
-            id: p.championId,
-            name: p.championName,
-            imageUrl: `https://ddragon.leagueoflegends.com/cdn/${info.gameVersion.split('.')[0]}.${info.gameVersion.split('.')[1]}.1/img/champion/${p.championName}.png`,
-          },
-          teamId: p.teamId,
-          kills: p.kills,
-          deaths: p.deaths,
-          assists: p.assists,
-          cs: p.totalMinionsKilled + p.neutralMinionsKilled,
-          win: p.win,
-          items: [],
-          spells: [],
-          visionScore: p.visionScore,
-          totalDamageDealtToChampions: p.totalDamageDealtToChampions,
-          goldEarned: p.goldEarned,
-          level: p.champLevel,
-          rank: undefined,
-          opScore: undefined,
-        });
+      const matchIdsUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURIComponent(account.puuid)}/ids?start=0&count=20`;
+      const matchIds: string[] = await riotFetchJson(matchIdsUrl);
 
-        const mappedParticipants = participants.map(formatParticipant);
-        const meMapped = mappedParticipants.find(p => p.summonerName === (account.gameName || summoner.name));
+      for (const matchId of matchIds) {
+        try {
+          const matchUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}`;
+          const matchJson = await riotFetchJson(matchUrl);
+          const info = matchJson.info;
+          const participants: any[] = info.participants || [];
 
-        matches.push({
-          id: gameId,
-          gameCreation: info.gameStartTimestamp,
-          gameDuration: info.gameDuration,
-          gameMode,
-          participants: mappedParticipants,
-          me: meMapped,
-        });
+          const me = participants.find(p => p.puuid === account.puuid);
+          if (!me) continue;
 
-        // Agg par champion
-        const champKey = me.championName;
-        if (!championsAgg[champKey]) {
-          championsAgg[champKey] = {
-            id: me.championId,
-            name: me.championName,
-            imageUrl: `https://ddragon.leagueoflegends.com/cdn/${info.gameVersion.split('.')[0]}.${info.gameVersion.split('.')[1]}.1/img/champion/${me.championName}.png`,
-            games: 0,
-            wins: 0,
-            kills: 0,
-            deaths: 0,
-            assists: 0,
-            totalDamageDealtToChampions: 0,
-            totalDamageTaken: 0,
-            totalCs: 0,
-            totalMinutes: 0,
-            gd15: 0,
-            csd15: 0,
-            dmgShare: 0,
+          const gameId = matchJson.metadata?.matchId || matchId;
+          const ddragonVersion = ddragonVersionFromGame(info);
+
+          const gameMode = (() => {
+            switch (info.queueId) {
+              case 420: return 'Ranked Solo/Duo';
+              case 440: return 'Ranked Flex';
+              case 450: return 'ARAM';
+              default: return 'Normal';
+            }
+          })();
+
+          const formatParticipant = (p: any) => {
+            const items = [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6]
+              .filter((id: number) => id && id > 0)
+              .map((id: number) => ({
+                id,
+                name: `Item ${id}`,
+                imageUrl: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/item/${id}.png`,
+              }));
+
+            const spells = [p.summoner1Id, p.summoner2Id]
+              .filter((id: number) => id && id > 0)
+              .map((id: number) => ({
+                id,
+                name: `Spell ${id}`,
+                imageUrl: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/spell/Summoner${id}.png`,
+              }));
+
+            const opScore = p.kills * 2 + p.assists - p.deaths + Math.floor(p.totalDamageDealtToChampions / 5000);
+
+            return {
+              summonerName: p.riotIdGameName || p.summonerName,
+              tagLine: p.riotIdTagline,
+              champion: {
+                id: p.championId,
+                name: p.championName,
+                imageUrl: `https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${p.championName}.png`,
+              },
+              teamId: p.teamId,
+              kills: p.kills,
+              deaths: p.deaths,
+              assists: p.assists,
+              cs: p.totalMinionsKilled + p.neutralMinionsKilled,
+              win: p.win,
+              items,
+              spells,
+              visionScore: p.visionScore,
+              totalDamageDealtToChampions: p.totalDamageDealtToChampions,
+              goldEarned: p.goldEarned,
+              level: p.champLevel,
+              rank: undefined,
+              opScore,
+            };
           };
-        }
-        const agg = championsAgg[champKey];
-        agg.games += 1;
-        if (me.win) agg.wins += 1;
-        agg.kills += me.kills;
-        agg.deaths += me.deaths;
-        agg.assists += me.assists;
-        agg.totalDamageDealtToChampions += me.totalDamageDealtToChampions;
-        agg.totalDamageTaken += me.totalDamageTaken;
-        agg.totalCs += me.totalMinionsKilled + me.neutralMinionsKilled;
-        agg.totalMinutes += info.gameDuration / 60;
 
-        // Coéquipiers
-        const myTeam = participants.filter(p => p.teamId === me.teamId && p.puuid !== account.puuid);
-        for (const mate of myTeam) {
-          const key = `${mate.riotIdGameName || mate.summonerName}#${mate.riotIdTagline || ''}`;
-          if (!teammatesAgg[key]) {
-            teammatesAgg[key] = {
-              name: mate.riotIdGameName || mate.summonerName,
-              tag: mate.riotIdTagline || '',
-              profileIconId: mate.profileIcon,
+          const mappedParticipants = participants.map(formatParticipant);
+          const meMapped = mappedParticipants.find(p => p.summonerName === (account.gameName || summoner.name));
+
+          matches.push({
+            id: gameId,
+            gameCreation: info.gameStartTimestamp,
+            gameDuration: info.gameDuration,
+            gameMode,
+            participants: mappedParticipants,
+            me: meMapped,
+          });
+
+          const champKey = me.championName;
+          if (!championsAgg[champKey]) {
+            championsAgg[champKey] = {
+              id: me.championId,
+              name: me.championName,
+              imageUrl: `https://ddragon.leagueoflegends.com/cdn/${info.gameVersion.split('.')[0]}.${info.gameVersion.split('.')[1]}.1/img/champion/${me.championName}.png`,
               games: 0,
               wins: 0,
+              kills: 0,
+              deaths: 0,
+              assists: 0,
+              totalDamageDealtToChampions: 0,
+              totalDamageTaken: 0,
+              totalCs: 0,
+              totalMinutes: 0,
+              gd15: 0,
+              csd15: 0,
+              dmgShare: 0,
             };
           }
-          const t = teammatesAgg[key];
-          t.games += 1;
-          if (me.win) t.wins += 1;
+          const agg = championsAgg[champKey];
+          agg.games += 1;
+          if (me.win) agg.wins += 1;
+          agg.kills += me.kills;
+          agg.deaths += me.deaths;
+          agg.assists += me.assists;
+          agg.totalDamageDealtToChampions += me.totalDamageDealtToChampions;
+          agg.totalDamageTaken += me.totalDamageTaken;
+          agg.totalCs += me.totalMinionsKilled + me.neutralMinionsKilled;
+          agg.totalMinutes += info.gameDuration / 60;
+
+          const myTeam = participants.filter(p => p.teamId === me.teamId && p.puuid !== account.puuid);
+          for (const mate of myTeam) {
+            const key = `${mate.riotIdGameName || mate.summonerName}#${mate.riotIdTagline || ''}`;
+            if (!teammatesAgg[key]) {
+              teammatesAgg[key] = {
+                name: mate.riotIdGameName || mate.summonerName,
+                tag: mate.riotIdTagline || '',
+                profileIconId: mate.profileIcon,
+                games: 0,
+                wins: 0,
+              };
+            }
+            const t = teammatesAgg[key];
+            t.games += 1;
+            if (me.win) t.wins += 1;
+          }
+        } catch (err) {
+          console.warn('[riot] failed to fetch match', matchId, err);
         }
-      } catch (err) {
-        console.warn('[riot] failed to fetch match', matchId, err);
       }
+    } catch (err: any) {
+      console.error('[riot] summary partial error (summoner/league/matches)', err?.message || err);
+      // On ne jette pas l'erreur ici: le frontend recevra un profil minimal + tableaux vides
     }
 
     const champions = Object.values(championsAgg).map((c: any) => {
@@ -267,7 +310,6 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Heatmap simple : activité par jour sur les matches récupérés
     const heatmapMap: Record<string, { games: number; wins: number; losses: number; }> = {};
     for (const m of matches) {
       const d = new Date(m.gameCreation);

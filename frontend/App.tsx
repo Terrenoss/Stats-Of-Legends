@@ -169,7 +169,7 @@ function App() {
            </div>
         ) : (
           <>
-            <ProfileHeader profile={currentProfile} lang={currentLang} />
+            <ProfileHeader profile={currentProfile} lang={currentLang} patch={currentPatch} />
             
             {/* TABS NAVIGATION */}
             <div className="flex gap-6 border-b border-white/5 mb-8">
@@ -215,7 +215,7 @@ function App() {
                    </div>
 
                    {/* Moved Below Champions */}
-                   <RecentlyPlayedWith teammates={teammates} lang={currentLang} />
+                   <RecentlyPlayedWith teammates={teammates} lang={currentLang} patch={currentPatch} />
                 </div>
 
                 {/* Right Column (Match History) */}

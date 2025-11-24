@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart2, Hammer, Trophy, Globe, Info, ChevronDown, Gamepad2 } from 'lucide-react';
-import { CURRENT_PATCH, TRANSLATIONS } from '../constants';
+import { CURRENT_PATCH_FALLBACK, TRANSLATIONS } from '../constants';
 import { Language } from '../types';
 
 interface NavbarProps {
@@ -15,7 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, current
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const t = TRANSLATIONS[currentLang];
 
-  const patchLabel = currentPatch || CURRENT_PATCH;
+  const patchLabel = currentPatch || CURRENT_PATCH_FALLBACK;
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 shadow-2xl">

@@ -7,9 +7,10 @@ import { Clock } from 'lucide-react';
 interface ProfileHeaderProps {
   profile: SummonerProfile;
   lang: Language;
+  patch?: string;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, patch }) => {
   const t = TRANSLATIONS[lang];
   const safePastRanks = Array.isArray(profile.pastRanks) ? profile.pastRanks : [];
 
@@ -37,7 +38,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang }) =
             <div className="relative">
               <div className="w-24 h-24 rounded-[1.5rem] bg-[#121212] p-1 border border-lol-gold/50 shadow-glow-gold relative z-10">
                   <img 
-                      src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/profileicon/${profile.profileIconId}.png`} 
+                      src={`https://ddragon.leagueoflegends.com/cdn/${patch || '15.23.1'}/img/profileicon/${profile.profileIconId}.png`} 
                       alt="Icon" 
                       className="w-full h-full object-cover rounded-[1.2rem]"
                   />

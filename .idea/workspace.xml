@@ -5,7 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/riot/summary/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/riot/summary/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/Navbar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ProfileHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/RecentlyPlayedWith.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/RecentlyPlayedWith.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +53,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "feat-new-ui",
     "ignore.virus.scanning.warn.message": "true",
     "js.debugger.nextJs.config.created.client": "true",
     "js.debugger.nextJs.config.created.server": "true",
@@ -54,8 +62,8 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "npm.Next.js: server-side.executor": "Debug",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "npm.Next.js: server-side.executor": "Run",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "ts.external.directory.path": "C:\\Users\\terre\\Documents\\PROJETS GITHUB\\Stats-Of-Legends\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -95,6 +103,9 @@
       <workItem from="1763944360400" duration="82000" />
       <workItem from="1763944552326" duration="65000" />
       <workItem from="1763944673735" duration="12000" />
+      <workItem from="1764001272724" duration="58000" />
+      <workItem from="1764001398837" duration="104000" />
+      <workItem from="1764001519867" duration="1931000" />
     </task>
     <servers />
   </component>

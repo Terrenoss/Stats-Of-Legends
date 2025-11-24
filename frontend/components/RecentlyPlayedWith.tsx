@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Teammate } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -6,9 +5,10 @@ import { TRANSLATIONS } from '../constants';
 interface RecentlyPlayedWithProps {
   teammates: Teammate[];
   lang: string;
+  patch?: string;
 }
 
-export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammates, lang }) => {
+export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammates, lang, patch }) => {
   const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
 
   return (
@@ -20,7 +20,7 @@ export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammate
             <div className="flex items-center gap-3">
               <div className="relative">
                  <img 
-                   src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/profileicon/${teammate.profileIconId}.png`} 
+                   src={`https://ddragon.leagueoflegends.com/cdn/${patch || '15.23.1'}/img/profileicon/${teammate.profileIconId}.png`} 
                    className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition" 
                    alt="Icon" 
                  />
