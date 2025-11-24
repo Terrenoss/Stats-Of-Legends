@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stats Of Legends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              lol: {
+                gold: '#C8AA6E',   /* Official LoL Gold */
+                goldDim: '#785A28',
+                goldLight: '#F0E6D2',
+                red: '#C23030',    /* Noxus Red */
+                redDark: '#5e1313',
+                hextech: '#9333EA', /* CHANGED: Void Purple instead of Blue */
+                hextechDim: '#581c87',
+                blue: '#9333EA',   /* Mapped to Purple to eliminate blue */
+                dark: '#050505',   /* Darker black */
+                panel: '#121212',  /* Dark grey/black */
+                card: '#18181b',   /* Zinc-900 */
+                win: '#059669',    /* Emerald Green */
+                loss: '#991B1B',   /* Deep Red */
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Beaufort for LOL', 'Inter', 'serif'],
+            },
+            backgroundImage: {
+              'hex-pattern': "url('data:image/svg+xml,%3Csvg width=\"24\" height=\"40\" viewBox=\"0 0 24 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 40c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10s-10 4.477-10 10v20c0 5.523 4.477 10 10 10z\" fill=\"%239333EA\" fill-opacity=\"0.05\" fill-rule=\"evenodd\"/%3E%3C/svg%3E')",
+              'gold-gradient': 'linear-gradient(to bottom, #C8AA6E, #785A28)',
+            },
+            boxShadow: {
+              'glow-gold': '0 0 20px rgba(200, 170, 110, 0.15)',
+              'glow-void': '0 0 20px rgba(147, 51, 234, 0.25)',
+              'glow-red': '0 0 20px rgba(194, 48, 48, 0.3)',
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background-color: #050505;
+        color: #A09B8C;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      .text-gold-gradient {
+        background: linear-gradient(to bottom, #F0E6D2, #C8AA6E);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
+    "next": "https://aistudiocdn.com/next@^16.0.3",
+    "tailwindcss": "https://aistudiocdn.com/tailwindcss@^4.1.17"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
