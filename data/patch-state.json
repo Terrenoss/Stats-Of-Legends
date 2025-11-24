@@ -1,0 +1,11 @@
+{
+  "pending": {
+    "version": "15.23.1",
+    "detectedAt": "2025-11-21T12:58:08.614Z",
+    "startedAt": "2025-11-21T12:58:08.614Z",
+    "status": "success",
+    "triggeredBy": "auto",
+    "completedAt": "2025-11-21T12:58:08.722Z"
+  },
+  "currentPatch": "15.23.1"
+}
