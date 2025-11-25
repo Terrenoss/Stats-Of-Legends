@@ -1,34 +1,53 @@
-import { NextResponse } from 'next/server';
-import { getNormalizedItems } from '@/lib/server/dd-server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: Request) {
+const DATA_BASE = process.env.DATA_BASE || '';
+
+async function fetchLatestPatch() {
+  try {
+    const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', { next: { revalidate: 60 } });
+    if (!res.ok) throw new Error('Failed versions');
+    const versions: string[] = await res.json();
+    return versions[0];
+  } catch {
+    return '15.22.1';
+  }
+}
+
+export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const patch = url.searchParams.get('patch') || undefined;
-    const locale = url.searchParams.get('locale') || undefined;
-    try {
-      const patchParam = (patch === 'latest' ? undefined : patch);
-      const res = await getNormalizedItems(patchParam, locale);
-      if (!res || !res.data || res.data.length === 0) throw new Error('no local items');
-      return NextResponse.json(res);
-    } catch (err) {
-      // fallback to CDN
-      try {
-        const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch || 'latest'}/data/${locale || 'en_US'}/item.json`;
-        const r = await fetch(cdnUrl);
-        if (r.ok) {
-          const json = await r.json();
-          // normalize quickly
-          const data = Object.keys(json.data || {}).map(id => {
-            const it = json.data[id];
-            return { id: String(id), name: it.name, imageFull: it.image?.full || `${id}.png`, image: it.image?.full || `${id}.png`, stats: it.stats || {}, gold: it.gold || {} };
-          });
-          return NextResponse.json({ patch: patch || 'latest', data });
-        }
-      } catch (err) {}
-      return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    let patch = url.searchParams.get('patch') || 'latest';
+    const locale = url.searchParams.get('locale') || 'en_US';
+
+    if (patch === 'latest') {
+      patch = await fetchLatestPatch();
     }
-  } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+
+    if (DATA_BASE) {
+      try {
+        const upstream = await fetch(`${DATA_BASE}/api/dd/items?patch=${encodeURIComponent(patch)}&locale=${encodeURIComponent(locale)}`);
+        if (upstream.ok) {
+          return NextResponse.json(await upstream.json());
+        }
+      } catch {}
+    }
+
+    const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/item.json`;
+    const r = await fetch(cdnUrl, { next: { revalidate: 3600 } });
+    if (!r.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
+    const json = await r.json();
+    const data = Object.keys(json.data || {}).map(id => {
+      const it = (json.data as any)[id];
+      return {
+        id: String(id),
+        name: it.name,
+        imageFull: it.image?.full || `${id}.png`,
+        stats: it.stats || {},
+        gold: it.gold || {},
+      };
+    });
+    return NextResponse.json({ patch, data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }
 }
