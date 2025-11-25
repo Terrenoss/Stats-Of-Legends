@@ -3,13 +3,15 @@
 import React, { useState } from 'react';
 import { Github, Twitter, Disc, Info } from "lucide-react";
 import { SafeLink } from "./ui/SafeLink";
+import { useI18n } from "../app/LanguageContext";
 
 export const Footer = () => {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const { t } = useI18n();
 
   const handlePlaceholderClick = (e: React.MouseEvent, label: string) => {
     e.preventDefault();
-    setToastMsg(`${label} is currently a placeholder.`);
+    setToastMsg(`${label} ${t.placeholderToast}`);
     setTimeout(() => setToastMsg(null), 3000);
   };
 
@@ -26,10 +28,9 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
-             <h3 className="font-display font-bold text-white text-xl tracking-wider mb-4 uppercase">Stats Of Legends</h3>
+             <h3 className="font-display font-bold text-white text-xl tracking-wider mb-4 uppercase">{t.footerTitle}</h3>
              <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
-               La plateforme d'analyse nouvelle génération pour League of Legends. 
-               Optimisez vos builds, comprenez vos erreurs et grimpez le ladder grâce à notre IA Gemini 3.0.
+               {t.footerTagline}
              </p>
              <div className="flex gap-4 mt-6">
                 <SocialIcon icon={<Twitter size={18} />} onClick={(e) => handlePlaceholderClick(e, 'Twitter')} />
@@ -41,34 +42,34 @@ export const Footer = () => {
           <div>
             <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-6">Navigation</h4>
             <ul className="space-y-3 text-sm text-gray-500">
-              <li><SafeLink href="/" className="hover:text-lol-gold transition-colors">Accueil</SafeLink></li>
-              <li><SafeLink href="/builder" className="hover:text-lol-gold transition-colors">Builder Noxus</SafeLink></li>
-              <li><SafeLink href="/leaderboard" className="hover:text-lol-gold transition-colors">Classement</SafeLink></li>
+              <li><SafeLink href="/" className="hover:text-lol-gold transition-colors">{t.navHome}</SafeLink></li>
+              <li><SafeLink href="/builder" className="hover:text-lol-gold transition-colors">{t.navBuilder}</SafeLink></li>
+              <li><SafeLink href="/leaderboard" className="hover:text-lol-gold transition-colors">{t.navLeaderboard}</SafeLink></li>
               <li>
                 <button onClick={(e) => handlePlaceholderClick(e, 'API Status')} className="hover:text-lol-gold transition-colors text-left">
-                  API Status
+                  {t.apiStatus}
                 </button>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-6">Ressources</h4>
+            <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-6">{t.resources}</h4>
             <ul className="space-y-3 text-sm text-gray-500">
-              <li><a href="https://developer.riotgames.com/" target="_blank" rel="noreferrer" className="hover:text-lol-gold transition-colors">Riot API</a></li>
+              <li><a href="https://developer.riotgames.com/" target="_blank" rel="noreferrer" className="hover:text-lol-gold transition-colors">{t.riotApi}</a></li>
               <li>
                 <button onClick={(e) => handlePlaceholderClick(e, 'Privacy Policy')} className="hover:text-lol-gold transition-colors text-left">
-                  Privacy Policy
+                  {t.privacyPolicy}
                 </button>
               </li>
               <li>
                 <button onClick={(e) => handlePlaceholderClick(e, 'Terms of Service')} className="hover:text-lol-gold transition-colors text-left">
-                  Terms of Service
+                  {t.termsOfService}
                 </button>
               </li>
               <li>
                 <button onClick={(e) => handlePlaceholderClick(e, 'Contact Support')} className="hover:text-lol-gold transition-colors text-left">
-                  Contact Support
+                  {t.contactSupport}
                 </button>
               </li>
             </ul>
@@ -77,10 +78,10 @@ export const Footer = () => {
 
         <div className="border-t border-white/5 pt-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-700 font-mono">
-            © 2025 Stats Of Legends. All rights reserved.
+            {t.footerCopyright}
           </p>
           <p className="text-[10px] text-gray-700 max-w-2xl text-center md:text-right leading-relaxed">
-            Stats Of Legends isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+            {t.footerDisclaimer}
           </p>
         </div>
       </div>

@@ -1,20 +1,16 @@
-
 "use client";
 
 import { SearchHero } from "../components/SearchHero";
-import { TRANSLATIONS } from "../constants";
-import { Language } from "../types";
-import { useState } from "react";
+import { useI18n } from "./LanguageContext";
 import { SafeLink } from "../components/ui/SafeLink";
 
 export default function Home() {
-  const [currentLang] = useState<Language>('FR');
-  const t = TRANSLATIONS[currentLang];
+  const { t } = useI18n();
 
   return (
     <div className="animate-fadeIn">
-      {/* SearchHero handles navigation safely via push or onSearch */}
-      <SearchHero lang={currentLang} />
+      {/* SearchHero now reads language from context */}
+      <SearchHero />
       
       <div className="max-w-7xl mx-auto px-4 py-20">
          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">

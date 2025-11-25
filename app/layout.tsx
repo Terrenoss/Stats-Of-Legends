@@ -1,8 +1,8 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import { LanguageProvider } from "./LanguageContext";
 
 export const metadata: Metadata = {
   title: "Stats Of Legends",
@@ -20,11 +20,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased bg-[#050505] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans">
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <LanguageProvider>
+          <Navbar />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );

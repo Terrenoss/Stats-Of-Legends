@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,27 +6,21 @@ import { CURRENT_PATCH, TRANSLATIONS } from '../constants';
 import { Language } from '../types';
 import { SafeLink } from './ui/SafeLink';
 import { useSafeNavigation } from '../hooks/useSafeNavigation';
+import { useLanguage } from "../app/LanguageContext";
 
 interface NavbarProps {
   currentView?: string;
   onNavigate?: (view: string) => void;
-  currentLang?: Language;
-  onSetLang?: (lang: Language) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
   currentView, 
-  onNavigate, 
-  currentLang: propLang, 
-  onSetLang 
+  onNavigate
 }) => {
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
-  const [localLang, setLocalLang] = useState<Language>('FR'); 
   const [currentPatch, setCurrentPatch] = useState(CURRENT_PATCH);
   const { pathname } = useSafeNavigation();
-  
-  const currentLang = propLang || localLang;
-  const setCurrentLang = onSetLang || setLocalLang;
+  const { lang: currentLang, setLang: setCurrentLang } = useLanguage();
 
   const t = TRANSLATIONS[currentLang];
 

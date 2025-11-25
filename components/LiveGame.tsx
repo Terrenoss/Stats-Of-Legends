@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { Radio, Shield, Swords, Timer } from 'lucide-react';
 import { MOCK_CHAMPIONS } from '../constants';
+import { useI18n } from "../app/LanguageContext";
 
 interface LiveGameProps {
   summonerName: string;
@@ -10,6 +10,7 @@ interface LiveGameProps {
 export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
   const [gameData, setGameData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useI18n();
 
   useEffect(() => {
     const fetchLiveGame = async () => {
@@ -31,7 +32,7 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
   if (!gameData) return (
     <div className="flex flex-col items-center justify-center h-96 bg-[#121212] border border-white/5 rounded-[2rem]">
        <Radio className="w-16 h-16 text-gray-700 mb-6" />
-       <h3 className="text-2xl font-display font-bold text-gray-500 uppercase tracking-wider">No Active Game Found</h3>
+       <h3 className="text-2xl font-display font-bold text-gray-500 uppercase tracking-wider">{t.noActiveGame}</h3>
     </div>
   );
 
@@ -44,7 +45,7 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
   const TeamColumn = ({ teamId, color }: { teamId: number, color: string }) => (
     <div className={`flex flex-col gap-2`}>
         <div className={`text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${color === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
-            <Shield className="w-4 h-4" /> {color === 'blue' ? 'Blue Team' : 'Red Team'}
+            <Shield className="w-4 h-4" /> {color === 'blue' ? t.blueTeam : t.redTeam}
         </div>
         {gameData.participants.filter((p: any) => p.teamId === teamId).map((p: any, i: number) => (
             <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border ${p.summonerName === summonerName ? 'bg-lol-gold/10 border-lol-gold' : 'bg-[#18181b] border-white/5'}`}>
@@ -72,10 +73,10 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
           
           <div className="flex flex-col gap-1 z-10">
              <div className="flex items-center gap-2 text-lol-red font-bold text-xs uppercase tracking-widest animate-pulse">
-                <div className="w-2 h-2 rounded-full bg-lol-red"></div> Live
+                <div className="w-2 h-2 rounded-full bg-lol-red"></div> {t.liveLabel}
              </div>
-             <h2 className="text-2xl font-display font-bold text-white">Ranked Solo/Duo</h2>
-             <span className="text-gray-500 text-sm">Summoner's Rift</span>
+             <h2 className="text-2xl font-display font-bold text-white">{t.rankedSoloDuo}</h2>
+             <span className="text-gray-500 text-sm">{t.summonersRift}</span>
           </div>
 
           <div className="flex flex-col items-center z-10">
@@ -83,11 +84,11 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
                  <Timer className="w-6 h-6 text-lol-gold" />
                  {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
              </div>
-             <span className="text-[10px] text-gray-500 uppercase font-bold mt-1">Game Time</span>
+             <span className="text-[10px] text-gray-500 uppercase font-bold mt-1">{t.gameTime}</span>
           </div>
           
           <div className="hidden md:flex flex-col items-end z-10">
-              <span className="text-xs text-gray-500 uppercase font-bold mb-2">Banned Champions</span>
+              <span className="text-xs text-gray-500 uppercase font-bold mb-2">{t.bannedChampions}</span>
               <div className="flex gap-1">
                   {gameData.bannedChampions.map((ban: any, i: number) => (
                       <div key={i} className="w-8 h-8 rounded border border-white/10 bg-black/50 grayscale opacity-70">

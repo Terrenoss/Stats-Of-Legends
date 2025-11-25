@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, ArrowRight, History, X } from 'lucide-react';
-import { Region, Language, SeasonInfo } from '../types';
-import { REGIONS, TRANSLATIONS, CURRENT_SEASON_INFO } from '../constants';
+import { Region, SeasonInfo } from '../types';
+import { REGIONS, CURRENT_SEASON_INFO } from '../constants';
 import { useSafeNavigation } from '../hooks/useSafeNavigation';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useI18n } from "../app/LanguageContext";
 
 interface SearchHeroProps {
-  lang: Language;
   onSearch?: (query: string, region: Region) => void;
   seasonInfo?: SeasonInfo;
 }
@@ -18,7 +18,7 @@ interface RecentSearch {
   timestamp: number;
 }
 
-export const SearchHero: React.FC<SearchHeroProps> = ({ lang, onSearch, seasonInfo }) => {
+export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo }) => {
   const [input, setInput] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<Region>('EUW');
   const [suggestions, setSuggestions] = useState<{ gameName: string; tagLine: string; puuid: string; }[]>([]);
@@ -28,7 +28,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ lang, onSearch, seasonIn
   const [recentSearches, setRecentSearches, isStorageReady] = useLocalStorage<RecentSearch[]>('recent_searches_v1', []);
 
   const { push } = useSafeNavigation();
-  const t = TRANSLATIONS[lang];
+  const { t } = useI18n();
   
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapperRef = useRef<HTMLFormElement>(null);

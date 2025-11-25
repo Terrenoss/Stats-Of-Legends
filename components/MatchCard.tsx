@@ -1,22 +1,20 @@
-
 import React, { useState } from 'react';
-import { Match, Language } from '../types';
-import { ChevronDown, ArrowRight, BarChart2 } from 'lucide-react';
+import { Match } from '../types';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 import { analyzeMatch } from '../services/geminiService';
-import { TRANSLATIONS } from '../constants';
 import { MatchAnalysis } from './match/MatchAnalysis';
 import { MatchGraph } from './match/MatchGraph';
 import { MatchScoreboard } from './match/MatchScoreboard';
 import { MatchDamageChart } from './match/MatchDamageChart';
+import { useI18n } from "../app/LanguageContext";
 
 interface MatchCardProps {
   match: Match;
-  lang?: Language;
 }
 
 type TabType = 'NONE' | 'ANALYSE' | 'GRAPH' | 'BUILD' | 'STATS';
 
-export const MatchCard: React.FC<MatchCardProps> = ({ match, lang = 'FR' }) => {
+export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
   const { me } = match;
   const isWin = me.win;
   const kda = ((me.kills + me.assists) / Math.max(1, me.deaths)).toFixed(2);
@@ -27,7 +25,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, lang = 'FR' }) => {
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const t = TRANSLATIONS[lang];
+  const { t, lang } = useI18n();
 
   const handleAiAnalysis = async () => {
     if (analysis) return; 
