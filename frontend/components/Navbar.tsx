@@ -70,7 +70,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, current
                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Current Patch</span>
                <div className="flex items-center gap-2 text-lol-gold font-mono text-sm">
                   <span className="w-2 h-2 rounded-full bg-lol-red shadow-[0_0_8px_#C23030] animate-pulse"></span>
-                  {patchLabel}
+                  <a
+                    href="https://www.leagueoflegends.com/fr-fr/news/game-updates/patch-25-23-notes/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                    aria-label={`Ouvrir les notes du patch ${patchLabel}`}
+                  >
+                    {patchLabel}
+                  </a>
                </div>
             </div>
 

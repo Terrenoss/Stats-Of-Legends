@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, X, Zap, Shield, Swords, Brain, RotateCcw, Crosshair, Users, ChevronDown, CheckSquare, Square, Undo, Redo } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Plus, X, Zap, Shield, Swords, Brain, RotateCcw, Crosshair, Users, ChevronDown, CheckSquare, Square, Undo, Redo, Gauge } from 'lucide-react';
 import { Item, Champion, Stats, DummyStats, Language } from '../types';
 import { DEFAULT_DUMMY, TRANSLATIONS } from '../constants';
 import { analyzeBuild } from '../services/geminiService';
@@ -9,15 +9,28 @@ interface BuilderProps {
   lang?: Language;
 }
 
+// Filtres de stats pour la liste d'items
+const STAT_FILTERS: { key: keyof Stats; label: string; icon: React.ReactNode }[] = [
+  { key: 'ad', label: 'AD', icon: <Swords className="w-3 h-3" /> },
+  { key: 'ap', label: 'AP', icon: <Zap className="w-3 h-3" /> },
+  { key: 'armor', label: 'Armor', icon: <Shield className="w-3 h-3" /> },
+  { key: 'mr', label: 'MR', icon: <Shield className="w-3 h-3" /> },
+  { key: 'hp', label: 'HP', icon: <Plus className="w-3 h-3" /> },
+  { key: 'haste', label: 'Haste', icon: <Zap className="w-3 h-3" /> },
+  { key: 'attackSpeed', label: 'AS', icon: <Swords className="w-3 h-3" /> },
+  { key: 'crit', label: 'Crit', icon: <Crosshair className="w-3 h-3" /> },
+  { key: 'moveSpeed', label: 'Speed', icon: <Gauge className="w-3 h-3" /> },
+];
+
 export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
-  const { 
-    state: selectedItems, 
-    set: setSelectedItems, 
-    undo, 
-    redo, 
-    canUndo, 
+  const {
+    state: selectedItems,
+    set: setSelectedItems,
+    undo,
+    redo,
+    canUndo,
     canRedo,
-    reset: resetHistory
+    reset: resetHistory,
   } = useHistory<(Item | null)[]>([null, null, null, null, null, null], 20);
 
   const [currentChampion, setCurrentChampion] = useState<Champion | null>(null);
@@ -25,23 +38,31 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   const [items, setItems] = useState<Item[]>([]);
 
   const [championLevel, setChampionLevel] = useState<number>(18);
-  const [spellLevels, setSpellLevels] = useState<{[key: string]: number}>({ Q: 1, W: 1, E: 1, R: 1 });
+  const [spellLevels, setSpellLevels] = useState<{ [key: string]: number }>({ Q: 1, W: 1, E: 1, R: 1 });
   const [searchQuery, setSearchQuery] = useState('');
   const [champSearchQuery, setChampSearchQuery] = useState('');
-  
+
+  // Etats de filtrage
+  const [activeStatFilters, setActiveStatFilters] = useState<string[]>([]);
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [dummy, setDummy] = useState<DummyStats>(DEFAULT_DUMMY);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isChampSelectOpen, setIsChampSelectOpen] = useState(false);
-  
-  const [comboToggles, setComboToggles] = useState<{[key: string]: boolean}>({
+
+  const [comboToggles, setComboToggles] = useState<{ [key: string]: boolean }>({
     auto: true,
     Q: true,
     W: true,
     E: true,
-    R: true
+    R: true,
   });
+
+  // Virtualisation liste d'items
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [listHeight, setListHeight] = useState(500);
 
   const t = TRANSLATIONS[lang];
 
@@ -51,7 +72,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
       try {
         const [champRes, itemRes] = await Promise.all([
           fetch('/api/dd/champions?patch=latest&locale=fr_FR'),
-          fetch('/api/dd/items?patch=latest&locale=fr_FR')
+          fetch('/api/dd/items?patch=latest&locale=fr_FR'),
         ]);
         if (champRes.ok) {
           const champJson = await champRes.json();
@@ -98,7 +119,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
               baseDamage: s.baseDamage || [],
               ratios: s.ratios || {},
               damageType: s.damageType || 'magic',
-            }))
+            })),
           }));
           setChampions(champs);
           if (!currentChampion && champs.length > 0) {
@@ -126,7 +147,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
               attackSpeed: it.stats?.PercentAttackSpeedMod ? it.stats.PercentAttackSpeedMod * 100 : 0,
               crit: it.stats?.FlatCritChanceMod ? it.stats.FlatCritChanceMod * 100 : 0,
               haste: it.stats?.AbilityHaste ?? 0,
-            }
+            },
           }));
           setItems(its);
         }
@@ -137,6 +158,37 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     loadData();
   }, []);
 
+  // Raccourcis clavier undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        if (e.shiftKey) {
+          if (canRedo) redo();
+        } else {
+          if (canUndo) undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        if (canRedo) redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, undo, redo]);
+
+  // Resize observer pour la hauteur de la liste virtualisée
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setListHeight(entry.contentRect.height);
+      }
+    });
+    if (scrollRef.current) {
+      observer.observe(scrollRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!currentChampion || !currentChampion.baseStats || !currentChampion.statsGrowth) return;
 
@@ -145,26 +197,26 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     const lvlMod = championLevel - 1;
 
     let computedStats: Stats = {
-       hp: base.hp + (growth?.hp || 0) * lvlMod,
-       mp: base.mp + (growth?.mp || 0) * lvlMod,
-       mpRegen: base.mpRegen + (growth?.mpRegen || 0) * lvlMod,
-       ad: base.ad + (growth?.ad || 0) * lvlMod,
-       ap: base.ap, 
-       armor: base.armor + (growth?.armor || 0) * lvlMod,
-       mr: base.mr + (growth?.mr || 0) * lvlMod,
-       attackSpeed: base.attackSpeed, 
-       haste: base.haste,
-       crit: base.crit,
-       moveSpeed: base.moveSpeed,
-       lethality: 0,
-       magicPen: 0,
-       percentPen: 0
+      hp: base.hp + (growth?.hp || 0) * lvlMod,
+      mp: base.mp + (growth?.mp || 0) * lvlMod,
+      mpRegen: base.mpRegen + (growth?.mpRegen || 0) * lvlMod,
+      ad: base.ad + (growth?.ad || 0) * lvlMod,
+      ap: base.ap,
+      armor: base.armor + (growth?.armor || 0) * lvlMod,
+      mr: base.mr + (growth?.mr || 0) * lvlMod,
+      attackSpeed: base.attackSpeed,
+      haste: base.haste,
+      crit: base.crit,
+      moveSpeed: base.moveSpeed,
+      lethality: 0,
+      magicPen: 0,
+      percentPen: 0,
     };
 
     const bonusAsFromLevel = (growth?.attackSpeed || 0) * lvlMod;
-    
+
     let itemBonusAs = 0;
-    selectedItems.forEach(item => {
+    selectedItems.forEach((item) => {
       if (item && item.stats) {
         if (item.stats.ad) computedStats.ad += item.stats.ad;
         if (item.stats.ap) computedStats.ap += item.stats.ap;
@@ -183,14 +235,14 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     });
 
     const totalBonusAs = bonusAsFromLevel + itemBonusAs;
-    computedStats.attackSpeed = computedStats.attackSpeed * (1 + (totalBonusAs / 100));
+    computedStats.attackSpeed = computedStats.attackSpeed * (1 + totalBonusAs / 100);
 
     setStats(computedStats);
   }, [selectedItems, currentChampion, championLevel]);
 
   useEffect(() => {
-     setSpellLevels({ Q: 1, W: 1, E: 1, R: 1 });
-     setComboToggles({ auto: true, Q: true, W: true, E: true, R: true });
+    setSpellLevels({ Q: 1, W: 1, E: 1, R: 1 });
+    setComboToggles({ auto: true, Q: true, W: true, E: true, R: true });
   }, [currentChampion]);
 
   const handleDragStart = (e: React.DragEvent, source: 'catalog' | 'slot', data: Item | number) => {
@@ -209,7 +261,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
 
     if (sourceType === 'catalog') {
       const itemId = parseInt(e.dataTransfer.getData('itemId'));
-      const item = items.find(i => i.id === itemId);
+      const item = items.find((i) => i.id === itemId);
       if (item) {
         newItems[targetIndex] = item;
       }
@@ -233,7 +285,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   };
 
   const handleReset = () => {
-      resetHistory([null, null, null, null, null, null]);
+    resetHistory([null, null, null, null, null, null]);
   };
 
   const handleAnalysis = async () => {
@@ -247,7 +299,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   };
 
   const handleSpellLevelChange = (spellKey: string, delta: number, max: number) => {
-    setSpellLevels(prev => {
+    setSpellLevels((prev) => {
       const current = prev[spellKey] || 0;
       const next = Math.max(0, Math.min(max, current + delta));
       return { ...prev, [spellKey]: next };
@@ -255,29 +307,30 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   };
 
   const toggleCombo = (key: string) => {
-    setComboToggles(prev => ({...prev, [key]: !prev[key]}));
+    setComboToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const calculateSpellDamage = (spell: any) => {
-     if (!stats) return 0;
-     const lvl = spellLevels[spell.id] || 0;
-     if (lvl === 0) return 0;
-     
-     const base = spell.baseDamage[lvl - 1] || 0;
-     const scaling = (spell.ratios.ap ? stats.ap * spell.ratios.ap : 0) + 
-                     (spell.ratios.ad ? stats.ad * spell.ratios.ad : 0);
-     
-     const rawDamage = base + scaling;
+    if (!stats) return 0;
+    const lvl = spellLevels[spell.id] || 0;
+    if (lvl === 0) return 0;
 
-     const effectiveArmor = Math.max(0, dummy.armor - (stats.lethality || 0)); 
-     const effectiveMr = dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-     
-     const physReduction = 100 / (100 + effectiveArmor);
-     const magicReduction = 100 / (100 + Math.max(0, effectiveMr));
+    const base = spell.baseDamage[lvl - 1] || 0;
+    const scaling =
+      (spell.ratios.ap ? stats.ap * spell.ratios.ap : 0) +
+      (spell.ratios.ad ? stats.ad * spell.ratios.ad : 0);
 
-     if (spell.damageType === 'magic') return rawDamage * magicReduction;
-     if (spell.damageType === 'physical') return rawDamage * physReduction;
-     return rawDamage;
+    const rawDamage = base + scaling;
+
+    const effectiveArmor = Math.max(0, dummy.armor - (stats.lethality || 0));
+    const effectiveMr = dummy.mr * (1 - (stats.percentPen || 0) / 100) - (stats.magicPen || 0);
+
+    const physReduction = 100 / (100 + effectiveArmor);
+    const magicReduction = 100 / (100 + Math.max(0, effectiveMr));
+
+    if (spell.damageType === 'magic') return rawDamage * magicReduction;
+    if (spell.damageType === 'physical') return rawDamage * physReduction;
+    return rawDamage;
   };
 
   const calculateAutoDamage = () => {
@@ -290,78 +343,178 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   const calculateTotalDamage = () => {
     let total = 0;
     if (comboToggles['auto']) {
-        total += calculateAutoDamage() * 3;
+      total += calculateAutoDamage() * 3;
     }
     if (currentChampion && currentChampion.spells) {
-       currentChampion.spells.forEach(spell => {
-          if (comboToggles[spell.id]) {
-            total += calculateSpellDamage(spell);
-          }
-       });
+      currentChampion.spells.forEach((spell) => {
+        if (comboToggles[spell.id]) {
+          total += calculateSpellDamage(spell);
+        }
+      });
     }
     return Math.floor(total);
   };
 
-  const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toggleStatFilter = (key: string) => {
+    setActiveStatFilters((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
-  const filteredChampions = champions.filter(champ =>
+  // Scroll handler pour virtualisation
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  };
+
+  // Filtrage items (texte + stats)
+  const filteredItems = items.filter((item) => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesStats = true;
+    if (activeStatFilters.length > 0) {
+      if (!item.stats) matchesStats = false;
+      else {
+        matchesStats = activeStatFilters.some((statKey) => (item.stats as any)[statKey] > 0);
+      }
+    }
+    return matchesSearch && matchesStats;
+  });
+
+  const filteredChampions = champions.filter((champ) =>
     champ.name.toLowerCase().includes(champSearchQuery.toLowerCase())
   );
 
+  // Constantes de virtualisation
+  const ITEM_HEIGHT = 84; // 72px item + 12px gap
+  const totalHeight = filteredItems.length * ITEM_HEIGHT;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 2);
+  const endIndex = Math.min(
+    filteredItems.length,
+    Math.ceil((scrollTop + listHeight) / ITEM_HEIGHT) + 2
+  );
+
+  const visibleItems = filteredItems
+    .slice(startIndex, endIndex)
+    .map((item, index) => ({
+      ...item,
+      virtualTop: (startIndex + index) * ITEM_HEIGHT,
+    }));
+
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto min-h-[calc(100vh-80px)]">
-      
       {/* LEFT COLUMN: Item Catalog */}
-      <div className="lg:col-span-3 flex flex-col gap-6 h-[800px] lg:h-auto">
+      <div className="lg:col-span-3 flex flex-col gap-4 h-[800px] lg:h-auto">
+        {/* Search */}
         <div className="bg-[#121212] border border-white/5 p-4 rounded-3xl shadow-xl">
           <div className="relative">
-             <Search className="absolute left-4 top-3.5 w-5 h-5 text-lol-gold" />
-             <input 
-               type="text" 
-               placeholder={t.searchItem}
-               className="w-full bg-[#080808] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-gray-200 focus:border-lol-gold focus:outline-none placeholder-gray-600 transition-colors"
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-             />
+            <Search className="absolute left-4 top-3.5 w-5 h-5 text-lol-gold" />
+            <input
+              type="text"
+              placeholder={t.searchItem}
+              className="w-full bg-[#080808] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-gray-200 focus:border-lol-gold focus:outline-none placeholder-gray-600 transition-colors"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
-        
-        <div className="flex-1 bg-[#121212] border border-white/5 rounded-3xl overflow-y-auto p-4 space-y-3 scrollbar-hide shadow-inner">
-          {filteredItems.map(item => (
-            <div 
-              key={item.id} 
-              draggable
-              onDragStart={(e) => handleDragStart(e, 'catalog', item)}
-              onClick={() => {
-                const emptyIdx = selectedItems.findIndex(i => i === null);
-                if (emptyIdx !== -1) {
-                  const newI = [...selectedItems]; newI[emptyIdx] = item; setSelectedItems(newI);
-                }
-              }}
-              className="relative bg-[#1a1a1a] hover:bg-[#252525] border border-transparent hover:border-lol-gold/50 p-3 flex items-center gap-4 cursor-grab active:cursor-grabbing transition rounded-2xl group select-none"
-            >
-               <img src={item.imageUrl} className="w-12 h-12 rounded-xl border border-gray-700 group-hover:border-lol-gold" alt={item.name} />
-               <div className="flex-1 min-w-0">
-                 <div className="text-sm font-bold text-gray-200 truncate group-hover:text-lol-gold transition-colors">{item.name}</div>
-                 <div className="text-xs text-lol-goldDim">{item.price} G</div>
-               </div>
-               <Plus className="w-5 h-5 text-gray-600 group-hover:text-lol-gold" />
-               
-               {/* Hover Tooltip */}
-               <div className="absolute left-full top-0 ml-4 w-64 bg-[#121212] border border-lol-gold p-4 rounded-2xl shadow-2xl z-[100] hidden group-hover:block pointer-events-none">
+
+        {/* Filters */}
+        <div className="bg-[#121212] border border-white/5 p-4 rounded-3xl shadow-xl">
+          <div className="flex flex-wrap gap-2">
+            {STAT_FILTERS.map((sf) => {
+              const isActive = activeStatFilters.includes(sf.key);
+              return (
+                <button
+                  key={sf.key}
+                  onClick={() => toggleStatFilter(sf.key)}
+                  className={`p-2 rounded-xl border transition-all flex items-center gap-1 ${
+                    isActive
+                      ? 'bg-lol-red/20 border-lol-red text-lol-red'
+                      : 'bg-black/30 border-white/5 text-gray-500 hover:border-gray-600'
+                  }`}
+                  title={sf.label}
+                >
+                  {sf.icon}
+                  <span className="text-[10px] font-bold">{sf.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Item List (Virtualized) */}
+        <div
+          ref={scrollRef}
+          onScroll={onScroll}
+          className="flex-1 bg-[#121212] border border-white/5 rounded-3xl overflow-y-auto p-4 scrollbar-hide shadow-inner relative"
+        >
+          <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
+            {visibleItems.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '72px',
+                  transform: `translateY(${item.virtualTop}px)`,
+                }}
+                draggable
+                onDragStart={(e) => handleDragStart(e, 'catalog', item)}
+                onClick={() => {
+                  const emptyIdx = selectedItems.findIndex((i) => i === null);
+                  if (emptyIdx !== -1) {
+                    const newI = [...selectedItems];
+                    newI[emptyIdx] = item;
+                    setSelectedItems(newI);
+                  }
+                }}
+                className="relative bg-[#1a1a1a] hover:bg-[#252525] border border-transparent hover:border-lol-gold/50 p-3 flex items-center gap-4 cursor-grab active:cursor-grabbing transition rounded-2xl group select-none"
+              >
+                <img
+                  src={item.imageUrl}
+                  className="w-12 h-12 rounded-xl border border-gray-700 group-hover:border-lol-gold"
+                  alt={item.name}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-gray-200 truncate group-hover:text-lol-gold transition-colors">
+                    {item.name}
+                  </div>
+                  <div className="text-xs text-lol-goldDim">{item.price} G</div>
+                </div>
+                <Plus className="w-5 h-5 text-gray-600 group-hover:text-lol-gold" />
+
+                {/* Hover Tooltip */}
+                <div className="absolute left-full top-0 ml-4 w-64 bg-[#121212] border border-lol-gold p-4 rounded-2xl shadow-2xl z-[100] hidden group-hover:block pointer-events-none">
                   <div className="font-bold text-lol-gold mb-2 font-display text-lg">{item.name}</div>
                   <div className="text-xs text-gray-300 space-y-1 mb-3">
-                     {Object.entries(item.stats || {}).map(([key, val]) => (
-                        val ? <div key={key} className="flex justify-between uppercase text-[10px] tracking-wider font-bold"><span>{key}</span> <span className="text-white">+{val}</span></div> : null
-                     ))}
+                    {Object.entries(item.stats || {}).map(([key, val]) =>
+                      val ? (
+                        <div
+                          key={key}
+                          className="flex justify-between uppercase text-[10px] tracking-wider font-bold"
+                        >
+                          <span>{key}</span>{' '}
+                          <span className="text-white">+{val}</span>
+                        </div>
+                      ) : null
+                    )}
                   </div>
-                  {item.passive && <div className="text-[10px] text-gray-400 border-t border-gray-800 pt-2"><span className="text-lol-gold font-bold">Passif:</span> {item.passive}</div>}
+                  {item.passive && (
+                    <div className="text-[10px] text-gray-400 border-t border-gray-800 pt-2">
+                      <span className="text-lol-gold font-bold">Passif:</span> {item.passive}
+                    </div>
+                  )}
                   <div className="text-[10px] text-gray-500 mt-2 italic">{item.description}</div>
-               </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {filteredItems.length === 0 && (
+            <div className="text-center text-gray-500 py-10 text-sm absolute top-4 w-full">
+              No items match filters.
             </div>
-          ))}
+          )}
         </div>
       </div>
 

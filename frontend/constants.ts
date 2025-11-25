@@ -1,17 +1,7 @@
+
 import { GameMode, Match, SummonerProfile, Item, Champion, DummyStats, Language, Region, HeatmapDay, LPPoint, DetailedChampionStats, RoleStat, Participant, Teammate, MatchTimelinePoint, ItemTimestamp } from './types';
 
-export const CURRENT_PATCH_FALLBACK = "15.23.1";
-
-export interface SeasonInfo {
-  season: string; // e.g. "Season 2025"
-  split: string;  // e.g. "Split 1"
-}
-
-// valeur par défaut si pas encore déterminé côté client/serveur
-export const DEFAULT_SEASON_INFO: SeasonInfo = {
-  season: 'Season 2024',
-  split: 'Split 2',
-};
+export const CURRENT_PATCH = "15.23.1";
 
 export const REGIONS: Region[] = ['EUW', 'NA', 'KR', 'EUNE', 'BR', 'LAN'];
 
@@ -348,15 +338,15 @@ export const MOCK_TEAMMATES: Teammate[] = [
 ];
 
 export const MOCK_LP_HISTORY: LPPoint[] = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (29 - i));
-    return {
-        date: d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-        fullDate: d.toLocaleDateString('fr-FR'),
-        lp: 1400 + Math.floor(Math.sin(i * 0.5) * 50 + Math.random() * 30),
-        tier: "CHALLENGER",
-        rank: "I"
-    };
+  const d = new Date();
+  d.setDate(d.getDate() - (29 - i));
+  return {
+    date: d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+    fullDate: d.toLocaleDateString('fr-FR'),
+    lp: 1400 + Math.floor(Math.sin(i * 0.5) * 50 + Math.random() * 30),
+    tier: "CHALLENGER",
+    rank: "I"
+  };
 });
 
 export const MOCK_HEATMAP_DATA: HeatmapDay[] = Array.from({ length: 120 }, (_, i) => {
@@ -500,8 +490,8 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
 
 export const MOCK_CHAMPIONS: Champion[] = [
   {
-    id: 1, 
-    name: "Ahri", 
+    id: 1,
+    name: "Ahri",
     title: "The Nine-Tailed Fox",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Ahri.png",
     baseStats: { hp: 590, mp: 418, mpRegen: 8, ad: 53, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.668, magicPen: 0, lethality: 0 },
@@ -609,104 +599,115 @@ export const DEFAULT_DUMMY: DummyStats = {
 
 // Builder Items (Existing data kept)
 export const BUILDER_ITEMS: Item[] = [
-  { 
-    id: 1, 
-    name: "Luden's Companion", 
+  {
+    id: 1,
+    name: "Luden's Companion",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3285.png",
     price: 3000,
     stats: { ap: 90, haste: 20, mp: 600, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0, magicPen: 0 },
     description: "Confère de la puissance de burst et du mana.",
-    passive: "Charge : Gagnez une charge de tir toutes les 3s. Les sorts consomment les charges pour infliger 40 (+8% AP) dégâts magiques bonus."
+    passive: "Charge : Gagnez une charge de tir toutes les 3s. Les sorts consomment les charges pour infliger 40 (+8% AP) dégâts magiques bonus.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 2, 
-    name: "Rabadon's Deathcap", 
+  {
+    id: 2,
+    name: "Rabadon's Deathcap",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3089.png",
     price: 3600,
     stats: { ap: 140, haste: 0, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0 },
     description: "L'item ultime pour les mages.",
-    passive: "Magical Opus : Augmente votre Puissance (AP) totale de 35%."
+    passive: "Magical Opus : Augmente votre Puissance (AP) totale de 35%.",
+    tags: ['Legendary']
   },
-  { 
-    id: 3, 
-    name: "Shadowflame", 
+  {
+    id: 3,
+    name: "Shadowflame",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/4645.png",
     price: 3200,
     stats: { ap: 120, haste: 0, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0, magicPen: 12 },
     description: "Critiques magiques sur cibles fragiles.",
-    passive: "Cinderbloom : Les dégâts magiques et bruts infligent des coups critiques aux ennemis ayant moins de 35% de PV (bonus 20%)."
+    passive: "Cinderbloom : Les dégâts magiques et bruts infligent des coups critiques aux ennemis ayant moins de 35% de PV (bonus 20%).",
+    tags: ['Legendary']
   },
-  { 
-    id: 4, 
-    name: "Infinity Edge", 
+  {
+    id: 4,
+    name: "Infinity Edge",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3031.png",
     price: 3300,
     stats: { ad: 65, crit: 20, haste: 0, mr: 0, armor: 0, hp: 0, ap: 0, moveSpeed: 0 },
     description: "Augmente massivement les dégâts critiques.",
-    passive: "Critical Precision : Vos coups critiques infligent 40% de dégâts supplémentaires."
+    passive: "Critical Precision : Vos coups critiques infligent 40% de dégâts supplémentaires.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 5, 
-    name: "Trinity Force", 
+  {
+    id: 5,
+    name: "Trinity Force",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3078.png",
     price: 3333,
     stats: { ad: 45, hp: 300, haste: 20, moveSpeed: 20, attackSpeed: 33, crit: 0, mr: 0, armor: 0, ap: 0 },
     description: "L'item polyvalent par excellence.",
-    passive: "Spellblade : Après une compétence, votre prochaine attaque inflige 200% AD de base bonus."
+    passive: "Spellblade : Après une compétence, votre prochaine attaque inflige 200% AD de base bonus.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 6, 
-    name: "Zhonya's Hourglass", 
+  {
+    id: 6,
+    name: "Zhonya's Hourglass",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3157.png",
     price: 3250,
     stats: { ap: 120, armor: 50, haste: 15, mr: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0 },
     description: "Protection contre le burst.",
-    passive: "Stasis (Actif) : Vous devenez invulnérable et inciblable pendant 2.5s."
+    passive: "Stasis (Actif) : Vous devenez invulnérable et inciblable pendant 2.5s.",
+    tags: ['Legendary']
   },
-  { 
-    id: 7, 
-    name: "Kraken Slayer", 
+  {
+    id: 7,
+    name: "Kraken Slayer",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/6672.png",
     price: 3000,
     stats: { ad: 40, haste: 0, moveSpeed: 5, crit: 20, attackSpeed: 35, mr: 0, armor: 0, hp: 0, ap: 0 },
     description: "Anti-Tank via vitesse d'attaque.",
-    passive: "Bring It Down : Chaque 3ème attaque inflige des dégâts physiques bonus à l'impact."
+    passive: "Bring It Down : Chaque 3ème attaque inflige des dégâts physiques bonus à l'impact.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 8, 
-    name: "Heartsteel", 
+  {
+    id: 8,
+    name: "Heartsteel",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3084.png",
     price: 3000,
     stats: { hp: 800, haste: 0, mr: 0, armor: 0, ad: 0, ap: 0, crit: 0, moveSpeed: 0, mpRegen: 200 },
     description: "PV infinis stackables.",
-    passive: "Colossal Consumption : Chargez une attaque puissante contre un champion pour gagner des PV max permanents."
+    passive: "Colossal Consumption : Chargez une attaque puissante contre un champion pour gagner des PV max permanents.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 9, 
-    name: "Jak'Sho", 
+  {
+    id: 9,
+    name: "Jak'Sho",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/6665.png",
     price: 3200,
     stats: { hp: 300, armor: 50, mr: 50, haste: 0, ad: 0, ap: 0, crit: 0, moveSpeed: 0 },
     description: "Tanking ultime en combat prolongé.",
-    passive: "Voidborn Resilience : En combat, augmente vos résistances bonus jusqu'à 30%."
+    passive: "Voidborn Resilience : En combat, augmente vos résistances bonus jusqu'à 30%.",
+    tags: ['Legendary', 'Mythic']
   },
-  { 
-    id: 10, 
-    name: "Blade of the Ruined King", 
+  {
+    id: 10,
+    name: "Blade of the Ruined King",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3153.png",
     price: 3200,
-    stats: { ad: 40, haste: 0, moveSpeed: 0, crit: 0, attackSpeed: 25, mr: 0, armor: 0, hp: 0, ap: 0 }, 
+    stats: { ad: 40, haste: 0, moveSpeed: 0, crit: 0, attackSpeed: 25, mr: 0, armor: 0, hp: 0, ap: 0 },
     description: "Vol de vie et dégâts % PV actuels.",
-    passive: "Mist's Edge : Les attaques infligent des dégâts physiques équivalents à 12% des PV actuels de la cible."
+    passive: "Mist's Edge : Les attaques infligent des dégâts physiques équivalents à 12% des PV actuels de la cible.",
+    tags: ['Legendary']
   },
-  { 
-    id: 11, 
-    name: "Void Staff", 
+  {
+    id: 11,
+    name: "Void Staff",
     imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3135.png",
     price: 2800,
     stats: { ap: 80, magicPen: 40 }, // 40% pen
     description: "Pénétration magique brute.",
-    passive: "Dissolve : Ignore 40% de la résistance magique de la cible."
+    passive: "Dissolve : Ignore 40% de la résistance magique de la cible.",
+    tags: ['Legendary']
   },
   {
     id: 12,
@@ -715,7 +716,8 @@ export const BUILDER_ITEMS: Item[] = [
     price: 3100,
     stats: { ad: 60, crit: 20, lethality: 12 },
     description: "Exécution des cibles faibles.",
-    passive: "Death and Taxes : Si vous infligez des dégâts laissant un champion sous 5% PV, il est exécuté."
+    passive: "Death and Taxes : Si vous infligez des dégâts laissant un champion sous 5% PV, il est exécuté.",
+    tags: ['Legendary']
   },
   {
     id: 13,
@@ -724,7 +726,8 @@ export const BUILDER_ITEMS: Item[] = [
     price: 400,
     stats: { ap: 15, hp: 70 },
     description: "Starter AP",
-    passive: ""
+    passive: "",
+    tags: ['Starter']
   },
   {
     id: 14,
@@ -733,7 +736,8 @@ export const BUILDER_ITEMS: Item[] = [
     price: 300,
     stats: { moveSpeed: 25 },
     description: "Speed",
-    passive: ""
+    passive: "",
+    tags: ['Boots']
   },
   {
     id: 15,
@@ -742,7 +746,8 @@ export const BUILDER_ITEMS: Item[] = [
     price: 1100,
     stats: { ap: 40, haste: 10, mp: 300 },
     description: "Mana component",
-    passive: ""
+    passive: "",
+    tags: ['Component']
   },
   {
     id: 16,
@@ -751,82 +756,83 @@ export const BUILDER_ITEMS: Item[] = [
     price: 1100,
     stats: { moveSpeed: 45, magicPen: 18 },
     description: "Magic Pen Boots",
-    passive: ""
+    passive: "",
+    tags: ['Boots']
   }
 ];
 
 // Helper to generate a full participant list for a match
 const generateParticipants = (myChampId: number, isWin: boolean): Participant[] => {
-    const list: Participant[] = [];
-    
-    // Me (Blue Team usually in this mock)
+  const list: Participant[] = [];
+
+  // Me (Blue Team usually in this mock)
+  list.push({
+    summonerName: "Faker",
+    tagLine: "KR1",
+    champion: MOCK_CHAMPIONS.find(c => c.id === myChampId) || MOCK_CHAMPIONS[0],
+    teamId: 100,
+    kills: isWin ? 12 : 4,
+    deaths: isWin ? 2 : 5,
+    assists: isWin ? 8 : 12,
+    cs: isWin ? 240 : 180,
+    win: isWin,
+    items: BUILDER_ITEMS.slice(0, 6),
+    spells: [],
+    visionScore: 35,
+    totalDamageDealtToChampions: isWin ? 32000 : 21000,
+    goldEarned: isWin ? 14500 : 10000,
+    level: 17,
+    rank: "CHALLENGER",
+    opScore: isWin ? 92 : 64
+  });
+
+  // 4 Teammates (Blue)
+  for (let i = 0; i < 4; i++) {
     list.push({
-        summonerName: "Faker",
-        tagLine: "KR1",
-        champion: MOCK_CHAMPIONS.find(c => c.id === myChampId) || MOCK_CHAMPIONS[0],
-        teamId: 100,
-        kills: isWin ? 12 : 4,
-        deaths: isWin ? 2 : 5,
-        assists: isWin ? 8 : 12,
-        cs: isWin ? 240 : 180,
-        win: isWin,
-        items: BUILDER_ITEMS.slice(0, 6),
-        spells: [],
-        visionScore: 35,
-        totalDamageDealtToChampions: isWin ? 32000 : 21000,
-        goldEarned: isWin ? 14500 : 10000,
-        level: 17,
-        rank: "CHALLENGER",
-        opScore: isWin ? 92 : 64
+      summonerName: `Teammate ${i+1}`,
+      tagLine: "KR1",
+      champion: MOCK_CHAMPIONS[(i + 1) % MOCK_CHAMPIONS.length],
+      teamId: 100,
+      kills: Math.floor(Math.random() * 10),
+      deaths: Math.floor(Math.random() * 10),
+      assists: Math.floor(Math.random() * 15),
+      cs: Math.floor(Math.random() * 250),
+      win: isWin,
+      items: BUILDER_ITEMS.slice(0, 5),
+      spells: [],
+      visionScore: Math.floor(Math.random() * 50),
+      totalDamageDealtToChampions: Math.floor(Math.random() * 25000) + 5000,
+      goldEarned: Math.floor(Math.random() * 12000) + 6000,
+      level: Math.floor(Math.random() * 4) + 14,
+      rank: "CHALLENGER",
+      opScore: Math.floor(Math.random() * 40) + 50
     });
+  }
 
-    // 4 Teammates (Blue)
-    for (let i = 0; i < 4; i++) {
-        list.push({
-            summonerName: `Teammate ${i+1}`,
-            tagLine: "KR1",
-            champion: MOCK_CHAMPIONS[(i + 1) % MOCK_CHAMPIONS.length],
-            teamId: 100,
-            kills: Math.floor(Math.random() * 10),
-            deaths: Math.floor(Math.random() * 10),
-            assists: Math.floor(Math.random() * 15),
-            cs: Math.floor(Math.random() * 250),
-            win: isWin,
-            items: BUILDER_ITEMS.slice(0, 5),
-            spells: [],
-            visionScore: Math.floor(Math.random() * 50),
-            totalDamageDealtToChampions: Math.floor(Math.random() * 25000) + 5000,
-            goldEarned: Math.floor(Math.random() * 12000) + 6000,
-            level: Math.floor(Math.random() * 4) + 14,
-            rank: "CHALLENGER",
-            opScore: Math.floor(Math.random() * 40) + 50
-        });
-    }
+  // 5 Enemies (Red)
+  for (let i = 0; i < 5; i++) {
+    list.push({
+      summonerName: `Enemy ${i+1}`,
+      tagLine: "KR1",
+      champion: MOCK_CHAMPIONS[(i + 3) % MOCK_CHAMPIONS.length],
+      teamId: 200,
+      kills: Math.floor(Math.random() * 10),
+      deaths: Math.floor(Math.random() * 10),
+      assists: Math.floor(Math.random() * 15),
+      cs: Math.floor(Math.random() * 250),
+      win: !isWin,
+      items: BUILDER_ITEMS.slice(0, 5),
+      spells: [],
+      visionScore: Math.floor(Math.random() * 50),
+      totalDamageDealtToChampions: Math.floor(Math.random() * 25000) + 5000,
+      goldEarned: Math.floor(Math.random() * 12000) + 6000,
+      level: Math.floor(Math.random() * 4) + 14,
+      rank: "GRANDMASTER",
+      opScore: Math.floor(Math.random() * 40) + 50
+    });
+  }
 
-    // 5 Enemies (Red)
-    for (let i = 0; i < 5; i++) {
-        list.push({
-            summonerName: `Enemy ${i+1}`,
-            tagLine: "KR1",
-            champion: MOCK_CHAMPIONS[(i + 3) % MOCK_CHAMPIONS.length],
-            teamId: 200,
-            kills: Math.floor(Math.random() * 10),
-            deaths: Math.floor(Math.random() * 10),
-            assists: Math.floor(Math.random() * 15),
-            cs: Math.floor(Math.random() * 250),
-            win: !isWin,
-            items: BUILDER_ITEMS.slice(0, 5),
-            spells: [],
-            visionScore: Math.floor(Math.random() * 50),
-            totalDamageDealtToChampions: Math.floor(Math.random() * 25000) + 5000,
-            goldEarned: Math.floor(Math.random() * 12000) + 6000,
-            level: Math.floor(Math.random() * 4) + 14,
-            rank: "GRANDMASTER",
-            opScore: Math.floor(Math.random() * 40) + 50
-        });
-    }
-
-    return list;
+  return list;
 };
 
 // Generate Timeline Data for a match
@@ -862,16 +868,16 @@ const generateTimeline = (isWin: boolean): MatchTimelinePoint[] => {
 
 // Generate Mock Build Path
 const generateBuildPath = (): ItemTimestamp[] => {
-    return [
-        { item: BUILDER_ITEMS[12], timestamp: "0m" }, // Ring
-        { item: BUILDER_ITEMS[13], timestamp: "5m" }, // Boots
-        { item: BUILDER_ITEMS[14], timestamp: "8m" }, // Lost Chapter
-        { item: BUILDER_ITEMS[0], timestamp: "12m" }, // Luden
-        { item: BUILDER_ITEMS[15], timestamp: "15m" }, // Sorc Shoes
-        { item: BUILDER_ITEMS[2], timestamp: "22m" }, // Shadowflame
-        { item: BUILDER_ITEMS[5], timestamp: "28m" }, // Zhonya
-        { item: BUILDER_ITEMS[1], timestamp: "35m" }, // Rabadon
-    ];
+  return [
+    { item: BUILDER_ITEMS[12], timestamp: "0m" }, // Ring
+    { item: BUILDER_ITEMS[13], timestamp: "5m" }, // Boots
+    { item: BUILDER_ITEMS[14], timestamp: "8m" }, // Lost Chapter
+    { item: BUILDER_ITEMS[0], timestamp: "12m" }, // Luden
+    { item: BUILDER_ITEMS[15], timestamp: "15m" }, // Sorc Shoes
+    { item: BUILDER_ITEMS[2], timestamp: "22m" }, // Shadowflame
+    { item: BUILDER_ITEMS[5], timestamp: "28m" }, // Zhonya
+    { item: BUILDER_ITEMS[1], timestamp: "35m" }, // Rabadon
+  ];
 };
 
 // Mock Matches
@@ -922,7 +928,7 @@ export const MOCK_MATCHES: Match[] = [
       cs: 310,
       win: false,
       items: [
-         BUILDER_ITEMS[4], BUILDER_ITEMS[5], BUILDER_ITEMS[1]
+        BUILDER_ITEMS[4], BUILDER_ITEMS[5], BUILDER_ITEMS[1]
       ],
       spells: [
         { id: 4, name: "Flash", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/SummonerFlash.png" },
@@ -937,29 +943,29 @@ export const MOCK_MATCHES: Match[] = [
     }
   },
   {
-      id: "KR_11223344",
-      gameCreation: Date.now() - 172800000,
-      gameDuration: 1500,
-      gameMode: GameMode.FLEX,
-      participants: generateParticipants(3, true),
-      timelineData: generateTimeline(true),
-      itemBuild: generateBuildPath(),
-      me: {
-        summonerName: "Faker",
-        champion: { id: 3, name: "Jinx", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Jinx.png" },
-        kills: 15,
-        deaths: 1,
-        assists: 5,
-        cs: 280,
-        win: true,
-        items: BUILDER_ITEMS.slice(0, 6),
-        spells: [],
-        visionScore: 20,
-        totalDamageDealtToChampions: 40000,
-        goldEarned: 16000,
-        level: 16,
-        teamId: 100,
-        opScore: 88
-      }
+    id: "KR_11223344",
+    gameCreation: Date.now() - 172800000,
+    gameDuration: 1500,
+    gameMode: GameMode.FLEX,
+    participants: generateParticipants(3, true),
+    timelineData: generateTimeline(true),
+    itemBuild: generateBuildPath(),
+    me: {
+      summonerName: "Faker",
+      champion: { id: 3, name: "Jinx", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Jinx.png" },
+      kills: 15,
+      deaths: 1,
+      assists: 5,
+      cs: 280,
+      win: true,
+      items: BUILDER_ITEMS.slice(0, 6),
+      spells: [],
+      visionScore: 20,
+      totalDamageDealtToChampions: 40000,
+      goldEarned: 16000,
+      level: 16,
+      teamId: 100,
+      opScore: 88
     }
+  }
 ];

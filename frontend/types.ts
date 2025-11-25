@@ -1,3 +1,4 @@
+
 export enum GameMode {
   SOLO_DUO = 'Ranked Solo/Duo',
   FLEX = 'Ranked Flex',
@@ -48,10 +49,10 @@ export interface Spell {
   maxRank: number;
   cooldown: number[];
   cost: number[];
-  baseDamage: number[]; 
+  baseDamage: number[];
   ratios: {
-    ad?: number; 
-    ap?: number; 
+    ad?: number;
+    ap?: number;
   };
   damageType: 'physical' | 'magic' | 'true';
 }
@@ -72,14 +73,17 @@ export interface SummonerSpell {
   imageUrl: string;
 }
 
+export type ItemTag = 'Mythic' | 'Legendary' | 'Boots' | 'Starter' | 'Component';
+
 export interface Item {
   id: number;
   name: string;
   imageUrl: string;
   price?: number;
-  stats?: Partial<Stats>; 
+  stats?: Partial<Stats>;
   description?: string;
   passive?: string;
+  tags?: ItemTag[];
 }
 
 // New Interface for Timed Items (Build Tab)
@@ -227,9 +231,4 @@ export interface RoleStat {
   role: 'TOP' | 'JUNGLE' | 'MID' | 'ADC' | 'SUPPORT';
   games: number;
   winrate: number;
-}
-
-export interface SeasonInfo {
-  season: string;
-  split: string;
 }
