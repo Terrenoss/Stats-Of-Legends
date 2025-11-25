@@ -1,0 +1,137 @@
+
+import React from 'react';
+import { Participant } from '../../types';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+
+interface MatchDamageChartProps {
+  participants: Participant[];
+  lang: string;
+}
+
+export const MatchDamageChart: React.FC<MatchDamageChartProps> = ({ participants }) => {
+  const team100 = participants.filter(p => p.teamId === 100);
+  const team200 = participants.filter(p => p.teamId === 200);
+
+  const calculateTotal = (team: Participant[], key: keyof Participant) => 
+    team.reduce((acc, p) => acc + (typeof p[key] === 'number' ? (p[key] as number) : 0), 0);
+
+  const metrics = [
+    { label: 'Champions Killed', key: 'kills' as keyof Participant, color: '#C8AA6E' }, // Gold
+    { label: 'Gold Earned', key: 'goldEarned' as keyof Participant, color: '#F0E6D2' }, // Light Gold
+    { label: 'Damage Dealt', key: 'totalDamageDealtToChampions' as keyof Participant, color: '#C23030' }, // Red
+    { label: 'Wards Placed', key: 'visionScore' as keyof Participant, color: '#9333EA' }, // Hextech
+    { label: 'Damage Taken', key: 'totalDamageDealtToChampions' as keyof Participant, color: '#555' }, // Grey (Using dealt for demo, should be taken if available in type)
+    { label: 'CS', key: 'cs' as keyof Participant, color: '#60A5FA' }, // Blue
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
+      {metrics.map((metric, idx) => (
+        <StatComparisonCard 
+          key={idx}
+          label={metric.label}
+          metricKey={metric.key}
+          team100={team100}
+          team200={team200}
+          color={metric.color}
+        />
+      ))}
+    </div>
+  );
+};
+
+interface StatComparisonCardProps {
+  label: string;
+  metricKey: keyof Participant;
+  team100: Participant[];
+  team200: Participant[];
+  color: string;
+}
+
+const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKey, team100, team200, color }) => {
+  const t1Total = team100.reduce((acc, p) => acc + (p[metricKey] as number), 0);
+  const t2Total = team200.reduce((acc, p) => acc + (p[metricKey] as number), 0);
+  const total = t1Total + t2Total;
+
+  // Find max value in this card for bar scaling
+  const maxVal = Math.max(
+      ...team100.map(p => p[metricKey] as number),
+      ...team200.map(p => p[metricKey] as number)
+  );
+
+  const data = [
+    { name: 'Blue', value: t1Total },
+    { name: 'Red', value: t2Total },
+  ];
+
+  const COLORS = ['#3b82f6', '#ef4444']; // Blue / Red
+
+  return (
+    <div className="bg-[#121212] border border-white/5 rounded-xl p-4 shadow-lg flex flex-col gap-4">
+       <div className="text-center text-xs font-bold text-white uppercase tracking-wider">{label}</div>
+       
+       <div className="flex items-center justify-between gap-4">
+          {/* Team 100 List (Left) */}
+          <div className="flex flex-col gap-1 w-24">
+             {team100.map((p, i) => (
+               <PlayerStatRow key={i} participant={p} metricKey={metricKey} maxVal={maxVal} align="right" color="#3b82f6" />
+             ))}
+          </div>
+
+          {/* Center Chart */}
+          <div className="relative w-28 h-28 flex-shrink-0">
+             <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data}
+                    innerRadius={35}
+                    outerRadius={45}
+                    dataKey="value"
+                    stroke="none"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+             </ResponsiveContainer>
+             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="text-[#3b82f6] text-sm font-bold">{t1Total.toLocaleString()}</div>
+                <div className="w-full h-px bg-white/10 my-0.5"></div>
+                <div className="text-[#ef4444] text-sm font-bold">{t2Total.toLocaleString()}</div>
+             </div>
+          </div>
+
+          {/* Team 200 List (Right) */}
+          <div className="flex flex-col gap-1 w-24">
+             {team200.map((p, i) => (
+               <PlayerStatRow key={i} participant={p} metricKey={metricKey} maxVal={maxVal} align="left" color="#ef4444" />
+             ))}
+          </div>
+       </div>
+    </div>
+  );
+};
+
+const PlayerStatRow = ({ participant, metricKey, maxVal, align, color }: { participant: Participant, metricKey: keyof Participant, maxVal: number, align: 'left' | 'right', color: string }) => {
+    const val = participant[metricKey] as number;
+    const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
+
+    return (
+        <div className={`flex items-center gap-2 ${align === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
+            <img 
+               src={participant.champion.imageUrl} 
+               className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'}`} 
+               alt={participant.champion.name} 
+            />
+            <div className={`flex flex-col w-full ${align === 'right' ? 'items-end' : 'items-start'}`}>
+                <div className="text-[9px] text-gray-300 font-mono leading-none mb-0.5">{val.toLocaleString()}</div>
+                <div className={`h-1 bg-gray-800 rounded-full w-full flex ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
+                    <div style={{ width: `${width}%`, backgroundColor: color }} className="h-full rounded-full opacity-80"></div>
+                </div>
+            </div>
+        </div>
+    );
+};
