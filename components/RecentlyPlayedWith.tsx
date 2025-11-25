@@ -1,19 +1,22 @@
+"use client";
 
 import React from 'react';
-import { Teammate } from '../types';
+import { Teammate, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { useI18n } from '../app/LanguageContext';
 
 interface RecentlyPlayedWithProps {
   teammates: Teammate[];
-  lang: string;
+  lang?: Language;
 }
 
 export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammates, lang }) => {
-  const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
+  const { t } = useI18n();
+  const translations = lang ? (TRANSLATIONS as any)[lang] : t;
 
   return (
     <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-5 shadow-xl">
-      <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4">{t.recentlyPlayedWith}</h3>
+      <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4">{translations.recentlyPlayedWith}</h3>
       <div className="space-y-4">
         {teammates.map((teammate, idx) => (
           <div key={idx} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">

@@ -897,6 +897,8 @@ const generateParticipants = (myChampId: number, isWin: boolean): Participant[] 
         physicalDamageDealtToChampions: Math.floor(totalDmg * 0.1),
         magicDamageDealtToChampions: Math.floor(totalDmg * 0.8),
         trueDamageDealtToChampions: Math.floor(totalDmg * 0.1),
+        // added: totalDamageTaken for compatibility with components
+        totalDamageTaken: isWin ? Math.floor(totalDmg * 0.5) : Math.floor(totalDmg * 0.8),
         goldEarned: isWin ? 14500 : 10000,
         level: 17,
         rank: "CHALLENGER",
@@ -923,6 +925,8 @@ const generateParticipants = (myChampId: number, isWin: boolean): Participant[] 
             physicalDamageDealtToChampions: Math.floor(dmg * 0.4),
             magicDamageDealtToChampions: Math.floor(dmg * 0.4),
             trueDamageDealtToChampions: Math.floor(dmg * 0.2),
+            // added
+            totalDamageTaken: Math.floor(dmg * 0.6),
             goldEarned: Math.floor(Math.random() * 12000) + 6000,
             level: Math.floor(Math.random() * 4) + 14,
             rank: "CHALLENGER",
@@ -950,6 +954,8 @@ const generateParticipants = (myChampId: number, isWin: boolean): Participant[] 
             physicalDamageDealtToChampions: Math.floor(dmg * 0.4),
             magicDamageDealtToChampions: Math.floor(dmg * 0.4),
             trueDamageDealtToChampions: Math.floor(dmg * 0.2),
+            // added
+            totalDamageTaken: Math.floor(dmg * 0.6),
             goldEarned: Math.floor(Math.random() * 12000) + 6000,
             level: Math.floor(Math.random() * 4) + 14,
             rank: "GRANDMASTER",
@@ -1033,6 +1039,8 @@ export const MOCK_MATCHES: Match[] = [
       physicalDamageDealtToChampions: 3200,
       magicDamageDealtToChampions: 25600,
       trueDamageDealtToChampions: 3200,
+      // added
+      totalDamageTaken: 12000,
       goldEarned: 14500,
       level: 18,
       teamId: 100,
@@ -1067,6 +1075,8 @@ export const MOCK_MATCHES: Match[] = [
       physicalDamageDealtToChampions: 2000,
       magicDamageDealtToChampions: 25000,
       trueDamageDealtToChampions: 1000,
+      // added
+      totalDamageTaken: 15000,
       goldEarned: 11200,
       level: 16,
       teamId: 100,
@@ -1096,6 +1106,8 @@ export const MOCK_MATCHES: Match[] = [
         physicalDamageDealtToChampions: 38000,
         magicDamageDealtToChampions: 1000,
         trueDamageDealtToChampions: 1000,
+        // added
+        totalDamageTaken: 9000,
         goldEarned: 16000,
         level: 16,
         teamId: 100,

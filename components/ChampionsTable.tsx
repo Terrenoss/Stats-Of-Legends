@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DetailedChampionStats } from '../types';
 import { Search, ChevronDown, ChevronUp } from 'lucide-react';
@@ -124,7 +123,11 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                    <td className="p-4 text-center text-gray-600 font-mono">{index + 1}</td>
                    <td className="p-4">
                       <div className="flex items-center gap-3">
-                         <img src={champ.imageUrl} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
+                         {champ.imageUrl ? (
+                           <img src={champ.imageUrl} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
+                         ) : (
+                           <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}</div>
+                         )}
                          <span className="font-bold text-white group-hover:text-lol-gold transition-colors">{champ.name}</span>
                       </div>
                    </td>

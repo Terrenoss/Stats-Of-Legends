@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Participant } from '../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -20,7 +19,7 @@ export const MatchDamageChart: React.FC<MatchDamageChartProps> = ({ participants
     { label: 'Gold Earned', key: 'goldEarned' as keyof Participant, color: '#F0E6D2' }, // Light Gold
     { label: 'Damage Dealt', key: 'totalDamageDealtToChampions' as keyof Participant, color: '#C23030' }, // Red
     { label: 'Wards Placed', key: 'visionScore' as keyof Participant, color: '#9333EA' }, // Hextech
-    { label: 'Damage Taken', key: 'totalDamageDealtToChampions' as keyof Participant, color: '#555' }, // Grey (Using dealt for demo, should be taken if available in type)
+    { label: 'Damage Taken', key: 'totalDamageTaken' as keyof Participant, color: '#555' }, // Grey (use actual taken field)
     { label: 'CS', key: 'cs' as keyof Participant, color: '#60A5FA' }, // Blue
   ];
 
@@ -49,14 +48,14 @@ interface StatComparisonCardProps {
 }
 
 const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKey, team100, team200, color }) => {
-  const t1Total = team100.reduce((acc, p) => acc + (p[metricKey] as number), 0);
-  const t2Total = team200.reduce((acc, p) => acc + (p[metricKey] as number), 0);
+  const t1Total = team100.reduce((acc, p) => acc + (Number(p[metricKey]) || 0), 0);
+  const t2Total = team200.reduce((acc, p) => acc + (Number(p[metricKey]) || 0), 0);
   const total = t1Total + t2Total;
 
   // Find max value in this card for bar scaling
   const maxVal = Math.max(
-      ...team100.map(p => p[metricKey] as number),
-      ...team200.map(p => p[metricKey] as number)
+      ...team100.map(p => Number(p[metricKey]) || 0),
+      ...team200.map(p => Number(p[metricKey]) || 0)
   );
 
   const data = [
@@ -116,20 +115,30 @@ const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKe
 };
 
 const PlayerStatRow = ({ participant, metricKey, maxVal, align, color }: { participant: Participant, metricKey: keyof Participant, maxVal: number, align: 'left' | 'right', color: string }) => {
-    const val = participant[metricKey] as number;
-    const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
+     const val = Number(participant[metricKey]) || 0;
+     const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
+
+    // Safe champion access and fallbacks
+    const champImg = participant.champion?.imageUrl ?? null;
+    const champName = participant.champion?.name ?? 'Unknown';
+    const safeVal = typeof val === 'number' && !isNaN(val) ? val : 0;
+    const safeWidth = maxVal > 0 ? Math.min(100, (safeVal / maxVal) * 100) : 0;
 
     return (
         <div className={`flex items-center gap-2 ${align === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
-            <img 
-               src={participant.champion.imageUrl} 
-               className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'}`} 
-               alt={participant.champion.name} 
-            />
+            {champImg ? (
+              <img 
+                 src={champImg}
+                 className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'}`} 
+                 alt={champName}
+              />
+            ) : (
+              <div className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
+            )}
             <div className={`flex flex-col w-full ${align === 'right' ? 'items-end' : 'items-start'}`}>
-                <div className="text-[9px] text-gray-300 font-mono leading-none mb-0.5">{val.toLocaleString()}</div>
+                <div className={`text-[9px] text-gray-300 font-mono leading-none mb-0.5`}>{safeVal.toLocaleString()}</div>
                 <div className={`h-1 bg-gray-800 rounded-full w-full flex ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
-                    <div style={{ width: `${width}%`, backgroundColor: color }} className="h-full rounded-full opacity-80"></div>
+                    <div style={{ width: `${safeWidth}%`, backgroundColor: color }} className="h-full rounded-full opacity-80"></div>
                 </div>
             </div>
         </div>

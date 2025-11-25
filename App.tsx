@@ -181,7 +181,7 @@ function App() {
 
                   <div className="space-y-2">
                     {filteredMatches.map((match) => (
-                      <MatchCard key={match.id} match={match} lang={currentLang} />
+                      <MatchCard key={match.id} match={match} />
                     ))}
                     {filteredMatches.length === 0 && (
                         <div className="text-center py-10 text-gray-500 text-sm font-bold">No matches found for this filter.</div>
@@ -215,8 +215,6 @@ function App() {
       <Navbar 
         currentView={currentView} 
         onNavigate={handleNavigate}
-        currentLang={currentLang}
-        onSetLang={setCurrentLang}
       />
       <main className="flex-grow">
         {renderContent()}

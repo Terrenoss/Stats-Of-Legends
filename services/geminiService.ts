@@ -7,15 +7,24 @@ export const analyzeMatch = async (match: Match): Promise<string> => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ match }),
     });
+
+    const text = await res.text();
+    let data: any = null;
+    try { data = JSON.parse(text); } catch (e) { /* not JSON */ }
+
     if (!res.ok) {
-      console.error('Gemini match-analysis failed', await res.text());
-      return "Une erreur est survenue lors de l'analyse du match.";
+      console.error('Gemini match-analysis failed', res.status, data || text);
+      // If server provided a readable error message, surface it
+      if (data && data.error) return typeof data.error === 'string' ? data.error : (data.error.message || 'Erreur lors de l\'analyse du match.');
+      return `Erreur lors de l'analyse du match (status ${res.status}).`;
     }
-    const data = await res.json();
-    return data.result || "Impossible de générer l'analyse.";
+
+    // success
+    if (data && data.result) return data.result;
+    return "Impossible de générer l'analyse.";
   } catch (error) {
     console.error('Gemini Error:', error);
-    return "Une erreur est survenue lors de l'analyse du match.";
+    return "Erreur IA : impossible de contacter le service d'analyse. Vérifiez votre configuration.";
   }
 };
 
@@ -26,14 +35,21 @@ export const analyzeBuild = async (champion: Champion, items: Item[], stats: Sta
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ champion, itemNames: items.map(i => i.name).join(', '), stats }),
     });
-    const data = await response.json();
+
+    const text = await response.text();
+    let data: any = null;
+    try { data = JSON.parse(text); } catch (e) { /* not JSON */ }
+
     if (!response.ok) {
-      console.error('Gemini build-analysis failed', data);
-      return "Erreur lors de l'analyse du build.";
+      console.error('Gemini build-analysis failed', response.status, data || text);
+      if (data && data.error) return typeof data.error === 'string' ? data.error : (data.error.message || 'Erreur lors de l\'analyse du build.');
+      return `Erreur lors de l'analyse du build (status ${response.status}).`;
     }
-    return data.result || "Analyse impossible.";
+
+    if (data && data.result) return data.result;
+    return "Analyse impossible.";
   } catch (error) {
     console.error('Gemini Error:', error);
-    return "Erreur lors de l'analyse du build.";
+    return "Erreur IA : impossible de contacter le service d'analyse. Vérifiez votre configuration.";
   }
 };

@@ -26,6 +26,9 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live'>('overview');
   const [matchFilter, setMatchFilter] = useState<'ALL' | 'SOLO' | 'FLEX'>('ALL');
   const [currentLang] = useState<Language>('FR');
+  const [partialData, setPartialData] = useState(false);
+  const [meta, setMeta] = useState<any>(null);
+  const [showMetaDetails, setShowMetaDetails] = useState(false);
 
   const t = TRANSLATIONS[currentLang];
 
@@ -51,6 +54,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
                 setHeatmap(realData.heatmap as HeatmapDay[]);
                 setChampions(realData.champions as DetailedChampionStats[]);
                 setTeammates(realData.teammates as Teammate[]);
+                setPartialData(Boolean(realData.partialData));
+                setMeta(realData.meta ?? null);
             } else {
                 throw new Error("Use Mock");
             }
@@ -62,6 +67,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
             setHeatmap([]);
             setChampions([]);
             setTeammates([]);
+            setPartialData(false);
+            setMeta(null);
         } finally {
             setLoading(false);
         }
@@ -113,6 +120,21 @@ export default function SummonerClientPage({ params }: { params: { region: strin
            <span>←</span> {t.back}
         </SafeLink>
 
+        {partialData && (
+          <div className="mb-4 rounded-lg bg-yellow-900/60 border border-yellow-700 text-yellow-100 px-4 py-2 text-sm font-bold flex items-center justify-between">
+            <div>Données partielles — certains champs manquent.</div>
+            {meta?.errors && meta.errors.length > 0 && (
+              <button onClick={() => setShowMetaDetails(s => !s)} className="ml-4 text-xs underline">
+                {showMetaDetails ? 'Masquer détails' : `Voir détails (${meta.errors.length})`}
+              </button>
+            )}
+          </div>
+        )}
+
+        {showMetaDetails && meta?.errors && (
+          <pre className="bg-[#0b0b0b] text-xs text-gray-300 p-3 rounded mb-4 overflow-auto max-h-48 border border-white/5">{JSON.stringify(meta.errors, null, 2)}</pre>
+        )}
+
         <ProfileHeader profile={profile} lang={currentLang} />
         
         {/* TABS NAVIGATION */}
@@ -132,7 +154,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
                     <PerformanceRadar />
                 </div>
                 
-                <ActivityHeatmap data={heatmap} lang={currentLang} />
+                <ActivityHeatmap data={heatmap} />
                 
                 {/* Champions List */}
                 <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-5 shadow-xl">
@@ -181,7 +203,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
 
                 <div className="space-y-2">
                 {filteredMatches.map((match) => (
-                    <MatchCard key={match.id} match={match} lang={currentLang} />
+                    <MatchCard key={match.id} match={match} />
                 ))}
                 {filteredMatches.length === 0 && (
                     <div className="text-center py-10 text-gray-500 text-sm font-bold">No matches found for this filter.</div>

@@ -1,4 +1,3 @@
-
 export enum GameMode {
   SOLO_DUO = 'Ranked Solo/Duo',
   FLEX = 'Ranked Flex',
@@ -90,6 +89,7 @@ export interface Item {
 export interface ItemTimestamp {
   item: Item;
   timestamp: string; // e.g. "12m"
+  action?: string; // optional: 'ITEM_PURCHASED' | 'ITEM_SOLD' | 'ITEM_UNDO'
 }
 
 export interface Participant {
@@ -109,10 +109,15 @@ export interface Participant {
   physicalDamageDealtToChampions: number;
   magicDamageDealtToChampions: number;
   trueDamageDealtToChampions: number;
+  totalDamageTaken?: number; // Ajouté : dégâts subis
   goldEarned: number;
   level: number;
   rank?: string; // e.g., "P4"
   opScore?: number; // 0-100 score
+  ace?: boolean; // indicates ACE (all enemies killed) if present in source
+  aceCount?: number; // number of ace occurrences (optional)
+  puuid?: string; // player's unique id from Riot
+  participantId?: number; // numeric participant id within match frames
 }
 
 // New Interface for Match Timeline Graph

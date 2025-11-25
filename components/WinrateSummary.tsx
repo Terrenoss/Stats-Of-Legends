@@ -1,16 +1,18 @@
+"use client";
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Match } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { Match, Language } from '../types';
+import { useI18n } from '../app/LanguageContext';
 
 interface WinrateSummaryProps {
     matches: Match[];
-    lang: string;
+    lang?: Language;
 }
 
 export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang }) => {
-    const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
+    const { t } = useI18n();
+    const translations = lang ? (require('../constants').TRANSLATIONS as any)[lang] : t;
 
     const recentMatches = matches.slice(0, 20);
     const wins = recentMatches.filter(m => m.me.win).length;
@@ -68,7 +70,7 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang })
 
              {/* Stats Text */}
              <div className="flex flex-col items-center gap-1">
-                 <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full mb-1">{t.recent20Games}</div>
+                 <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full mb-1">{translations.recent20Games}</div>
                  <div className="text-gray-300 font-bold text-sm">{wins}W - {losses}L</div>
              </div>
 
