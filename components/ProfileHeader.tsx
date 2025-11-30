@@ -7,9 +7,10 @@ import { Clock } from 'lucide-react';
 interface ProfileHeaderProps {
   profile: SummonerProfile;
   lang: Language;
+  onUpdateRequest?: () => void;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onUpdateRequest }) => {
   const t = TRANSLATIONS[lang];
 
   const getLastUpdatedText = () => {
@@ -45,7 +46,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang }) =
                     {profile.name} 
                 </h2>
                 <span className="text-gray-500 text-sm font-sans font-medium">#{profile.tag}</span>
-                <button className="mt-3 w-max px-6 py-1.5 bg-lol-red/10 hover:bg-lol-red text-lol-red hover:text-white text-[10px] font-bold uppercase tracking-wider border border-lol-red/20 rounded-full transition-all">
+                <button
+                  className="mt-3 w-max px-6 py-1.5 bg-lol-red/10 hover:bg-lol-red text-lol-red hover:text-white text-[10px] font-bold uppercase tracking-wider border border-lol-red/20 rounded-full transition-all"
+                  onClick={onUpdateRequest}
+                >
                     {t.update}
                 </button>
                 <div className="mt-2 text-[10px] text-gray-500 font-medium flex items-center gap-1">

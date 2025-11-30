@@ -245,3 +245,62 @@ export interface SeasonInfo {
   season: string;
   split: string;
 }
+
+export interface RiotAccount {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+}
+
+export interface RiotSummoner {
+  id: string;
+  accountId?: string;
+  puuid: string;
+  name: string;
+  profileIconId: number;
+  summonerLevel: number;
+}
+
+export interface RiotParticipant {
+  puuid: string;
+  summonerName: string;
+  championName: string;
+  championId?: number;
+  teamId: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  totalMinionsKilled?: number;
+  neutralMinionsKilled?: number;
+  totalDamageDealtToChampions?: number;
+  visionScore?: number;
+  goldEarned?: number;
+  champLevel?: number;
+  summoner1Id?: number;
+  summoner2Id?: number;
+  item0?: number;
+  item1?: number;
+  item2?: number;
+  item3?: number;
+  item4?: number;
+  item5?: number;
+  item6?: number;
+  [key: string]: any;
+}
+
+export interface RiotMatch {
+  metadata: {
+    matchId: string;
+    participants: string[];
+  };
+  info: {
+    gameCreation?: number;
+    gameStartTimestamp?: number;
+    gameDuration: number;
+    gameMode?: string;
+    queueId?: number;
+    participants: RiotParticipant[];
+    frames?: any[];
+    [key: string]: any;
+  };
+}

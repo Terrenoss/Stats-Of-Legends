@@ -1,3 +1,5 @@
+// Legacy Vite config - non utilisée par l’application Next.js actuelle.
+// Conservée uniquement à titre de référence.
 // @ts-nocheck
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';

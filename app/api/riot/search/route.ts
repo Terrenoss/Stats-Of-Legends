@@ -11,14 +11,22 @@ const REGION_ROUTING: Record<string, string> = {
   KR: 'asia',
 };
 
+function isValidRegion(region: string): region is keyof typeof REGION_ROUTING {
+  return Object.prototype.hasOwnProperty.call(REGION_ROUTING, region);
+}
+
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const query = url.searchParams.get('query') || '';
-    const region = url.searchParams.get('region') || 'EUW';
+    const region = (url.searchParams.get('region') || 'EUW').toUpperCase();
 
     if (!RIOT_KEY) {
-      return NextResponse.json({ error: 'RIOT_API_KEY is not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'RIOT_API_KEY is not configured', suggestions: [] }, { status: 500 });
+    }
+
+    if (!isValidRegion(region)) {
+      return NextResponse.json({ error: 'Invalid region', suggestions: [] }, { status: 400 });
     }
 
     if (!query.includes('#')) {
@@ -30,13 +38,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ suggestions: [] });
     }
 
-    const routing = REGION_ROUTING[region] || REGION_ROUTING.EUW;
+    const routing = REGION_ROUTING[region];
 
     const accountUrl = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
     const resAcc = await fetch(accountUrl, {
       headers: { 'X-Riot-Token': RIOT_KEY },
       next: { revalidate: 30 },
     });
+
+    if (resAcc.status === 403) {
+      return NextResponse.json(
+        {
+          error: 'RIOT_FORBIDDEN',
+          reason: 'Riot API returned 403 Forbidden while searching this account. Vérifie ta clé et tes autorisations.',
+          suggestions: [],
+        },
+        { status: 502 },
+      );
+    }
 
     if (!resAcc.ok) {
       return NextResponse.json({ suggestions: [] });

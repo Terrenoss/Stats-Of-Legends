@@ -18,6 +18,8 @@ import { SafeLink } from '../../../../components/ui/SafeLink';
 
 export default function SummonerClientPage({ params }: { params: { region: string, summonerName: string } }) {
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
   const [profile, setProfile] = useState<SummonerProfile | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [heatmap, setHeatmap] = useState<HeatmapDay[]>([]);
@@ -32,50 +34,64 @@ export default function SummonerClientPage({ params }: { params: { region: strin
 
   const t = TRANSLATIONS[currentLang];
 
+  const loadData = async () => {
+    setLoading(true);
+    setUpdateError(null);
+    const nameParam = decodeURIComponent(params.summonerName as string);
+    let name = nameParam;
+    let tag = params.region as string;
+
+    if (nameParam.includes('-')) {
+      [name, tag] = nameParam.split('-');
+    }
+
+    try {
+      const res = await fetch(`/api/summoner?region=${params.region}&name=${name}&tag=${tag}`);
+
+      if (res.ok) {
+        const realData = await res.json();
+
+        setProfile(realData.profile as SummonerProfile);
+        setMatches(realData.matches as Match[]);
+        setHeatmap(realData.heatmap as HeatmapDay[]);
+        setChampions(realData.champions as DetailedChampionStats[]);
+        setTeammates(realData.teammates as Teammate[]);
+        setPartialData(Boolean(realData.partialData));
+        setMeta(realData.meta ?? null);
+      } else {
+        const errJson = await res.json().catch(() => null);
+        if (errJson?.error === 'RIOT_FORBIDDEN') {
+          setUpdateError('Impossible de mettre à jour les données : accès Riot API refusé (403).');
+        } else {
+          setUpdateError('Échec de la mise à jour des données du joueur.');
+        }
+        throw new Error('Fetch summoner failed');
+      }
+
+    } catch (e) {
+      console.error('Failed to fetch summoner', e);
+      setProfile(null);
+      setMatches([]);
+      setHeatmap([]);
+      setChampions([]);
+      setTeammates([]);
+      setPartialData(false);
+      setMeta(null);
+    } finally {
+      setLoading(false);
+      setUpdating(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-        setLoading(true);
-        const nameParam = decodeURIComponent(params.summonerName as string);
-        let name = nameParam;
-        let tag = params.region as string; 
-        
-        if (nameParam.includes('-')) {
-            [name, tag] = nameParam.split('-');
-        }
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.region, params.summonerName]);
 
-        try {
-            const res = await fetch(`/api/summoner?region=${params.region}&name=${name}&tag=${tag}`);
-            
-            if (res.ok) {
-                const realData = await res.json();
-
-                setProfile(realData.profile as SummonerProfile);
-                setMatches(realData.matches as Match[]);
-                setHeatmap(realData.heatmap as HeatmapDay[]);
-                setChampions(realData.champions as DetailedChampionStats[]);
-                setTeammates(realData.teammates as Teammate[]);
-                setPartialData(Boolean(realData.partialData));
-                setMeta(realData.meta ?? null);
-            } else {
-                throw new Error("Use Mock");
-            }
-
-        } catch (e) {
-            console.error("Failed to fetch summoner", e);
-            setProfile(null);
-            setMatches([]);
-            setHeatmap([]);
-            setChampions([]);
-            setTeammates([]);
-            setPartialData(false);
-            setMeta(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchData();
-  }, [params]);
+  const handleUpdateClick = async () => {
+    setUpdating(true);
+    await loadData();
+  };
 
   const filteredMatches = matchFilter === 'ALL' 
     ? matches 
@@ -120,23 +136,21 @@ export default function SummonerClientPage({ params }: { params: { region: strin
            <span>←</span> {t.back}
         </SafeLink>
 
-        {partialData && (
-          <div className="mb-4 rounded-lg bg-yellow-900/60 border border-yellow-700 text-yellow-100 px-4 py-2 text-sm font-bold flex items-center justify-between">
-            <div>Données partielles — certains champs manquent.</div>
-            {meta?.errors && meta.errors.length > 0 && (
-              <button onClick={() => setShowMetaDetails(s => !s)} className="ml-4 text-xs underline">
-                {showMetaDetails ? 'Masquer détails' : `Voir détails (${meta.errors.length})`}
-              </button>
-            )}
+        {updateError && (
+          <div className="mb-4 rounded-lg bg-red-900/60 border border-red-700 text-red-100 px-4 py-2 text-sm font-bold">
+            {updateError}
           </div>
         )}
 
-        {showMetaDetails && meta?.errors && (
-          <pre className="bg-[#0b0b0b] text-xs text-gray-300 p-3 rounded mb-4 overflow-auto max-h-48 border border-white/5">{JSON.stringify(meta.errors, null, 2)}</pre>
+        <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} />
+
+        {updating && (
+          <div className="mt-2 mb-4 text-xs text-gray-400 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full border-2 border-lol-gold border-t-transparent animate-spin"></span>
+            <span>Mise à jour des données...</span>
+          </div>
         )}
 
-        <ProfileHeader profile={profile} lang={currentLang} />
-        
         {/* TABS NAVIGATION */}
         <div className="flex gap-6 border-b border-white/5 mb-8">
             <TabButton active={profileTab === 'overview'} onClick={() => setProfileTab('overview')} icon={<LayoutDashboard size={16}/>} label={t.overview} />
