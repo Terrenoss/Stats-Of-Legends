@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Teammate, Language } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, CURRENT_PATCH } from '../constants';
 import { useI18n } from '../app/LanguageContext';
 
 interface RecentlyPlayedWithProps {
@@ -18,12 +18,15 @@ export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammate
     <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-5 shadow-xl">
       <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4">{translations.recentlyPlayedWith}</h3>
       <div className="space-y-4">
+        {teammates.length === 0 && (
+          <div className="text-xs text-gray-600">Aucun joueur récent trouvé.</div>
+        )}
         {teammates.map((teammate, idx) => (
           <div key={idx} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
             <div className="flex items-center gap-3">
               <div className="relative">
                  <img 
-                   src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/profileicon/${teammate.profileIconId}.png`} 
+                   src={`https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/profileicon/${teammate.profileIconId || 0}.png`} 
                    className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition" 
                    alt="Icon" 
                  />

@@ -19,8 +19,33 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
   const QUEUE_FILTERS = ['All Ranked', 'Ranked Solo', 'Ranked Flex', 'Normal'];
   const SEASONS = ['Season 2025', 'Season 2024 Split 2', 'Season 2024 Split 1'];
 
-  const sortedChamps = [...champions]
-    .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Applique les filtres de recherche + file de jeu
+  const filteredChamps = champions.filter((c) => {
+    if (!c.name || typeof c.name !== 'string') return false;
+    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filtre de file : on utilise un champ facultatif queueType si présent
+    // Possible valeurs attendues: 'RANKED_SOLO_5x5', 'RANKED_FLEX_SR', 'NORMAL_5x5', 'ARAM', etc.
+    const q = (c as any).queueType as string | undefined;
+    if (activeQueue === 'All Ranked') {
+      // On garde les games classées (solo/flex) si queueType est présent
+      const isRanked = !q || q === 'RANKED_SOLO_5x5' || q === 'RANKED_FLEX_SR';
+      return matchesSearch && isRanked;
+    }
+    if (activeQueue === 'Ranked Solo') {
+      return matchesSearch && (!q || q === 'RANKED_SOLO_5x5');
+    }
+    if (activeQueue === 'Ranked Flex') {
+      return matchesSearch && (!q || q === 'RANKED_FLEX_SR');
+    }
+    if (activeQueue === 'Normal') {
+      return matchesSearch && (!q || q === 'NORMAL_5x5');
+    }
+
+    return matchesSearch;
+  });
+
+  const sortedChamps = [...filteredChamps]
     .sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
       if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;

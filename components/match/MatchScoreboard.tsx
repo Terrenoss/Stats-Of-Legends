@@ -1,6 +1,7 @@
 import React from 'react';
 import { Participant } from '../../types';
 import { TRANSLATIONS } from '../../constants';
+import { SafeLink } from '../ui/SafeLink';
 
 interface MatchScoreboardProps {
   participants: Participant[];
@@ -175,10 +176,13 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
                              <div className="absolute -bottom-1 -right-1 bg-black text-[8px] w-4 h-4 flex items-center justify-center rounded text-gray-400 border border-gray-800">{p.level ?? '-'}</div>
                          </div>
                          <div className="flex flex-col min-w-0">
-                              <span className={`text-xs font-bold truncate ${p.summonerName === 'Faker' ? 'text-lol-gold' : 'text-gray-300'}`}>
+                              <SafeLink
+                                href={`/summoner/EUW/${encodeURIComponent(`${p.summonerName}-${p.tagLine || 'EUW'}`)}`}
+                                className={`text-xs font-bold truncate ${p.summonerName === 'Faker' ? 'text-lol-gold' : 'text-gray-300'} hover:text-lol-gold`}
+                              >
                                 {p.summonerName ?? 'Unranked'}{p.tagLine ? `#${p.tagLine}` : ''}
-                             </span>
-                             <span className="text-[9px] text-gray-600">{p.rank || "Unranked"}</span>
+                              </SafeLink>
+                             <span className="text-[9px] text-gray-600">{p.rank || 'Unranked'}</span>
                         </div>
                     </div>
 

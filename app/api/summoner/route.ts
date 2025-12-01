@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CURRENT_PATCH } from '../../../constants';
-import type { RiotAccount, RiotSummoner, RiotMatch } from '../../../types';
-import { fetchRiotAccount, fetchSummonerByPuuid, fetchMatchIds, riotFetchRaw, mapWithConcurrency, PLATFORM_MAP, REGION_ROUTING } from '../../../services/riotService';
+import type { RiotAccount, RiotSummoner, RiotMatch, LPPoint, HeatmapDay, Teammate, SummonerProfile } from '../../../types';
+import {
+  fetchRiotAccount,
+  fetchSummonerByPuuid,
+  fetchMatchIds,
+  riotFetchRaw,
+  mapWithConcurrency,
+  PLATFORM_MAP,
+  REGION_ROUTING,
+  fetchMatchTimeline,
+} from '../../../services/riotService';
 
 function isValidRegion(region: string): region is keyof typeof PLATFORM_MAP {
   return Object.prototype.hasOwnProperty.call(PLATFORM_MAP, region);
 }
 
 function isValidNamePart(value: string): boolean {
-  // Riot autorise lettres, chiffres, espaces et quelques caractères spéciaux. Ici on fait un contrôle simple.
   if (!value) return false;
   if (value.length > 16) return false;
-  // On tolère lettres, chiffres, espaces, _ . -
   return /^[A-Za-z0-9 _.-]+$/.test(value);
 }
 
@@ -27,11 +34,9 @@ export async function GET(req: NextRequest) {
     if (!rawName) {
       return NextResponse.json({ error: 'name is required' }, { status: 400 });
     }
-
     if (!isValidRegion(rawRegion)) {
       return NextResponse.json({ error: 'Invalid region' }, { status: 400 });
     }
-
     if (!isValidNamePart(rawName) || (rawTag && !isValidNamePart(rawTag))) {
       return NextResponse.json({ error: 'Invalid summoner name or tag' }, { status: 400 });
     }
@@ -39,7 +44,6 @@ export async function GET(req: NextRequest) {
     const name = rawName.trim();
     const tag = (rawTag || rawRegion).trim();
     const region = rawRegion;
-
     const platform = PLATFORM_MAP[region];
     const routing = REGION_ROUTING[region];
 
@@ -51,19 +55,18 @@ export async function GET(req: NextRequest) {
       meta.debugSnapshots.push({ step: 'account_parsed', parsedKeys: Object.keys(account || {}) });
     } catch (err: any) {
       const message = String(err?.message || err);
-      // Si Riot renvoie 403 (Forbidden), on renvoie une erreur explicite côté API
       if (message.includes('RIOT_403')) {
         meta.errors.push({ endpoint: 'riot/account/v1/accounts/by-riot-id', status: 403, message });
         return NextResponse.json(
           {
             error: 'RIOT_FORBIDDEN',
-            reason: 'Riot API returned 403 Forbidden for this request. Vérifie que ta clé est active et que tu utilises bien une clé dev ou personnelle correcte.',
+            reason:
+              'Riot API returned 403 Forbidden for this request. Vérifie que ta clé est active et que tu utilises bien une clé dev ou personnelle correcte.',
             meta,
           },
           { status: 502 },
         );
       }
-
       meta.errors.push({ endpoint: 'riot/account/v1/accounts/by-riot-id', status: 'error', message });
       return NextResponse.json({ found: false, meta }, { status: 502 });
     }
@@ -78,34 +81,11 @@ export async function GET(req: NextRequest) {
       meta.errors.push({ endpoint: 'lol/summoner/v4/summoners/by-puuid', status: 'error', message: String(err) });
     }
 
-    // If id missing, try fallback by-name (may return 403)
-    if (!summoner?.id) {
-      try {
-        const byNameUrl = `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURIComponent(account.gameName || name)}`;
-        const fallbackRes = await riotFetchRaw(byNameUrl);
-        meta.endpointsCalled.push({ endpoint: byNameUrl, status: fallbackRes.status, fallback: true });
-        if (fallbackRes.ok) {
-          const fallbackParsed = JSON.parse(fallbackRes.body || '{}') as RiotSummoner;
-          if (fallbackParsed.id) {
-            summoner = { ...(summoner || {} as any), ...fallbackParsed };
-            meta.debugSnapshots.push({ step: 'fallback_by_name_success', assignedId: summoner.id });
-          }
-        } else {
-          // on ne bloque plus la requête si le fallback échoue (403, 404...), on log seulement dans meta
-          meta.errors.push({ endpoint: byNameUrl, status: fallbackRes.status, body: fallbackRes.body });
-        }
-      } catch (fbErr) {
-        // idem, on log sans bloquer
-        meta.errors.push({ endpoint: 'fallback_by_name', status: 'network', message: String(fbErr) });
-      }
-    }
-
-    // 3) Leagues (only if we have summoner.id)
+    // 3) League entries by puuid (solo/flex rank)
     let leagueEntries: any[] = [];
-    if (summoner && summoner.id) {
+    if (account?.puuid) {
       try {
-        const summonerId = String(summoner.id);
-        const leagueUrl = `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-summoner/${encodeURIComponent(summonerId)}`;
+        const leagueUrl = `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-puuid/${encodeURIComponent(account.puuid)}`;
         const lRes = await riotFetchRaw(leagueUrl);
         meta.endpointsCalled.push({ endpoint: leagueUrl, status: lRes.status });
         if (lRes.ok) {
@@ -114,21 +94,36 @@ export async function GET(req: NextRequest) {
           meta.errors.push({ endpoint: leagueUrl, status: lRes.status, body: lRes.body });
         }
       } catch (err) {
-        meta.errors.push({ endpoint: 'league', status: 'network', message: String(err) });
+        meta.errors.push({ endpoint: 'league_by_puuid', status: 'network', message: String(err) });
       }
     }
 
     const soloEntry = leagueEntries.find((l: any) => l.queueType === 'RANKED_SOLO_5x5');
     const flexEntry = leagueEntries.find((l: any) => l.queueType === 'RANKED_FLEX_SR');
 
-    const defaultRank = { tier: null, rank: null, leaguePoints: null, wins: null, losses: null };
-    const rank = {
-      solo: soloEntry ? { tier: soloEntry.tier, rank: soloEntry.rank, leaguePoints: soloEntry.leaguePoints, wins: soloEntry.wins, losses: soloEntry.losses } : defaultRank,
-      flex: flexEntry ? { tier: flexEntry.tier, rank: flexEntry.rank, leaguePoints: flexEntry.leaguePoints, wins: flexEntry.wins, losses: flexEntry.losses } : defaultRank,
+    const rawRank = {
+      solo: soloEntry
+        ? {
+            tier: soloEntry.tier,
+            rank: soloEntry.rank,
+            leaguePoints: soloEntry.leaguePoints,
+            wins: soloEntry.wins,
+            losses: soloEntry.losses,
+          }
+        : { tier: null, rank: null, leaguePoints: null, wins: null, losses: null },
+      flex: flexEntry
+        ? {
+            tier: flexEntry.tier,
+            rank: flexEntry.rank,
+            leaguePoints: flexEntry.leaguePoints,
+            wins: flexEntry.wins,
+            losses: flexEntry.losses,
+          }
+        : { tier: null, rank: null, leaguePoints: null, wins: null, losses: null },
       ladder: { position: null, topPercent: null },
     };
 
-    // 4) Match IDs (match history up to 10)
+    // 4) Match IDs (history up to 10)
     let matches: any[] = [];
     if (account?.puuid) {
       try {
@@ -142,7 +137,9 @@ export async function GET(req: NextRequest) {
 
         let ddragonItemsMap: Record<string, any> = {};
         try {
-          const ddRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/data/en_US/item.json`);
+          const ddRes = await fetch(
+            `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/data/en_US/item.json`,
+          );
           if (ddRes.ok) {
             const ddJson = await ddRes.json();
             if (ddJson && ddJson.data) {
@@ -175,13 +172,22 @@ export async function GET(req: NextRequest) {
               const champName = typeof p.championName === 'string' ? p.championName : p.champion || '';
               const champId = p.championId ?? null;
               const key = sanitizeChampionKey(champName);
-              const imageUrl = key ? `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/champion/${key}.png` : '';
+              const imageUrl = key
+                ? `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/champion/${key}.png`
+                : '';
 
               const totalMinions = Number(p.totalMinionsKilled ?? p.totalMinions ?? 0);
               const neutral = Number(p.neutralMinionsKilled ?? 0);
-              const cs = (Number.isFinite(totalMinions) ? totalMinions : 0) + (Number.isFinite(neutral) ? neutral : 0);
+              const cs =
+                (Number.isFinite(totalMinions) ? totalMinions : 0) +
+                (Number.isFinite(neutral) ? neutral : 0);
 
-              const level = typeof p.champLevel === 'number' ? p.champLevel : typeof p.level === 'number' ? p.level : 0;
+              const level =
+                typeof p.champLevel === 'number'
+                  ? p.champLevel
+                  : typeof p.level === 'number'
+                  ? p.level
+                  : 0;
 
               const itemIds: number[] = [];
               for (let ii = 0; ii <= 6; ii++) {
@@ -193,7 +199,9 @@ export async function GET(req: NextRequest) {
                 const dd = ddragonItemsMap[String(id)] || null;
                 return {
                   id,
-                  imageUrl: id ? `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/item/${id}.png` : '',
+                  imageUrl: id
+                    ? `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/item/${id}.png`
+                    : '',
                   name: dd ? dd.name || `Item ${id}` : `Item ${id}`,
                   tags: dd ? dd.tags || [] : [],
                 };
@@ -249,18 +257,18 @@ export async function GET(req: NextRequest) {
             });
 
             const me = participants.find((p: any) => p.puuid === account!.puuid) || null;
-            if (me) {
-              me.summonerName = me.summonerName || account!.gameName || name;
-              me.tagLine = me.tagLine || account!.tagLine || tag || region;
-            }
             if (!me) return null;
+            me.summonerName = me.summonerName || account!.gameName || name;
+            me.tagLine = me.tagLine || account!.tagLine || tag || region;
 
             const itemBuild: any[] = [];
             try {
               const frames = (info as any).frames || [];
               const events: any[] = frames.flatMap((f: any) => f.events || []);
               const myEvents = events.filter(
-                (e) => ['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].includes(e.type) && e.participantId === me.participantId,
+                (e) =>
+                  ['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].includes(e.type) &&
+                  e.participantId === me.participantId,
               );
               myEvents.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
               for (const ev of myEvents) {
@@ -319,7 +327,8 @@ export async function GET(req: NextRequest) {
               const maxGold = Math.max(...participants.map((p: any) => Number(p.goldEarned || 0)), 1);
               for (const p of participants) {
                 const dmgNorm = Number(p.totalDamageDealtToChampions || 0) / maxDamage;
-                const kda = (Number(p.kills || 0) + Number(p.assists || 0)) / Math.max(1, Number(p.deaths || 0));
+                const kda =
+                  (Number(p.kills || 0) + Number(p.assists || 0)) / Math.max(1, Number(p.deaths || 0));
                 const kdaNorm = Math.min(kda / 5, 1);
                 const visionNorm = Math.min(Number(p.visionScore || 0) / 60, 1);
                 const goldNorm = Number(p.goldEarned || 0) / maxGold;
@@ -330,6 +339,47 @@ export async function GET(req: NextRequest) {
               // non critique
             }
 
+            const timelineRes = await riotFetchRaw(`https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`);
+            meta.endpointsCalled.push({ endpoint: `timeline:${matchId}`, status: timelineRes.status });
+            let timelineData: any[] | undefined = undefined;
+            if (timelineRes.ok) {
+              try {
+                const timelineJson = JSON.parse(timelineRes.body || '{}');
+                const frames = (timelineJson.info?.frames || []) as any[];
+                const points: { timestamp: string; blueScore: number; redScore: number }[] = [];
+                for (const frame of frames) {
+                  const tsMs = frame.timestamp ?? 0;
+                  const minutes = Math.round(tsMs / 60000);
+                  let blueGold = 0;
+                  let redGold = 0;
+                  const participantsFrames = frame.participantFrames || {};
+                  for (const key of Object.keys(participantsFrames)) {
+                    const pf = participantsFrames[key];
+                    const teamId = Number(pf.teamId ?? (pf.participantId && pf.participantId <= 5 ? 100 : 200));
+                    const totalGold = Number(pf.totalGold ?? pf.gold ?? 0);
+                    if (teamId === 100) blueGold += totalGold;
+                    else if (teamId === 200) redGold += totalGold;
+                  }
+                  if (minutes >= 0 && (blueGold > 0 || redGold > 0)) {
+                    points.push({
+                      timestamp: `${minutes}m`,
+                      blueScore: blueGold,
+                      redScore: redGold,
+                    });
+                  }
+                }
+                if (points.length) timelineData = points;
+              } catch (e) {
+                meta.errors.push({ endpoint: 'match_timeline_parse', status: 'parse', message: String(e) });
+              }
+            }
+
+            const championPickBan = (info.teamId === 100 ? participants.filter((p) => p.teamId === 200) : participants.filter((p) => p.teamId === 100)).map((p) => ({
+              champion: p.champion?.name || p.championName || '',
+              role: p.teamId === 100 ? 'blue' : 'red',
+              isBan: p.banStatus === 'BANNED',
+            }));
+
             return {
               id: mj.metadata?.matchId || matchId,
               gameCreation: info.gameStartTimestamp || null,
@@ -339,6 +389,8 @@ export async function GET(req: NextRequest) {
               me,
               itemBuild,
               teamMatesSummary: team,
+              timelineData,
+              championPickBan,
             };
           } catch (err) {
             meta.errors.push({ endpoint: 'match_detail', status: 'network', message: String(err) });
@@ -354,7 +406,23 @@ export async function GET(req: NextRequest) {
 
     // 5) Champions aggregation from matches
     const championsPlayedAgg: Record<string, any> = {};
-    for (const m of matches) {
+    const heatmapAgg: Record<string, { games: number; wins: number; losses: number }> = {};
+
+    const now = Date.now();
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    for (let i = 119; i >= 0; i--) {
+      const d = new Date(now - i * MS_PER_DAY);
+      const iso = d.toISOString().slice(0, 10);
+      heatmapAgg[iso] = { games: 0, wins: 0, losses: 0 };
+    }
+
+    const sortedMatches = [...matches].sort((a, b) => (a.gameCreation || 0) - (b.gameCreation || 0));
+
+    const baseLp = typeof rawRank.solo.leaguePoints === 'number' ? rawRank.solo.leaguePoints : 0;
+    let currentLp = baseLp;
+    const lpPointsTmp: { ts: number; lp: number }[] = [];
+
+    for (const m of sortedMatches) {
       const champ = m.me?.champion?.name || m.me?.championName || 'Unknown';
       if (!championsPlayedAgg[champ]) {
         championsPlayedAgg[champ] = {
@@ -365,130 +433,168 @@ export async function GET(req: NextRequest) {
           deaths: 0,
           assists: 0,
           damage: 0,
-          cs: 0,
-          durationSeconds: 0,
         };
       }
+
       const agg = championsPlayedAgg[champ];
       agg.games += 1;
-      if (m.me?.win) agg.wins += 1;
+      agg.wins += m.me?.win ? 1 : 0;
       agg.kills += m.me?.kills || 0;
       agg.deaths += m.me?.deaths || 0;
       agg.assists += m.me?.assists || 0;
       agg.damage += m.me?.totalDamageDealtToChampions || 0;
-      agg.cs += (m.me?.cs || m.me?.totalMinionsKilled || 0) + (m.me?.neutralMinionsKilled || 0);
-      agg.durationSeconds += m.gameDuration || 0;
+
+      const dayKey = new Date(m.gameCreation || 0).toISOString().slice(0, 10);
+      if (!heatmapAgg[dayKey]) {
+        heatmapAgg[dayKey] = { games: 0, wins: 0, losses: 0 };
+      }
+      heatmapAgg[dayKey].games += 1;
+      if (m.me?.win) heatmapAgg[dayKey].wins += 1;
+      else heatmapAgg[dayKey].losses += 1;
+
+      if (m.gameMode === 'RANKED_SOLO_5x5') {
+        const delta = m.me?.win ? 15 : -15;
+        currentLp -= delta;
+        lpPointsTmp.unshift({ ts: m.gameCreation || 0, lp: Math.max(0, currentLp) });
+      }
     }
 
-    const championsPlayed = Object.values(championsPlayedAgg).map((c: any) => ({
-      id: 0,
+    const champions = Object.values(championsPlayedAgg).map((c: any, idx: number) => ({
+      id: idx,
       name: c.championName,
-      imageUrl: c.championName
-        ? `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/champion/${c.championName.replace(
-            /[^A-Za-z0-9]/g,
-            '',
-          )}.png`
-        : '',
+      imageUrl: `https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/champion/${c.championName.replace(
+        /[^A-Za-z0-9]/g,
+        '',
+      )}.png`,
       games: c.games,
       wins: c.wins,
       losses: c.games - c.wins,
-      kda: c.games ? Number(((c.kills + c.assists) / Math.max(1, c.deaths)).toFixed(2)) : 0,
+      kda: (c.kills + c.assists) / Math.max(1, c.deaths),
       kills: c.kills,
       deaths: c.deaths,
       assists: c.assists,
-      dmgPerMinute:
-        c.durationSeconds > 0 ? Math.round((c.damage / (c.durationSeconds / 60)) || 0) : 0,
-      dmgTakenPerMinute: 0,
-      csPerMinute:
-        c.durationSeconds > 0
-          ? Number((c.cs / (c.durationSeconds / 60)).toFixed(2))
-          : 0,
-      gd15: 0,
-      csd15: 0,
-      dmgPercentage: 0,
+      damage: c.damage,
     }));
 
-    const teammatesResult: any[] = [];
-    const teammateMap: Record<string, any> = {};
+    // Replace simple lpHistory with typed LPPoint including dates and ranks
+    const lpHistory: LPPoint[] = lpPointsTmp.length
+      ? lpPointsTmp
+          .sort((a, b) => a.ts - b.ts)
+          .map((p) => {
+            const d = new Date(p.ts);
+            return {
+              date: d.toISOString(),
+              fullDate: d.toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }),
+              lp: p.lp,
+              tier: rawRank.solo?.tier || null,
+              rank: rawRank.solo?.rank || null,
+            };
+          })
+      : [
+          {
+            date: new Date().toISOString(),
+            fullDate: new Date().toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }),
+            lp: typeof rawRank.solo.leaguePoints === 'number' ? rawRank.solo.leaguePoints : 0,
+            tier: rawRank.solo?.tier || null,
+            rank: rawRank.solo?.rank || null,
+          },
+        ];
+
+    // Convert heatmapAgg into typed HeatmapDay with intensity 0-4
+    const heatmap: HeatmapDay[] = Object.entries(heatmapAgg).map(([date, v]) => {
+      const games = v.games;
+      const wins = v.wins;
+      const losses = v.losses;
+      const wr = games > 0 ? wins / games : 0;
+      let intensity: 0 | 1 | 2 | 3 | 4 = 0;
+      if (games === 0) intensity = 0;
+      else if (games <= 2 && wr < 0.4) intensity = 1;
+      else if (games > 2 && wr < 0.4) intensity = 2;
+      else if (games <= 2 && wr >= 0.4) intensity = 3;
+      else intensity = 4;
+      return { date, games, wins, losses, intensity };
+    });
+
+    // Build teammates compatible with Teammate type
+    const teammatesMap: Record<string, any> = {};
     for (const m of matches) {
       const team = m.teamMatesSummary || [];
       for (const tm of team) {
-        const key = tm.summonerName || '';
-        if (!teammateMap[key]) {
-          teammateMap[key] = {
-            name: tm.summonerName || '',
-            tag: '',
+        const key = `${tm.summonerName}`;
+        if (!teammatesMap[key]) {
+          teammatesMap[key] = {
+            name: tm.summonerName,
+            tag: region,
             profileIconId: 0,
             games: 0,
             wins: 0,
-            losses: 0,
           };
         }
-        teammateMap[key].games += 1;
-        if (tm.win) teammateMap[key].wins += 1;
-        else teammateMap[key].losses += 1;
+        teammatesMap[key].games += 1;
+        if (tm.win) teammatesMap[key].wins += 1;
       }
     }
-    for (const k of Object.keys(teammateMap)) {
-      const t = teammateMap[k];
-      t.winrate = t.games ? Math.round((t.wins / t.games) * 100) : 0;
-      teammatesResult.push(t);
-    }
 
-    const missingId = !summoner?.id;
-    const hasLeagueError = meta.errors.some((e: any) => String(e.endpoint || '').includes('/lol/league'));
-    const partialData = Boolean(account && (missingId || hasLeagueError || meta.errors.length > 0));
+    const teammates: Teammate[] = Object.values(teammatesMap)
+      .map((t: any) => ({
+        name: t.name,
+        tag: t.tag,
+        profileIconId: t.profileIconId,
+        games: t.games,
+        wins: t.wins,
+        losses: t.games - t.wins,
+        winrate: t.games > 0 ? Math.round((t.wins / t.games) * 100) : 0,
+      }))
+      .sort((a, b) => b.games - a.games)
+      .slice(0, 10);
 
-    const profile = {
-      name: account.gameName || name,
-      tag: account.tagLine || tag || region,
+    // Map rawRank to typed ranks for SummonerProfile
+    const soloRank = {
+      tier: rawRank.solo?.tier || 'UNRANKED',
+      rank: rawRank.solo?.rank || '',
+      lp: typeof rawRank.solo.leaguePoints === 'number' ? rawRank.solo.leaguePoints : 0,
+      wins: rawRank.solo?.wins || 0,
+      losses: rawRank.solo?.losses || 0,
+    };
+
+    const flexRank = {
+      tier: rawRank.flex?.tier || 'UNRANKED',
+      rank: rawRank.flex?.rank || '',
+      lp: typeof rawRank.flex.leaguePoints === 'number' ? rawRank.flex.leaguePoints : 0,
+      wins: rawRank.flex?.wins || 0,
+      losses: rawRank.flex?.losses || 0,
+    };
+
+    const profile: SummonerProfile = {
+      name: account.gameName,
+      tag: account.tagLine,
       level: summoner?.summonerLevel || 0,
       profileIconId: summoner?.profileIconId || 0,
       ranks: {
-        solo: soloEntry
-          ? {
-              tier: soloEntry.tier,
-              rank: soloEntry.rank,
-              lp: soloEntry.leaguePoints || 0,
-              wins: soloEntry.wins || 0,
-              losses: soloEntry.losses || 0,
-            }
-          : { tier: null, rank: null, lp: null, wins: null, losses: null },
-        flex: flexEntry
-          ? {
-              tier: flexEntry.tier,
-              rank: flexEntry.rank,
-              lp: flexEntry.leaguePoints || 0,
-              wins: flexEntry.wins || 0,
-              losses: flexEntry.losses || 0,
-            }
-          : { tier: null, rank: null, lp: null, wins: null, losses: null },
+        solo: soloRank,
+        flex: flexRank,
       },
       pastRanks: [],
-      ladderRank: rank.ladder.position || 0,
-      topPercent: rank.ladder.topPercent || 0,
+      ladderRank: 0,
+      topPercent: 0,
       lastUpdated: Date.now(),
     };
 
-    const payload = {
+    // Simple placeholder performance metrics for now (can be improved later)
+    const performance = null;
+
+    return NextResponse.json({
       profile,
       matches,
-      heatmap: [],
-      champions: championsPlayed,
-      teammates: teammatesResult,
-      partialData,
-      meta: {
-        endpointsCalled: meta.endpointsCalled,
-        notes: meta.errors.length
-          ? 'Some endpoints failed - see meta.errors'
-          : 'All requested endpoints attempted',
-        errors: meta.errors,
-        debugSnapshots: meta.debugSnapshots,
-      },
-    };
-
-    return NextResponse.json(payload);
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+      champions,
+      heatmap,
+      teammates,
+      lpHistory,
+      performance,
+      meta,
+    });
+  } catch (e) {
+    console.error('[summoner] fatal error', e);
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

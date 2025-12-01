@@ -1,25 +1,78 @@
 import React from 'react';
 import { SummonerProfile, Language } from '../types';
 import { YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { TRANSLATIONS, MOCK_LP_HISTORY, MOCK_ROLES, RANK_EMBLEMS, CURRENT_PATCH } from '../constants';
+import { TRANSLATIONS, MOCK_ROLES, RANK_EMBLEMS, CURRENT_PATCH } from '../constants';
 import { Clock } from 'lucide-react';
 
 interface ProfileHeaderProps {
   profile: SummonerProfile;
   lang: Language;
   onUpdateRequest?: () => void;
+  lpHistory?: any[];
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onUpdateRequest }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onUpdateRequest, lpHistory }) => {
   const t = TRANSLATIONS[lang];
+  const history = lpHistory && lpHistory.length ? lpHistory : [];
+  const safePastRanks = Array.isArray(profile.pastRanks) ? profile.pastRanks : [];
+  const safeSolo = profile.ranks?.solo || { tier: null, rank: null, lp: null, wins: null, losses: null };
+  const safeFlex = profile.ranks?.flex || { tier: null, rank: null, lp: null, wins: null, losses: null };
+  const [now, setNow] = React.useState(() => Date.now());
+  const hasLadder = typeof profile.ladderRank === 'number' && profile.ladderRank > 0 && typeof profile.topPercent === 'number' && profile.topPercent > 0;
+
+  React.useEffect(() => {
+    // Rafraîchit l’horloge locale pour que "il y a X secondes" se mette à jour sans reload
+    const id = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const getLastUpdatedText = () => {
-      const days = Math.floor((Date.now() - profile.lastUpdated) / (1000 * 60 * 60 * 24));
-      if (lang === 'FR') return `il y a ${days} jours`;
-      if (lang === 'EN') return `${days} days ago`;
-      if (lang === 'ES') return `hace ${days} días`;
-      if (lang === 'KR') return `${days}일 전`;
-      return `${days} days ago`;
+      const diffMs = now - profile.lastUpdated;
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHours = Math.floor(diffMin / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      const format = (fr: string, en: string, es: string, kr: string) => {
+        if (lang === 'FR') return fr;
+        if (lang === 'EN') return en;
+        if (lang === 'ES') return es;
+        if (lang === 'KR') return kr;
+        return en;
+      };
+
+      if (diffSec < 60) {
+        return format(
+          `il y a ${diffSec} secondes`,
+          `${diffSec} seconds ago`,
+          `hace ${diffSec} segundos`,
+          `${diffSec}초 전`
+        );
+      }
+      if (diffMin < 60) {
+        return format(
+          `il y a ${diffMin} minutes`,
+          `${diffMin} minutes ago`,
+          `hace ${diffMin} minutos`,
+          `${diffMin}분 전`
+        );
+      }
+      if (diffHours < 24) {
+        return format(
+          `il y a ${diffHours} heures`,
+          `${diffHours} hours ago`,
+          `hace ${diffHours} horas`,
+          `${diffHours}시간 전`
+        );
+      }
+      return format(
+        `il y a ${diffDays} jours`,
+        `${diffDays} days ago`,
+        `hace ${diffDays} días`,
+        `${diffDays}일 전`
+      );
   };
 
   return (
@@ -42,12 +95,14 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
             </div>
 
             <div className="flex flex-col pt-2">
-                <h2 className="text-3xl font-bold text-white tracking-tight font-display uppercase leading-none mb-1">
-                    {profile.name} 
-                </h2>
-                <span className="text-gray-500 text-sm font-sans font-medium">#{profile.tag}</span>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <h2 className="text-3xl font-bold text-white tracking-tight font-display uppercase leading-none">
+                    {profile.name}
+                  </h2>
+                  <span className="text-gray-500 text-sm font-sans font-medium">#{profile.tag}</span>
+                </div>
                 <button
-                  className="mt-3 w-max px-6 py-1.5 bg-lol-red/10 hover:bg-lol-red text-lol-red hover:text-white text-[10px] font-bold uppercase tracking-wider border border-lol-red/20 rounded-full transition-all"
+                  className="mt-1 w-max px-6 py-1.5 bg-lol-red/10 hover:bg-lol-red text-lol-red hover:text-white text-[10px] font-bold uppercase tracking-wider border border-lol-red/20 rounded-full transition-all"
                   onClick={onUpdateRequest}
                 >
                     {t.update}
@@ -63,12 +118,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
         <div className="mt-auto border-t border-white/5 pt-4">
             <h4 className="text-[10px] uppercase text-gray-500 font-bold mb-2 tracking-widest">{t.pastRanks}</h4>
             <div className="flex flex-wrap gap-2">
-                {profile.pastRanks.map((rank, i) => (
+                {safePastRanks.length === 0 ? (
+                  <div className="text-gray-400 text-sm font-medium">{t.noPastRanks}</div>
+                ) : (
+                  safePastRanks.map((rank, i) => (
                     <div key={i} className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
                         <span className="text-[10px] text-gray-400 font-bold">{rank.season}:</span>
                         <span className="text-[10px] text-gray-200 font-bold">{rank.tier} {rank.rank}</span>
                     </div>
-                ))}
+                  ))
+                )}
             </div>
         </div>
       </div>
@@ -78,41 +137,45 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
          {/* Solo Duo */}
          <div className="flex-1 bg-[#121212] border border-white/5 rounded-[1.5rem] p-5 flex items-center gap-5 relative overflow-hidden group">
              <div className="w-20 h-20 bg-black/30 rounded-2xl flex items-center justify-center border border-white/5 shadow-inner p-2">
-                {typeof profile.ranks?.solo?.tier === 'string' && RANK_EMBLEMS[profile.ranks.solo.tier] ? (
-                  <img src={RANK_EMBLEMS[profile.ranks.solo.tier]} className="w-full h-full object-contain drop-shadow-lg" alt={profile.ranks.solo.tier} />
-                ) : typeof profile.ranks?.solo?.tier === 'string' ? (
-                  <span className="font-display text-4xl font-black text-lol-gold drop-shadow-md">{profile.ranks.solo.tier.charAt(0)}</span>
+                {typeof safeSolo.tier === 'string' && RANK_EMBLEMS[safeSolo.tier] ? (
+                  <img src={RANK_EMBLEMS[safeSolo.tier]} className="w-full h-full object-contain drop-shadow-lg" alt={safeSolo.tier} />
+                ) : typeof safeSolo.tier === 'string' ? (
+                  <span className="font-display text-4xl font-black text-lol-gold drop-shadow-md">{safeSolo.tier.charAt(0)}</span>
                 ) : (
                   <span className="font-display text-4xl font-black text-lol-gold drop-shadow-md">U</span>
                 )}
              </div>
              <div>
                 <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">{t.rankSolo}</div>
-                <div className="text-white font-bold font-display text-2xl tracking-wide">{profile.ranks.solo.tier ?? 'Unranked'} {profile.ranks.solo.rank ?? ''}</div>
-                <div className="text-lol-gold text-sm font-mono font-bold mt-0.5">{profile.ranks.solo.lp ?? '-'} LP</div>
-                <div className="text-[10px] text-gray-400 mt-1">{profile.ranks.solo.wins ?? '-'}W {profile.ranks.solo.losses ?? '-'}L</div>
+                <div className="text-white font-bold font-display text-2xl tracking-wide">{safeSolo.tier ?? 'Unranked'} {safeSolo.rank ?? ''}</div>
+                <div className="text-lol-gold text-sm font-mono font-bold mt-0.5">{safeSolo.lp ?? '-'} LP</div>
+                <div className="text-[10px] text-gray-400 mt-1">{safeSolo.wins ?? '-'}W {safeSolo.losses ?? '-'}L</div>
                 
                 {/* Ladder Rank */}
-                <div className="mt-2 text-xs text-gray-500 font-medium">
-                   {t.ladderRank} <span className="text-white font-bold">{profile.ladderRank.toLocaleString()}</span> ({profile.topPercent}% {t.topPercent})
-                </div>
+                {hasLadder && (
+                  <div className="mt-2 text-xs text-gray-500 font-medium">
+                    {t.ladderRank}{' '}
+                    <span className="text-white font-bold">{profile.ladderRank.toLocaleString()}</span>{' '}
+                    ({profile.topPercent}% {t.topPercent})
+                  </div>
+                )}
              </div>
          </div>
 
          {/* Flex */}
          <div className="bg-[#121212] border border-white/5 rounded-[1.5rem] p-4 flex items-center gap-4 relative overflow-hidden opacity-70 hover:opacity-100 transition-opacity">
              <div className="w-12 h-12 bg-black/30 rounded-xl flex items-center justify-center border border-white/5 p-1">
-                {typeof profile.ranks?.flex?.tier === 'string' && RANK_EMBLEMS[profile.ranks.flex.tier] ? (
-                   <img src={RANK_EMBLEMS[profile.ranks.flex.tier]} className="w-full h-full object-contain grayscale opacity-80" alt={profile.ranks.flex.tier} />
-                ) : typeof profile.ranks?.flex?.tier === 'string' ? (
-                   <span className="font-display text-xl font-black text-gray-400">{profile.ranks.flex.tier.charAt(0)}</span>
+                {typeof safeFlex.tier === 'string' && RANK_EMBLEMS[safeFlex.tier] ? (
+                   <img src={RANK_EMBLEMS[safeFlex.tier]} className="w-full h-full object-contain grayscale opacity-80" alt={safeFlex.tier} />
+                ) : typeof safeFlex.tier === 'string' ? (
+                   <span className="font-display text-xl font-black text-gray-400">{safeFlex.tier.charAt(0)}</span>
                 ) : (
                    <span className="font-display text-xl font-black text-gray-400">U</span>
                 )}
              </div>
              <div>
                 <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">Flex</div>
-                <div className="text-gray-300 font-bold font-display text-sm tracking-wide">{profile.ranks.flex.tier ?? 'Unranked'} {profile.ranks.flex.rank ?? ''} • {profile.ranks.flex.lp ?? '-'} LP</div>
+                <div className="text-gray-300 font-bold font-display text-sm tracking-wide">{safeFlex.tier ?? 'Unranked'} {safeFlex.rank ?? ''} • {safeFlex.lp ?? '-'} LP</div>
              </div>
          </div>
       </div>
@@ -121,10 +184,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
       <div className="lg:col-span-4 grid grid-rows-2 gap-4">
          {/* LP Graph */}
          <div className="bg-[#121212] border border-white/5 rounded-[1.5rem] p-4 flex flex-col relative shadow-xl">
-             <h3 className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">{t.lpHistory} <span className="text-red-400 ml-2">-11 LP</span></h3>
+             <h3 className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">{t.lpHistory}</h3>
              <div className="flex-1 min-h-[80px]">
+                {history.length === 0 ? (
+                  <div className="text-[11px] text-gray-600 flex items-center justify-center h-full">Aucune donnée LP récente.</div>
+                ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={MOCK_LP_HISTORY}>
+                  <LineChart data={history}>
                     <YAxis domain={['dataMin - 20', 'dataMax + 20']} hide padding={{ top: 10, bottom: 10 }} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', fontSize: '10px' }} 
@@ -133,12 +199,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
                       content={({ active, payload }) => {
                          if (active && payload && payload.length) {
                            const data = payload[0].payload;
-                           // Calculate diff with previous data point logic would require finding index
-                           // Here we simply assume linear order in data
-                           const index = MOCK_LP_HISTORY.findIndex(p => p.date === data.date);
+                           const index = history.findIndex((p: any) => p.date === data.date);
                            let diff = 0;
                            if (index > 0) {
-                               diff = data.lp - MOCK_LP_HISTORY[index - 1].lp;
+                               diff = data.lp - history[index - 1].lp;
                            }
 
                            return (
@@ -169,6 +233,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
                     />
                   </LineChart>
                 </ResponsiveContainer>
+                )}
              </div>
          </div>
 

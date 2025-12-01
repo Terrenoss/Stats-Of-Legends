@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Match } from '../types';
+import { Match, GameMode } from '../types';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { analyzeMatch } from '../services/geminiService';
 import { MatchAnalysis } from './match/MatchAnalysis';
@@ -10,6 +10,7 @@ import { MatchScoreboard } from './match/MatchScoreboard';
 import { MatchDamageChart } from './match/MatchDamageChart';
 import { useI18n } from "../app/LanguageContext";
 import { PLACEHOLDER_SPELL } from '../constants';
+import { SafeLink } from './ui/SafeLink';
 
 interface MatchCardProps {
   match: Match;
@@ -33,6 +34,30 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
   const [loading, setLoading] = useState(false);
 
   const { t, lang } = useI18n();
+
+  const getQueueLabel = () => {
+    const mode = match.gameMode as any;
+    if (mode === GameMode.SOLO_DUO || mode === 'RANKED_SOLO_5x5') return t.rankSolo;
+    if (mode === GameMode.FLEX || mode === 'RANKED_FLEX_SR') return 'Ranked Flex';
+    if (mode === GameMode.ARAM || mode === 'ARAM') return 'ARAM';
+    if (mode === GameMode.NORMAL || mode === 'NORMAL_5x5') return t.normal;
+    return String(mode || t.normal);
+  };
+
+  const getTimeAgo = () => {
+    const ts = typeof match.gameCreation === 'number' ? match.gameCreation : 0;
+    if (!ts) return '';
+    const diffMs = Date.now() - ts;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHours = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSec < 60) return `${diffSec}s ago`;
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
 
   const handleAiAnalysis = async () => {
     if (analysis) return; 
@@ -167,6 +192,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
 
   // Ensure display name includes tag (Hera#ahri)
   const displaySummoner = me?.summonerName ? (me.summonerName + (me.tagLine ? `#${me.tagLine}` : '')) : (me?.summonerName ?? 'Unranked');
+  const displayRank = me?.rank || 'Unranked';
 
   const containerClass = 'mb-4 relative rounded-[1.5rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
   
@@ -239,9 +265,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
         {/* Game Info */}
         <div className="w-full md:w-28 flex flex-col gap-1">
           <span className={`font-black font-display uppercase tracking-wider text-[10px] ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
-            {match.gameMode === 'Ranked Solo/Duo' ? 'Ranked Solo' : match.gameMode === 'Ranked Flex' ? 'Ranked Flex' : 'Normal'}
+            {getQueueLabel()}
           </span>
-          <span className="text-[10px] text-gray-500 font-bold">10 hours ago</span>
+          <span className="text-[10px] text-gray-500 font-bold">{getTimeAgo()}</span>
           <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white' : 'text-gray-500'}`}>{isWin ? t.win : t.loss}</span>
           <span className="text-xs text-gray-500 font-mono">{durationMin}m {durationSec}s</span>
         </div>
@@ -314,6 +340,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
            <div className="flex justify-between w-full"><span>CS</span> <span className="text-gray-200 font-bold">{me.cs ?? 0} ({ csPerMinHeader }/m)</span></div>
            <div className="flex justify-between w-full"><span>Vision</span> <span className="text-gray-200 font-bold">{me.visionScore ?? 0}</span></div>
            <div className="text-[10px] text-gray-600 font-bold">{displaySummoner}</div>
+           <div className="text-[10px] text-gray-500">{displayRank}</div>
         </div>
         
         {/* Toggle Button */}

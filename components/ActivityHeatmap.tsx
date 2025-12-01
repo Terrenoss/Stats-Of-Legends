@@ -12,8 +12,9 @@ interface ActivityHeatmapProps {
 export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, lang }) => {
   const { t } = useI18n();
   const translations = lang ? (require('../constants').TRANSLATIONS as any)[lang] : t;
-  // Ensure we have exactly 120 days or simpler slice
-  const days = (data || []).slice(0, 119);
+  const days = (data || []).slice(-120); // prendre les 120 derniers jours dans l'ordre
+
+  const totalGames = days.reduce((acc, d) => acc + (d.games || 0), 0);
 
   const getColor = (intensity: number) => {
     switch(intensity) {
@@ -48,6 +49,9 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, lang }) 
            <span>{translations.sat}</span>
          </div>
          <div className="grid grid-rows-7 grid-flow-col gap-1">
+           {days.length === 0 && (
+             <div className="text-xs text-gray-500 col-span-full">Aucune activité récente.</div>
+           )}
            {days.map((day, i) => (
              <div 
                key={i} 
@@ -59,8 +63,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, lang }) 
        </div>
        <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5 text-xs text-gray-400 font-bold">
           <div className="flex gap-4">
-            <span><span className="text-white">{translations.gamesPlayedCount}</span> {translations.gamesPlayedText}</span>
-            <span><span className="text-white">262</span> {translations.hoursPlayedText}</span>
+            <span><span className="text-white">{totalGames}</span> {translations.gamesPlayed}</span>
           </div>
           <div className="flex items-center gap-2">
              <span>{translations.badDay}</span>

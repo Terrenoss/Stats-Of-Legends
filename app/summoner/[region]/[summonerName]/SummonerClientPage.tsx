@@ -28,9 +28,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live'>('overview');
   const [matchFilter, setMatchFilter] = useState<'ALL' | 'SOLO' | 'FLEX'>('ALL');
   const [currentLang] = useState<Language>('FR');
-  const [partialData, setPartialData] = useState(false);
-  const [meta, setMeta] = useState<any>(null);
-  const [showMetaDetails, setShowMetaDetails] = useState(false);
+  const [performance, setPerformance] = useState<any>(null);
+  const [lpHistory, setLpHistory] = useState<any[]>([]);
 
   const t = TRANSLATIONS[currentLang];
 
@@ -56,8 +55,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
         setHeatmap(realData.heatmap as HeatmapDay[]);
         setChampions(realData.champions as DetailedChampionStats[]);
         setTeammates(realData.teammates as Teammate[]);
-        setPartialData(Boolean(realData.partialData));
-        setMeta(realData.meta ?? null);
+        setLpHistory(realData.lpHistory || []);
+        setPerformance(realData.performance || null);
       } else {
         const errJson = await res.json().catch(() => null);
         if (errJson?.error === 'RIOT_FORBIDDEN') {
@@ -75,8 +74,6 @@ export default function SummonerClientPage({ params }: { params: { region: strin
       setHeatmap([]);
       setChampions([]);
       setTeammates([]);
-      setPartialData(false);
-      setMeta(null);
     } finally {
       setLoading(false);
       setUpdating(false);
@@ -93,9 +90,22 @@ export default function SummonerClientPage({ params }: { params: { region: strin
     await loadData();
   };
 
+  const mapGameMode = (m: Match): 'SOLO' | 'FLEX' | 'OTHER' => {
+    // Certains matches utilisent l’enum GameMode ("Ranked Solo/Duo"), d’autres une valeur brute comme "RANKED_SOLO_5x5"
+    const mode: any = m.gameMode;
+    if (mode === GameMode.SOLO_DUO || mode === 'RANKED_SOLO_5x5') return 'SOLO';
+    if (mode === GameMode.FLEX || mode === 'RANKED_FLEX_SR') return 'FLEX';
+    return 'OTHER';
+  };
+
   const filteredMatches = matchFilter === 'ALL' 
     ? matches 
-    : matches.filter(m => matchFilter === 'SOLO' ? m.gameMode === GameMode.SOLO_DUO : m.gameMode === GameMode.FLEX);
+    : matches.filter(m => {
+        const kind = mapGameMode(m);
+        if (matchFilter === 'SOLO') return kind === 'SOLO';
+        if (matchFilter === 'FLEX') return kind === 'FLEX';
+        return true;
+      });
 
   if (loading) {
       return (
@@ -142,7 +152,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
           </div>
         )}
 
-        <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} />
+        <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} lpHistory={lpHistory} />
 
         {updating && (
           <div className="mt-2 mb-4 text-xs text-gray-400 flex items-center gap-2">
@@ -165,7 +175,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
             <div className="lg:col-span-4 space-y-6">
                 <div className="h-72 bg-[#121212] border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
                     <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4 absolute top-6 left-6 z-10">Radar Stats</h3>
-                    <PerformanceRadar />
+                    <PerformanceRadar metrics={performance} />
                 </div>
                 
                 <ActivityHeatmap data={heatmap} />

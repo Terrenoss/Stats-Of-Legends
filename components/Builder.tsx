@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, X, Zap, Shield, Swords, Brain, RotateCcw, Crosshair, Users, ChevronDown, Wand2, Droplets, Gauge, CheckSquare, Square, Undo, Redo, Filter } from 'lucide-react';
+import { Search, Plus, X, Zap, Shield, Swords, Brain, RotateCcw, Crosshair, Users, ChevronDown, Wand2, Gauge, CheckSquare, Square, Undo, Redo } from 'lucide-react';
 import { Item, Champion, Stats, DummyStats, Language } from '../types';
 import { DEFAULT_DUMMY, TRANSLATIONS } from '../constants';
 import { analyzeBuild } from '../services/geminiService';
@@ -239,31 +239,24 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
 
 
   const handleDragStart = (e: React.DragEvent, source: 'catalog' | 'slot', data: Item | number) => {
-    e.dataTransfer.setData('sourceType', source);
     if (source === 'catalog') {
-      e.dataTransfer.setData('itemId', (data as Item).id.toString());
-    } else {
-      e.dataTransfer.setData('slotIndex', (data as number).toString());
+      // drag depuis le catalogue désactivé pour simplifier l'UX
+      e.preventDefault();
+      return;
     }
+    e.dataTransfer.setData('sourceType', source);
+    e.dataTransfer.setData('slotIndex', (data as number).toString());
   };
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
     const sourceType = e.dataTransfer.getData('sourceType');
+    if (sourceType !== 'slot') return;
     const newItems = [...selectedItems];
-
-    if (sourceType === 'catalog') {
-      const itemId = parseInt(e.dataTransfer.getData('itemId'));
-      const item = items.find(i => i.id === itemId);
-      if (item) {
-        newItems[targetIndex] = item;
-      }
-    } else if (sourceType === 'slot') {
-      const sourceIndex = parseInt(e.dataTransfer.getData('slotIndex'));
-      const temp = newItems[targetIndex];
-      newItems[targetIndex] = newItems[sourceIndex];
-      newItems[sourceIndex] = temp;
-    }
+    const sourceIndex = parseInt(e.dataTransfer.getData('slotIndex'));
+    const temp = newItems[targetIndex];
+    newItems[targetIndex] = newItems[sourceIndex];
+    newItems[sourceIndex] = temp;
     setSelectedItems(newItems);
   };
 
@@ -385,7 +378,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   }));
 
   const handleItemClick = (item: Item) => {
-    const emptyIdx = selectedItems.findIndex(i => i === null);
+    const emptyIdx = selectedItems.findIndex((i) => i === null);
     const targetIdx = emptyIdx === -1 ? selectedItems.length - 1 : emptyIdx;
     const newItems = [...selectedItems];
     newItems[targetIdx] = item;
@@ -500,7 +493,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
                         onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
                         className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${currentChampion?.id === champ.id ? 'border-lol-gold bg-lol-gold/10' : 'border-transparent hover:border-lol-gold/30'}`}
                       >
-                        <img src={champ.imageUrl} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" />
+                        <img src={champ.imageUrl} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
                         <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
                       </div>
                     ))}
