@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ChampionStat {
+  id        Int      @id @default(autoincrement())
+  championId String
+  role      String   // TOP, JUNGLE, MID, ADC, SUPPORT
+  tier      String   // IRON, BRONZE... CHALLENGER
+  patch     String   // 14.24
+  
+  wins      Int      @default(0)
+  matches   Int      @default(0)
+  bans      Int      @default(0)
+  
+  pickRate  Float    @default(0)
+  winRate   Float    @default(0)
+  banRate   Float    @default(0)
+
+  // Deep Stats (JSON)
+  // Structure: { "itemId": { "wins": 10, "matches": 20 }, ... }
+  items     Json?    
+  // Structure: { "runeId": { "wins": 10, "matches": 20 }, ... }
+  runes     Json?    
+  // Structure: { "spellId": { "wins": 10, "matches": 20 }, ... }
+  spells    Json?    
+  // Structure: { "Q-W-E-Q...": { "wins": 10, "matches": 20 }, ... }
+  skillOrder Json?
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([championId, role, tier, patch])
+  @@index([role, tier, patch])
+}
+
+model ScannedMatch {
+  id        String   @id // Match ID (EUW1_...)
+  patch     String
+  tier      String   @default("CHALLENGER") // Added to track total matches per tier
+  scannedAt DateTime @default(now())
+}
+
+model MatchupStat {
+  id          String   @id @default(cuid())
+  championId  String
+  opponentId  String
+  role        String
+  tier        String
+  patch       String
+  wins        Int      @default(0)
+  matches     Int      @default(0)
+
+  @@unique([championId, opponentId, role, tier, patch])
+  @@index([championId, role, tier, patch])
+}
+
+model DuoStat {
+  id          String   @id @default(cuid())
+  championId  String
+  partnerId   String
+  role        String
+  partnerRole String
+  tier        String
+  patch       String
+  wins        Int      @default(0)
+  matches     Int      @default(0)
+
+  @@unique([championId, partnerId, role, partnerRole, tier, patch])
+  @@index([championId, role, tier, patch])
+}

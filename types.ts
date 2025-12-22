@@ -48,10 +48,10 @@ export interface Spell {
   maxRank: number;
   cooldown: number[];
   cost: number[];
-  baseDamage: number[]; 
+  baseDamage: number[];
   ratios: {
-    ad?: number; 
-    ap?: number; 
+    ad?: number;
+    ap?: number;
   };
   damageType: 'physical' | 'magic' | 'true';
 }
@@ -74,12 +74,39 @@ export interface SummonerSpell {
 
 export type ItemTag = 'Mythic' | 'Legendary' | 'Boots' | 'Starter' | 'Component';
 
+export interface Rune {
+  id: number;
+  key: string;
+  icon: string;
+  name: string;
+  shortDesc: string;
+  longDesc: string;
+}
+
+export interface RuneSlot {
+  runes: Rune[];
+}
+
+export interface RuneStyle {
+  id: number;
+  key: string;
+  icon: string;
+  name: string;
+  slots: RuneSlot[];
+}
+
+export interface SelectedRunes {
+  primaryStyleId: number | null;
+  subStyleId: number | null;
+  selectedPerkIds: (number | null)[]; // [primary1, primary2, primary3, primary4, sub1, sub2, shard1, shard2, shard3]
+}
+
 export interface Item {
   id: number;
   name: string;
   imageUrl: string;
   price?: number;
-  stats?: Partial<Stats>; 
+  stats?: Partial<Stats>;
   description?: string;
   passive?: string;
   tags?: ItemTag[];
@@ -153,6 +180,20 @@ export interface PastRank {
   rank: string; // "IV"
 }
 
+export interface ChampionTier {
+  id: string;
+  name: string;
+  role: 'TOP' | 'JUNGLE' | 'MID' | 'ADC' | 'SUPPORT';
+  tier: 'S+' | 'S' | 'A+' | 'A' | 'B' | 'C' | 'D';
+  rank: number;
+  winRate: number;
+  pickRate: number;
+  banRate: number;
+  trend: 'up' | 'down' | 'stable';
+  matches: number;
+  counters: string[]; // Array of champion IDs (names)
+}
+
 export interface SummonerProfile {
   name: string;
   tag: string;
@@ -166,6 +207,7 @@ export interface SummonerProfile {
   ladderRank: number; // Position in ladder
   topPercent: number; // Top % of players
   lastUpdated: number; // Timestamp
+  metrics?: PerformanceMetrics;
 }
 
 export interface Teammate {

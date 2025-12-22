@@ -4,41 +4,63 @@ import { useI18n } from "../app/LanguageContext";
 
 interface LiveGameProps {
   summonerName: string;
+  tag: string;
+  region: string;
 }
 
-export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
+export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region }) => {
   const [gameData, setGameData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     const fetchLiveGame = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`/api/spectator?summoner=${encodeURIComponent(summonerName)}`);
+        // Add timestamp to prevent caching
+        const res = await fetch(`/api/spectator?name=${encodeURIComponent(summonerName)}&tag=${encodeURIComponent(tag)}&region=${region}&t=${Date.now()}`);
+        const data = await res.json();
+
         if (!res.ok) {
+          console.error('[LiveGame] Error:', data);
+          setError(data.error || 'Error fetching live game');
           setGameData(null);
           return;
         }
-        const data = await res.json();
-        if (!data || data.error || data.status === 'NOT_FOUND' || data.noActiveGame) {
+
+        if (data.noActiveGame) {
           setGameData(null);
         } else {
           setGameData(data);
         }
       } catch (e) {
-        console.error(e);
+        console.error('[LiveGame] Network Error:', e);
+        setError('Network error');
         setGameData(null);
       } finally {
         setLoading(false);
       }
     };
     fetchLiveGame();
-  }, [summonerName]);
+  }, [summonerName, tag, region]);
 
   if (loading)
     return (
       <div className="h-96 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-lol-gold" />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center h-96 bg-[#121212] border border-white/5 rounded-[2rem]">
+        <Shield className="w-16 h-16 text-red-500 mb-6" />
+        <h3 className="text-xl font-display font-bold text-red-400 uppercase tracking-wider mb-2">
+          {t.error || 'Error'}
+        </h3>
+        <p className="text-gray-500">{error}</p>
       </div>
     );
 
@@ -52,7 +74,14 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
       </div>
     );
 
-  const duration = Math.floor((Date.now() - gameData.gameStartTime) / 1000);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const duration = Math.floor((now - gameData.gameStartTime) / 1000);
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
 
@@ -62,9 +91,8 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
   const TeamColumn = ({ teamId, color }: { teamId: number; color: string }) => (
     <div className="flex flex-col gap-2">
       <div
-        className={`text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${
-          color === 'blue' ? 'text-blue-400' : 'text-red-400'
-        }`}
+        className={`text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${color === 'blue' ? 'text-blue-400' : 'text-red-400'
+          }`}
       >
         <Shield className="w-4 h-4" /> {color === 'blue' ? t.blueTeam : t.redTeam}
       </div>
@@ -73,11 +101,10 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
         .map((p: any, i: number) => (
           <div
             key={i}
-            className={`flex items-center gap-3 p-3 rounded-xl border ${
-              p.summonerName === summonerName
-                ? 'bg-lol-gold/10 border-lol-gold'
-                : 'bg-[#18181b] border-white/5'
-            }`}
+            className={`flex items-center gap-3 p-3 rounded-xl border ${p.summonerName === summonerName
+              ? 'bg-lol-gold/10 border-lol-gold'
+              : 'bg-[#18181b] border-white/5'
+              }`}
           >
             <div className="relative">
               <img
@@ -92,9 +119,8 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName }) => {
             </div>
             <div>
               <div
-                className={`font-bold text-sm ${
-                  p.summonerName === summonerName ? 'text-lol-gold' : 'text-white'
-                }`}
+                className={`font-bold text-sm ${p.summonerName === summonerName ? 'text-lol-gold' : 'text-white'
+                  }`}
               >
                 {p.summonerName}
               </div>

@@ -67,7 +67,8 @@ const LEGAL_CONTENT: Record<string, { title: string; icon: React.ReactNode; cont
   }
 };
 
-export default function LegalPage({ params }: { params: { slug: string } }) {
+export default async function LegalPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const slug = params.slug;
   const data = LEGAL_CONTENT[slug];
 
@@ -89,7 +90,7 @@ export default function LegalPage({ params }: { params: { slug: string } }) {
 
       <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-8 md:p-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-lol-gold/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-        
+
         <div className="flex flex-col items-center text-center mb-10 relative z-10">
           <div className="w-20 h-20 bg-[#080808] border border-lol-gold/30 rounded-full flex items-center justify-center mb-6 shadow-glow-gold">
             {data.icon}

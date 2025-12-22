@@ -28,7 +28,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
   const durationMin = Math.floor(durationSecondsTotal / 60);
   const durationSec = durationSecondsTotal % 60;
   const csPerMinHeader = (Number(me.cs ?? 0) && durationSecondsTotal > 0) ? +((Number(me.cs ?? 0) / (durationSecondsTotal / 60))).toFixed(1) : 0;
-  
+
   const [activeTab, setActiveTab] = useState<'NONE' | 'ANALYSE' | 'GRAPH' | 'BUILD' | 'STATS'>('NONE');
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,24 +60,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
   };
 
   const handleAiAnalysis = async () => {
-    if (analysis) return; 
+    if (analysis) return;
     setLoading(true);
     try {
-        const result = await analyzeMatch(match);
-        setAnalysis(result);
+      const result = await analyzeMatch(match);
+      setAnalysis(result);
     } catch (error) {
-        setAnalysis("Une erreur est survenue lors de l'analyse.");
+      setAnalysis("Une erreur est survenue lors de l'analyse.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   const toggleTab = (tab: any) => {
-      if (activeTab === tab) setActiveTab('NONE');
-      else {
-          setActiveTab(tab);
-          if (tab === 'ANALYSE') handleAiAnalysis();
-      }
+    if (activeTab === tab) setActiveTab('NONE');
+    else {
+      setActiveTab(tab);
+      if (tab === 'ANALYSE') handleAiAnalysis();
+    }
   };
 
   const maxDamage = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p: any) => Number(p.totalDamageDealtToChampions ?? 0)) : [0]));
@@ -146,74 +146,61 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
     return mm * 60 + ss;
   };
 
-  // Build a local inventory copy and consume ward items that were purchased in the timeline (ITEM_PURCHASED)
-  const inventoryFromEvents = Array.isArray(match.itemBuild) ? match.itemBuild
-    // normalize timestamp order: ensure chronological
-    .slice().sort((a: any, b: any) => parseTs(a.timestamp || '') - parseTs(b.timestamp || '')) : [];
-
-  // clone inventory so we can remove one ward occurrence if purchased
+  // clone inventory so we can extract the ward item
   const inventoryClone = [...allItems];
-  const removeOneById = (arr: any[], id: any) => {
-    const idx = arr.findIndex(it => Number(it?.id) === Number(id));
-    if (idx >= 0) arr.splice(idx, 1);
-  };
-  if (Array.isArray(inventoryFromEvents) && inventoryFromEvents.length > 0) {
-     for (const ev of inventoryFromEvents) {
-       try {
-         if (!ev || !ev.item) continue;
-         const action = ev.action || '';
-         const itemId = Number(ev.item.id);
-         // If it was a purchase, consume one item from inventoryClone
-         if (action === 'ITEM_PURCHASED') {
-           // But only consume if the item is a placed ward (stealth/farsight) — control wards should not be consumed in circle representation
-           const name = (ev.item.name || '').toLowerCase();
-          if (/control/i.test(name)) {
-            // leave Control Ward as inventory-only
-          } else if (/farsight/i.test(name) || /stealth/i.test(name) || /oracle/.test(name) || (Array.isArray(ev.item.tags) && (ev.item.tags as any).includes('Ward'))) {
-            // remove one occurrence for wards and oracle
-            removeOneById(inventoryClone, itemId);
-          } else {
-            // For normal items purchased, remove them as well to keep inventory accurate
-            removeOneById(inventoryClone, itemId);
-          }
-         }
-         if (action === 'ITEM_SOLD') {
-           // When sold, re-add the item to inventoryClone (best-effort: push at end)
-           inventoryClone.push(ev.item);
-         }
-       } catch (e) {
-         // ignore parsing errors
-       }
-     }
-   }
 
-  const items = inventoryClone.filter((it: any) => !isWardItemLocal(it));
-  const wardItem = inventoryClone.find((it: any) => isWardItemLocal(it)) || null;
+  // Find the first ward/trinket item to display in the circle
+  const wardItemIndex = inventoryClone.findIndex(it => isWardItemLocal(it));
+  let wardItem = null;
+
+  if (wardItemIndex !== -1) {
+    wardItem = inventoryClone[wardItemIndex];
+    // Remove it from the main grid list
+    inventoryClone.splice(wardItemIndex, 1);
+  }
+
+  const items = inventoryClone;
 
   // Ensure display name includes tag (Hera#ahri)
   const displaySummoner = me?.summonerName ? (me.summonerName + (me.tagLine ? `#${me.tagLine}` : '')) : (me?.summonerName ?? 'Unranked');
   const displayRank = me?.rank || 'Unranked';
 
   const containerClass = 'mb-4 relative rounded-[1.5rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
-  
+
   // Render function for Build tab to avoid nested ternaries in JSX
   const renderBuildContent = () => {
     if (Array.isArray(match.itemBuild) && match.itemBuild.length > 0) {
+      // Sort by timestamp descending (Reverse Chronological) to show latest items first? 
+      // Or Ascending to show path?
+      // User asked for "Build Path". Usually that means Start -> End.
+      // But `summoner/route.ts` now handles Undo logic and returns a clean list.
+      // So we can just display it in chronological order (Start -> End).
+      // The previous logic was: sort ascending.
+      // Let's keep ascending but ensure we display the action clearly.
+      // Wait, the user said "corrige l'item build path ... pour voir leur match".
+      // If `summoner/route.ts` returns a clean list (no undos), then simple ascending sort is correct.
+      // However, `MatchCard` logic was:
+      // const sorted = [...match.itemBuild].slice().sort((a: any, b: any) => parseTs(a.timestamp || '') - parseTs(b.timestamp || ''));
+      // This is correct for "Path".
+      // Maybe the user wanted to see Sells?
+      // My update to `summoner/route.ts` INCLUDES Sells but removes Undone events.
+      // So the list is now "Effective History".
+      // I will just ensure the display is clean.
+
       const sorted = [...match.itemBuild].slice().sort((a: any, b: any) => parseTs(a.timestamp || '') - parseTs(b.timestamp || ''));
+
       return sorted.map((step: any, idx: number) => (
         <div key={idx} className="flex items-center">
           <div className="flex flex-col items-center gap-2 group">
             <div className="relative">
               {step?.item?.imageUrl ? (
-                <img src={step.item.imageUrl} className="w-10 h-10 rounded-lg border border-gray-700 group-hover:border-lol-gold transition-colors" title={step.item.name} alt={step.item.name} />
+                <img src={step.item.imageUrl} className={`w-10 h-10 rounded-lg border transition-colors ${step.action === 'ITEM_SOLD' ? 'border-red-500/50 opacity-60 grayscale' : 'border-gray-700 group-hover:border-lol-gold'}`} title={`${step.item.name} (${step.action})`} alt={step.item.name} />
               ) : (
                 <div className="w-10 h-10 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(step?.item?.name && typeof step.item.name === 'string') ? step.item.name.charAt(0) : '?'}</div>
               )}
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-[9px] px-1.5 rounded border border-white/10 whitespace-nowrap">{step.timestamp ?? '-'}</div>
-              {step.action && (
-                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] px-1 rounded border ${step.action === 'ITEM_SOLD' ? 'bg-red-700/60 border-red-400/40 text-white' : step.action === 'ITEM_PURCHASED' ? 'bg-green-700/40 border-green-400/40 text-white' : 'bg-gray-800/40 border-white/10 text-gray-200'}`}>
-                  {String(step.action).replace('ITEM_', '')}
-                </div>
+              {step.action === 'ITEM_SOLD' && (
+                <div className="absolute top-0 right-0 bg-red-600 text-white text-[8px] px-1 rounded-bl font-bold">SOLD</div>
               )}
             </div>
           </div>
@@ -255,7 +242,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
   };
 
 
-  
+
   return (
     <div className={containerClass}>
       {/* Main Card Content */}
@@ -290,9 +277,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
             </div>
             {/* Portrait badges: overall MVP (gold) or team-best (grey) */}
             {overallMvp && me && overallMvp.summonerName === me.summonerName ? (
-                <div className="absolute -top-3 -left-2 bg-gradient-to-br from-yellow-300 to-yellow-600 text-[9px] px-1.5 py-0.5 rounded text-black font-black border border-white shadow-lg z-20">MVP</div>
+              <div className="absolute -top-3 -left-2 bg-gradient-to-br from-yellow-300 to-yellow-600 text-[9px] px-1.5 py-0.5 rounded text-black font-black border border-white shadow-lg z-20">MVP</div>
             ) : (teamBestMap[me?.teamId] && teamBestMap[me.teamId].summonerName === me.summonerName) ? (
-                <div className="absolute -top-3 -left-2 bg-gray-500/10 text-gray-300 border border-gray-500/30 text-[9px] px-1.5 py-0.5 rounded font-bold z-20">MVP</div>
+              <div className="absolute -top-3 -left-2 bg-gray-500/10 text-gray-300 border border-gray-500/30 text-[9px] px-1.5 py-0.5 rounded font-bold z-20">MVP</div>
             ) : null}
           </div>
           <div className="flex flex-col gap-1">
@@ -301,8 +288,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
             ))}
           </div>
           <div className="flex flex-col gap-1">
-             <div className="w-6 h-6 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
-             <div className="w-6 h-6 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
+            <div className="w-6 h-6 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
+            <div className="w-6 h-6 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
           </div>
         </div>
 
@@ -317,8 +304,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
 
         {/* Items */}
         <div className="flex flex-wrap gap-1 max-w-[160px]">
-          {items.map((item: any) => (
-             item?.imageUrl ? <img key={item.id ?? JSON.stringify(item)} src={item.imageUrl} alt={item.name ?? ''} className="w-8 h-8 rounded-lg bg-[#121212] border border-white/10" title={item.name ?? ''} /> : <div key={JSON.stringify(item)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/5"></div>
+          {items.map((item: any, idx: number) => (
+            item?.imageUrl ? <img key={`${item.id ?? 'item'}-${idx}`} src={item.imageUrl} alt={item.name ?? ''} className="w-8 h-8 rounded-lg bg-[#121212] border border-white/10" title={item.name ?? ''} /> : <div key={`empty-item-${idx}`} className="w-8 h-8 rounded-lg bg-white/5 border border-white/5"></div>
           ))}
           {[...Array(Math.max(0, 6 - (items?.length ?? 0)))].map((_, i) => (
             <div key={`empty-${i}`} className="w-8 h-8 rounded-lg bg-white/5 border border-white/5"></div>
@@ -337,49 +324,49 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
 
         {/* Stats Extra - Desktop */}
         <div className="hidden md:flex flex-col text-xs text-gray-400 border-l border-white/5 pl-4 gap-1 min-w-[100px]">
-           <div className="flex justify-between w-full"><span>CS</span> <span className="text-gray-200 font-bold">{me.cs ?? 0} ({ csPerMinHeader }/m)</span></div>
-           <div className="flex justify-between w-full"><span>Vision</span> <span className="text-gray-200 font-bold">{me.visionScore ?? 0}</span></div>
-           <div className="text-[10px] text-gray-600 font-bold">{displaySummoner}</div>
-           <div className="text-[10px] text-gray-500">{displayRank}</div>
+          <div className="flex justify-between w-full"><span>CS</span> <span className="text-gray-200 font-bold">{me.cs ?? 0} ({csPerMinHeader}/m)</span></div>
+          <div className="flex justify-between w-full"><span>Vision</span> <span className="text-gray-200 font-bold">{me.visionScore ?? 0}</span></div>
+          <div className="text-[10px] text-gray-600 font-bold">{displaySummoner}</div>
+          <div className="text-[10px] text-gray-500">{displayRank}</div>
         </div>
-        
+
         {/* Toggle Button */}
         <div className="flex-grow flex justify-end">
-           <button 
-             onClick={() => toggleTab(activeTab === 'NONE' ? 'ANALYSE' : 'NONE')}
-             className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-300 ${activeTab !== 'NONE' ? 'bg-white/10 rotate-180 border-white/30 text-white' : 'text-gray-500'}`}
-           >
-              <ChevronDown className="w-4 h-4" />
-           </button>
+          <button
+            onClick={() => toggleTab(activeTab === 'NONE' ? 'ANALYSE' : 'NONE')}
+            className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-300 ${activeTab !== 'NONE' ? 'bg-white/10 rotate-180 border-white/30 text-white' : 'text-gray-500'}`}
+          >
+            <ChevronDown className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
       {/* Tabs Actions */}
       <div className="flex border-t border-white/5 bg-[#121212]">
-          <button onClick={() => toggleTab('ANALYSE')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'ANALYSE' ? 'text-lol-hextech border-lol-hextech bg-lol-hextech/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.analysis}</button>
-          <button onClick={() => toggleTab('GRAPH')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'GRAPH' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.aiGraph}</button>
-          <button onClick={() => toggleTab('STATS')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'STATS' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.stats}</button>
-          <button onClick={() => toggleTab('BUILD')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'BUILD' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.build}</button>
+        <button onClick={() => toggleTab('ANALYSE')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'ANALYSE' ? 'text-lol-hextech border-lol-hextech bg-lol-hextech/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.analysis}</button>
+        <button onClick={() => toggleTab('GRAPH')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'GRAPH' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.aiGraph}</button>
+        <button onClick={() => toggleTab('STATS')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'STATS' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.stats}</button>
+        <button onClick={() => toggleTab('BUILD')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'BUILD' ? 'text-lol-gold border-lol-gold bg-lol-gold/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>{t.build}</button>
       </div>
 
       {/* Tab Content */}
       {activeTab !== 'NONE' && (
         <div className="bg-[#0e0e0e] border-t border-white/5 p-4 animate-fadeIn">
-            {activeTab === 'ANALYSE' && <MatchAnalysis analysis={analysis} loading={loading} lang={lang} />}
-            {activeTab === 'GRAPH' && match.timelineData && <MatchGraph data={match.timelineData} />}
-            {activeTab === 'STATS' && <MatchDamageChart participants={match.participants} lang={lang} />}
-            {activeTab === 'BUILD' && (
-               <div className="bg-[#121212] p-6 rounded-xl border border-white/5 overflow-x-auto mb-6">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Item Build Path</h4>
-                  <div className="flex items-center min-w-max pb-4">
-                    {/* Rendered build content (either timeline or fallback) */}
-                    {renderBuildContent()}
-                   </div>
-                </div>
-             )}
-            
-            {/* Scoreboard is always shown below detailed tabs if any tab is open */}
-            <MatchScoreboard participants={match.participants} maxDamage={maxDamage} mvpId={overallMvp?.summonerName ?? ''} aceId={aceLocal?.summonerName ?? ''} lang={lang} gameDurationSeconds={match.gameDuration} />
+          {activeTab === 'ANALYSE' && <MatchAnalysis analysis={analysis} loading={loading} lang={lang} />}
+          {activeTab === 'GRAPH' && match.timelineData && <MatchGraph data={match.timelineData} />}
+          {activeTab === 'STATS' && <MatchDamageChart participants={match.participants} lang={lang} />}
+          {activeTab === 'BUILD' && (
+            <div className="bg-[#121212] p-6 rounded-xl border border-white/5 overflow-x-auto mb-6">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Item Build Path</h4>
+              <div className="flex items-center min-w-max pb-4">
+                {/* Rendered build content (either timeline or fallback) */}
+                {renderBuildContent()}
+              </div>
+            </div>
+          )}
+
+          {/* Scoreboard is always shown below detailed tabs if any tab is open */}
+          <MatchScoreboard participants={match.participants} maxDamage={maxDamage} mvpId={overallMvp?.summonerName ?? ''} aceId={aceLocal?.summonerName ?? ''} lang={lang} gameDurationSeconds={match.gameDuration} />
         </div>
       )}
     </div>

@@ -13,8 +13,8 @@ interface NavbarProps {
   onNavigate?: (view: string) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ 
-  currentView, 
+export const Navbar: React.FC<NavbarProps> = ({
+  currentView,
   onNavigate
 }) => {
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -52,13 +52,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Logic to generate patch notes URL
   // Mapping logic: 15.x.y -> patch-25-x-notes (Season 15 -> Year 25)
   const patchParts = currentPatch.split('.');
-  
+
   let season = patchParts[0];
   if (season === '15') season = '25'; // Map Season 15 to Year 2025 shortcode
 
   const patchNumber = patchParts[1];
 
-  const patchUrl = patchParts.length >= 2 
+  const patchUrl = patchParts.length >= 2
     ? `https://www.leagueoflegends.com/fr-fr/news/game-updates/patch-${season}-${patchNumber}-notes/`
     : '#';
 
@@ -85,25 +85,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             </SafeLink>
             <div className="hidden md:block">
               <div className="ml-12 flex items-baseline space-x-2">
-                <NavButton 
-                  label={t.home} 
-                  active={currentView ? currentView === 'home' : pathname === '/'} 
+                <NavButton
+                  label={t.home}
+                  active={currentView ? currentView === 'home' : pathname === '/'}
                   href="/"
                   onClick={(e) => handleNavClick(e, 'home')}
                 />
-                <NavButton 
-                  label={t.builder} 
+                <NavButton
+                  label={t.builder}
                   icon={<Hammer className="w-4 h-4" />}
-                  active={currentView ? currentView === 'builder' : pathname === '/builder'} 
+                  active={currentView ? currentView === 'builder' : pathname === '/builder'}
                   href="/builder"
                   onClick={(e) => handleNavClick(e, 'builder')}
                 />
-                <NavButton 
-                  label={t.leaderboard} 
+                <NavButton
+                  label={t.leaderboard}
                   icon={<Trophy className="w-4 h-4" />}
-                  active={currentView ? currentView === 'leaderboard' : pathname === '/leaderboard'} 
+                  active={currentView ? currentView === 'leaderboard' : pathname === '/leaderboard'}
                   href="/leaderboard"
                   onClick={(e) => handleNavClick(e, 'leaderboard')}
+                />
+                <NavButton
+                  label={t.tierlist}
+                  icon={<Trophy className="w-4 h-4" />}
+                  active={currentView ? currentView === 'tierlist' : pathname === '/tierlist'}
+                  href="/tierlist"
+                  onClick={(e) => handleNavClick(e, 'tierlist')}
                 />
               </div>
             </div>
@@ -112,43 +119,43 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-6">
             {/* Patch Version */}
             <div className="hidden md:flex flex-col items-end">
-               <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Current Patch</span>
-               <a 
-                 href={patchUrl} 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="flex items-center gap-2 text-lol-gold font-mono text-sm hover:text-lol-red transition-colors group cursor-pointer"
-               >
-                  <span className="w-2 h-2 rounded-full bg-lol-red shadow-[0_0_8px_#C23030] animate-pulse group-hover:scale-125 transition-transform"></span>
-                  <span className="group-hover:underline decoration-lol-red/50 underline-offset-4">{currentPatch}</span>
-               </a>
+              <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Current Patch</span>
+              <a
+                href={patchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-lol-gold font-mono text-sm hover:text-lol-red transition-colors group cursor-pointer"
+              >
+                <span className="w-2 h-2 rounded-full bg-lol-red shadow-[0_0_8px_#C23030] animate-pulse group-hover:scale-125 transition-transform"></span>
+                <span className="group-hover:underline decoration-lol-red/50 underline-offset-4">{currentPatch}</span>
+              </a>
             </div>
 
             <div className="h-8 w-px bg-white/10 hidden md:block"></div>
 
             {/* Language Switcher */}
             <div className="relative">
-              <div 
+              <div
                 className="hidden md:flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-full border border-white/5 hover:border-lol-gold/30 hover:bg-white/5 transition group"
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
               >
-                 <Globe className="w-4 h-4 text-gray-400 group-hover:text-lol-gold transition-colors" />
-                 <span className="text-xs font-bold uppercase tracking-wider text-gray-300">{currentLang}</span>
-                 <ChevronDown className={`w-3 h-3 text-gray-500 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
+                <Globe className="w-4 h-4 text-gray-400 group-hover:text-lol-gold transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-300">{currentLang}</span>
+                <ChevronDown className={`w-3 h-3 text-gray-500 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
               </div>
-              
+
               {isLangMenuOpen && (
                 <div className="absolute right-0 top-full mt-3 w-32 bg-[#121212] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn overflow-hidden">
-                   {(['FR', 'EN', 'ES', 'KR'] as Language[]).map(lang => (
-                     <div 
-                       key={lang}
-                       className={`px-4 py-2 text-xs font-bold hover:bg-white/5 cursor-pointer flex items-center justify-between group ${currentLang === lang ? 'text-lol-gold' : 'text-gray-400'}`}
-                       onClick={() => { setCurrentLang(lang); setIsLangMenuOpen(false); }}
-                     >
-                       {lang}
-                       {currentLang === lang && <div className="w-1.5 h-1.5 rounded-full bg-lol-gold shadow-glow-gold"></div>}
-                     </div>
-                   ))}
+                  {(['FR', 'EN', 'ES', 'KR'] as Language[]).map(lang => (
+                    <div
+                      key={lang}
+                      className={`px-4 py-2 text-xs font-bold hover:bg-white/5 cursor-pointer flex items-center justify-between group ${currentLang === lang ? 'text-lol-gold' : 'text-gray-400'}`}
+                      onClick={() => { setCurrentLang(lang); setIsLangMenuOpen(false); }}
+                    >
+                      {lang}
+                      {currentLang === lang && <div className="w-1.5 h-1.5 rounded-full bg-lol-gold shadow-glow-gold"></div>}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -160,16 +167,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 };
 
 const NavButton = ({ label, icon, active, href, onClick }: { label: string, icon?: React.ReactNode, active: boolean, href: string, onClick?: (e: React.MouseEvent) => void }) => (
-  <SafeLink 
+  <SafeLink
     href={href}
     onClick={onClick}
     className={`
       relative px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-full group flex items-center gap-2
-      ${active 
-        ? 'text-[#050505] bg-lol-gold shadow-[0_0_15px_rgba(200,170,110,0.3)]' 
+      ${active
+        ? 'text-[#050505] bg-lol-gold shadow-[0_0_15px_rgba(200,170,110,0.3)]'
         : 'text-gray-400 hover:text-white hover:bg-white/5'}
     `}
   >
-      {icon} {label}
+    {icon} {label}
   </SafeLink>
 );

@@ -19,7 +19,7 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased bg-[#050505] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans">
+      <body suppressHydrationWarning={true} className="antialiased bg-[#050505] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans">
         <LanguageProvider>
           <Navbar />
           <main className="flex-grow">
