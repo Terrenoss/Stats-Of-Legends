@@ -11,10 +11,19 @@ function TierListContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Initialize state from URL params or defaults
-    const [selectedRole, setSelectedRole] = useState<string>(searchParams.get('role') || 'ALL');
-    const [selectedRank, setSelectedRank] = useState(searchParams.get('rank') || 'ALL');
+    // Initialize state with defaults to prevent hydration mismatch
+    const [selectedRole, setSelectedRole] = useState<string>('ALL');
+    const [selectedRank, setSelectedRank] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+        const role = searchParams.get('role');
+        const rank = searchParams.get('rank');
+        if (role) setSelectedRole(role);
+        if (rank) setSelectedRank(rank);
+    }, [searchParams]);
 
     const [data, setData] = useState<ChampionTier[]>([]);
     const [loading, setLoading] = useState(true);
@@ -49,15 +58,17 @@ function TierListContent() {
 
     // Update URL when filters change
     useEffect(() => {
+        if (!isMounted) return;
+
         const params = new URLSearchParams();
         if (selectedRole !== 'ALL') params.set('role', selectedRole);
-        if (selectedRank !== 'CHALLENGER') params.set('rank', selectedRank);
+        if (selectedRank !== 'CHALLENGER' && selectedRank !== 'ALL') params.set('rank', selectedRank);
 
         // Replace URL without reloading
         router.replace(`?${params.toString()}`, { scroll: false });
 
         loadData();
-    }, [selectedRole, selectedRank]);
+    }, [selectedRole, selectedRank, isMounted]);
 
     const loadData = async () => {
         setLoading(true);
@@ -112,10 +123,10 @@ function TierListContent() {
     }, [data, sortConfig, searchQuery]);
 
     return (
-        <div className="min-h-screen bg-[#0a0a0c] text-white p-8 pb-32">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className="min-h-screen bg-[#0a0a0c] text-white p-8 pb-32" suppressHydrationWarning>
+            <div className="max-w-7xl mx-auto space-y-8" suppressHydrationWarning>
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8">
+                <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8" suppressHydrationWarning>
                     <div>
                         <h1 className="text-4xl md:text-6xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-lol-gold to-yellow-600 mb-2">
                             Meta Tier List

@@ -76,3 +76,84 @@ model DuoStat {
   @@unique([championId, partnerId, role, partnerRole, tier, patch])
   @@index([championId, role, tier, patch])
 }
+
+// --- Caching Models ---
+
+model Summoner {
+  puuid          String   @id
+  summonerId     String?   // Encrypted Summoner ID
+  accountId      String?
+  gameName       String
+  tagLine        String
+  profileIconId  Int
+  summonerLevel  Int
+  updatedAt      DateTime @updatedAt
+  lastMatchFetch DateTime? // Used for incremental updates
+
+  ranks          SummonerRank[]
+  matches        SummonerMatch[]
+  snapshots      LeagueSnapshot[]
+  
+  @@unique([gameName, tagLine])
+  @@index([gameName, tagLine])
+}
+
+model SummonerRank {
+  id            String   @id @default(cuid())
+  summonerPuuid String
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  queueType     String   // RANKED_SOLO_5x5, RANKED_FLEX_SR
+  tier          String
+  rank          String
+  leaguePoints  Int
+  wins          Int
+  losses        Int
+  updatedAt     DateTime @updatedAt
+
+  @@unique([summonerPuuid, queueType])
+}
+
+model Match {
+  id            String   @id // EUW1_123456
+  gameCreation  DateTime // Start time
+  gameDuration  Int      // Seconds
+  gameMode      String
+  gameVersion   String
+  averageRank   String?  // e.g. "GOLD IV"
+  jsonData      Json     // Full match details from Riot API
+  
+  participants  SummonerMatch[]
+}
+
+model SummonerMatch {
+  summonerPuuid String
+  matchId       String
+  match         Match    @relation(fields: [matchId], references: [id])
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  
+  championId    Int
+  win           Boolean
+  kills         Int
+  deaths        Int
+  assists       Int
+  
+  @@id([summonerPuuid, matchId])
+  @@index([summonerPuuid])
+  @@index([matchId])
+}
+
+model LeagueSnapshot {
+  id            String   @id @default(cuid())
+  summonerPuuid String
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  timestamp     DateTime @default(now())
+  
+  queueType     String   // RANKED_SOLO_5x5
+  tier          String
+  rank          String
+  leaguePoints  Int
+  wins          Int
+  losses        Int
+  
+  @@index([summonerPuuid, timestamp])
+}

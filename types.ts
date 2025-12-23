@@ -119,6 +119,11 @@ export interface ItemTimestamp {
   action?: string; // optional: 'ITEM_PURCHASED' | 'ITEM_SOLD' | 'ITEM_UNDO'
 }
 
+export interface ParticipantRunes {
+  primary: string | null;
+  secondary: string | null;
+}
+
 export interface Participant {
   summonerName: string;
   tagLine?: string;
@@ -145,6 +150,34 @@ export interface Participant {
   aceCount?: number; // number of ace occurrences (optional)
   puuid?: string; // player's unique id from Riot
   participantId?: number; // numeric participant id within match frames
+
+  // New fields for detailed tabs
+  runes?: ParticipantRunes;
+  pentaKills?: number;
+  quadraKills?: number;
+  totalMinionsKilled?: number;
+  neutralMinionsKilled?: number;
+  teamPosition?: string;
+  wardsPlaced?: number;
+  wardsKilled?: number;
+  visionWardsBoughtInGame?: number;
+  killParticipation?: number;
+}
+
+export interface TeamObjective {
+  baron: { kills: number; first: boolean };
+  champion: { kills: number; first: boolean };
+  dragon: { kills: number; first: boolean };
+  inhibitor: { kills: number; first: boolean };
+  riftHerald: { kills: number; first: boolean };
+  tower: { kills: number; first: boolean };
+  voidGrub?: { kills: number; first: boolean };
+}
+
+export interface MatchTeam {
+  teamId: number;
+  win: boolean;
+  objectives: TeamObjective;
 }
 
 // New Interface for Match Timeline Graph
@@ -160,10 +193,13 @@ export interface Match {
   gameCreation: number;
   gameDuration: number;
   gameMode: GameMode;
+  averageRank?: string;
+  queueId: number;
   participants: Participant[];
   me: Participant; // Shortcut to the main user's data within participants
   timelineData?: MatchTimelinePoint[];
   itemBuild?: ItemTimestamp[];
+  teams?: MatchTeam[];
 }
 
 export interface RankDetail {

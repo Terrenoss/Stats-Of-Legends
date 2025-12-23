@@ -98,6 +98,11 @@ export async function fetchMatchTimeline(matchId: string, regionRouting: string)
   return riotFetchRaw(url);
 }
 
+export async function fetchLeagueEntriesByPuuid(puuid: string, platform: string) {
+  const url = `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`;
+  return riotFetchRaw(url);
+}
+
 
 // --- New Scanner Methods (Object-based) ---
 

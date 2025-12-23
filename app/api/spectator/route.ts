@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
@@ -11,6 +12,30 @@ async function riotFetch(url: string) {
   });
   return res;
 }
+
+// Helper for concurrency control
+const mapWithConcurrency = async <T, U>(
+  array: T[],
+  limit: number,
+  callback: (item: T) => Promise<U>
+): Promise<U[]> => {
+  const results: U[] = [];
+  const executing: Promise<void>[] = [];
+  for (const item of array) {
+    const p = Promise.resolve().then(() => callback(item));
+    results.push(p as unknown as U);
+    const e: Promise<void> = p.then(() => {
+      executing.splice(executing.indexOf(e), 1);
+    });
+    executing.push(e);
+    if (executing.length >= limit) {
+      await Promise.race(executing);
+    }
+    // Add small delay to avoid rate limits
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  return Promise.all(results);
+};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -85,8 +110,6 @@ export async function GET(request: Request) {
     console.log('[Spectator] Got PUUID:', puuid);
 
     // 2. Get Active Game (Spectator V5 uses PUUID)
-    // Note: User indicated /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}
-    // We skip Summoner V4 as we have PUUID from Account V1.
     const spectatorUrl = `https://${routing}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${puuid}`;
     console.log('[Spectator] Fetching Active Game (V5):', spectatorUrl);
     const spectatorRes = await riotFetch(spectatorUrl);
@@ -103,16 +126,42 @@ export async function GET(request: Request) {
     }
 
     const gameData = await spectatorRes.json();
-    console.log('[Spectator] Raw Participants (Sample):', gameData.participants[0]);
+    // console.log('[Spectator] Raw Participants (Sample):', gameData.participants[0]);
 
-    // 3. Enrich Participants with Ranks (Parallel Fetch)
-    // Spectator V5 participants likely have 'puuid' and 'summonerId'.
-    // We use 'summonerId' for League V4 if available.
-
-    const participantsWithRanks = await Promise.all(gameData.participants.map(async (p: any) => {
+    // 3. Enrich Participants with Ranks (Concurrency Limited)
+    const participantsWithRanks = await mapWithConcurrency(gameData.participants, 1, async (p: any) => {
       let rank = 'UNRANKED';
       let summonerId = p.summonerId;
       let displayName = p.riotId ? p.riotId.split('#')[0] : p.summonerName;
+
+      // 1. Check Cache (DB)
+      if (p.puuid) {
+        try {
+          const cachedRank = await prisma.summonerRank.findFirst({
+            where: {
+              summonerPuuid: p.puuid,
+              queueType: 'RANKED_SOLO_5x5',
+              updatedAt: { gt: new Date(Date.now() - 1000 * 60 * 60 * 24) } // 24h cache
+            }
+          });
+
+          if (cachedRank) {
+            if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(cachedRank.tier)) {
+              rank = `${cachedRank.tier} ${cachedRank.leaguePoints} LP`;
+            } else {
+              rank = `${cachedRank.tier} ${cachedRank.rank}`;
+            }
+            // console.log(`[Spectator] Cache hit for ${displayName}: ${rank}`);
+            return {
+              ...p,
+              summonerName: displayName || 'Unknown',
+              rank
+            };
+          }
+        } catch (e) {
+          console.error('[Spectator] Cache check failed:', e);
+        }
+      }
 
       // Fallback: If summonerId or displayName is missing, fetch Summoner V4 by PUUID
       if ((!summonerId || !displayName) && p.puuid) {
@@ -123,45 +172,106 @@ export async function GET(request: Request) {
             const sumData = await sumRes.json();
             summonerId = sumData.id;
             if (!displayName) displayName = sumData.name;
+
+            // Upsert Summoner to DB to ensure foreign key exists
+            try {
+              await prisma.summoner.upsert({
+                where: { puuid: p.puuid },
+                update: {
+                  summonerId: sumData.id,
+                  accountId: sumData.accountId,
+                  gameName: displayName,
+                  tagLine: p.riotId ? p.riotId.split('#')[1] : 'EUW', // Fallback tag
+                  profileIconId: sumData.profileIconId,
+                  summonerLevel: sumData.summonerLevel,
+                },
+                create: {
+                  puuid: p.puuid,
+                  summonerId: sumData.id,
+                  accountId: sumData.accountId,
+                  gameName: displayName,
+                  tagLine: p.riotId ? p.riotId.split('#')[1] : 'EUW',
+                  profileIconId: sumData.profileIconId,
+                  summonerLevel: sumData.summonerLevel,
+                }
+              });
+            } catch (dbErr) {
+              // Ignore DB upsert errors (race conditions etc)
+            }
           }
         } catch (e) {
           console.error('[Spectator] Failed to fetch summoner fallback:', e);
         }
       }
 
-      if (summonerId) {
+      // Use PUUID to fetch ranks directly (New Riot API)
+      if (p.puuid) {
         try {
-          const leagueUrl = `https://${routing}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`;
+          const leagueUrl = `https://${routing}.api.riotgames.com/lol/league/v4/entries/by-puuid/${p.puuid}`;
           const leagueRes = await riotFetch(leagueUrl);
+
           if (leagueRes.ok) {
             const leagues = await leagueRes.json();
             const solo = leagues.find((l: any) => l.queueType === 'RANKED_SOLO_5x5');
+
             if (solo) {
-              rank = `${solo.tier} ${solo.rank}`;
+              // Format Rank
+              if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(solo.tier)) {
+                rank = `${solo.tier} ${solo.leaguePoints} LP`;
+              } else {
+                rank = `${solo.tier} ${solo.rank}`;
+              }
+
+              // Cache to DB
+              try {
+                await prisma.summonerRank.upsert({
+                  where: {
+                    summonerPuuid_queueType: {
+                      summonerPuuid: p.puuid,
+                      queueType: 'RANKED_SOLO_5x5'
+                    }
+                  },
+                  update: {
+                    tier: solo.tier,
+                    rank: solo.rank,
+                    leaguePoints: solo.leaguePoints,
+                    wins: solo.wins,
+                    losses: solo.losses,
+                  },
+                  create: {
+                    summonerPuuid: p.puuid,
+                    queueType: 'RANKED_SOLO_5x5',
+                    tier: solo.tier,
+                    rank: solo.rank,
+                    leaguePoints: solo.leaguePoints,
+                    wins: solo.wins,
+                    losses: solo.losses,
+                  }
+                });
+              } catch (cacheErr) {
+                // console.error('[Spectator] Cache write failed:', cacheErr);
+              }
+
             } else {
               const flex = leagues.find((l: any) => l.queueType === 'RANKED_FLEX_SR');
               if (flex) rank = `${flex.tier} ${flex.rank} (Flex)`;
             }
+          } else {
+            console.error(`[Spectator] Rank fetch failed for ${displayName} (${p.puuid}): ${leagueRes.status}`);
           }
         } catch (e) {
-          // Ignore rank fetch errors
+          console.error('[Spectator] Rank fetch failed for', displayName, e);
         }
       }
 
       return {
         ...p,
-        summonerName: displayName || 'Unknown', // Ensure we always have a name
+        summonerName: displayName || 'Unknown',
         rank
       };
-    }));
+    });
 
-    // 4. Build Champions Map (Optional optimization, frontend can handle it but backend is safer)
-    // We'll just pass the enriched participants back.
-
-    // Fetch DDragon version for champion images if needed, or hardcode/env
-    // For now, we return the data structure expected by frontend
-
-    // Get Champion Names for IDs (using latest DDragon)
+    // 4. Build Champions Map
     const ddragonRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
     const versions = await ddragonRes.json();
     const latest = versions[0];
@@ -173,10 +283,66 @@ export async function GET(request: Request) {
       championsById[Number(c.key)] = c.id;
     });
 
+    // Debug missing champions
+    gameData.participants.forEach((p: any) => {
+      if (!championsById[p.championId]) {
+        console.error(`[Spectator] Missing champion ID mapping for: ${p.championId}`);
+      }
+    });
+
+    // 5. Infer Roles from DB (Tier List Data)
+    const championNames = gameData.participants.map((p: any) => championsById[p.championId]);
+
+    // Fetch stats for these champions to find their main role
+    // We aggregate matches by role for each champion
+    const roleStats = await prisma.championStat.groupBy({
+      by: ['championId', 'role'],
+      where: {
+        championId: { in: championNames }
+      },
+      _sum: {
+        matches: true
+      }
+    });
+
+    // Map Champion -> Best Role
+    const championRoles: Record<string, string> = {};
+    const roleCounts: Record<string, number> = {}; // Helper to find max
+
+    roleStats.forEach(stat => {
+      const key = stat.championId;
+      const count = stat._sum.matches || 0;
+
+      if (!roleCounts[key] || count > roleCounts[key]) {
+        roleCounts[key] = count;
+        championRoles[key] = stat.role;
+      }
+    });
+
+    // Assign inferred role to participants
+    const participantsWithRoles = participantsWithRanks.map((p: any) => {
+      const champName = championsById[p.championId];
+      let inferredRole = championRoles[champName] || 'UNKNOWN';
+
+      // Override for Smite -> JUNGLE (Strong signal)
+      // REMOVED: We handle this in frontend with weighted scoring to avoid conflicts (e.g. Smite Top)
+      /*
+      if (p.spell1Id === 11 || p.spell2Id === 11) {
+          inferredRole = 'JUNGLE';
+      }
+      */
+
+      return {
+        ...p,
+        inferredRole
+      };
+    });
+
     return NextResponse.json({
       ...gameData,
-      participants: participantsWithRanks,
-      championsById // Send map to frontend
+      participants: participantsWithRoles,
+      championsById,
+      version: latest // Send latest DDragon version to frontend
     });
 
   } catch (e) {

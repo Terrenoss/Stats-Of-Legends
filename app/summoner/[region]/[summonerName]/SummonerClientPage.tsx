@@ -32,6 +32,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const [lpHistory, setLpHistory] = useState<any[]>([]);
   const [visibleMatches, setVisibleMatches] = useState(10);
 
+  const [version, setVersion] = useState<string>('14.24.1'); // Default fallback
+
   const t = TRANSLATIONS[currentLang];
 
   const loadData = async () => {
@@ -46,7 +48,15 @@ export default function SummonerClientPage({ params }: { params: { region: strin
     }
 
     try {
-      const res = await fetch(`/api/summoner?region=${params.region}&name=${name}&tag=${tag}`);
+      const url = new URL(`/api/summoner`, window.location.origin);
+      url.searchParams.append('region', params.region);
+      url.searchParams.append('name', name);
+      url.searchParams.append('tag', tag);
+      if (updating) {
+        url.searchParams.append('force', 'true');
+      }
+
+      const res = await fetch(url.toString());
 
       if (res.ok) {
         const realData = await res.json();
@@ -58,6 +68,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
         setTeammates(realData.teammates as Teammate[]);
         setLpHistory(realData.lpHistory || []);
         setPerformance(realData.performance || null);
+        if (realData.version) setVersion(realData.version);
       } else {
         const errJson = await res.json().catch(() => null);
         if (errJson?.error === 'RIOT_FORBIDDEN') {
@@ -153,7 +164,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
         </div>
       )}
 
-      <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} lpHistory={lpHistory} />
+      <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} lpHistory={lpHistory} version={version} />
 
       {updating && (
         <div className="mt-2 mb-4 text-xs text-gray-400 flex items-center gap-2">
@@ -214,7 +225,11 @@ export default function SummonerClientPage({ params }: { params: { region: strin
           {/* Right Column (Match History) */}
           <div className="lg:col-span-8">
             <div className="mb-6">
-              <WinrateSummary matches={matches} lang={currentLang} />
+              <WinrateSummary
+                matches={filteredMatches.slice(0, visibleMatches)}
+                lang={currentLang}
+                title={t.recent20Games.replace('20', String(filteredMatches.slice(0, visibleMatches).length))}
+              />
             </div>
 
             <div className="flex items-center justify-between mb-4">

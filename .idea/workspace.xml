@@ -6,27 +6,23 @@
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.env.local" beforeDir="false" afterPath="$PROJECT_DIR$/.env.local" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/admin/process/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/admin/process/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/spectator/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/spectator/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/summoner/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/summoner/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/builder/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/builder/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/legal/[slug]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/legal/[slug]/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/tierlist/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/tierlist/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Builder.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Builder.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/LiveGame.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LiveGame.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Navbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/builder/BuilderStats.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/BuilderStats.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ProfileHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/RecentlyPlayedWith.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/RecentlyPlayedWith.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/WinrateSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/WinrateSummary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/tierlist/ChampionTierRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/tierlist/ChampionTierRow.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/constants.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/riotService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/riotService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -137,7 +133,9 @@
       <workItem from="1764095782971" duration="1851000" />
       <workItem from="1764537169257" duration="10951000" />
       <workItem from="1766408109594" duration="10888000" />
-      <workItem from="1766429787426" duration="13711000" />
+      <workItem from="1766429787426" duration="14365000" />
+      <workItem from="1766491940855" duration="8155000" />
+      <workItem from="1766504465564" duration="14042000" />
     </task>
     <servers />
   </component>

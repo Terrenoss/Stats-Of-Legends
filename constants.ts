@@ -1032,6 +1032,7 @@ export const MOCK_MATCHES: Match[] = [
     gameCreation: Date.now() - 3600000,
     gameDuration: 1845, // seconds
     gameMode: GameMode.SOLO_DUO,
+    queueId: 420,
     participants: generateParticipants(1, true),
     timelineData: generateTimeline(true),
     itemBuild: generateBuildPath(),
@@ -1066,6 +1067,7 @@ export const MOCK_MATCHES: Match[] = [
     gameCreation: Date.now() - 86400000,
     gameDuration: 2100,
     gameMode: GameMode.SOLO_DUO,
+    queueId: 420,
     participants: generateParticipants(2, false),
     timelineData: generateTimeline(false),
     itemBuild: generateBuildPath(),
@@ -1102,6 +1104,7 @@ export const MOCK_MATCHES: Match[] = [
     gameCreation: Date.now() - 172800000,
     gameDuration: 1500,
     gameMode: GameMode.FLEX,
+    queueId: 440,
     participants: generateParticipants(3, true),
     timelineData: generateTimeline(true),
     itemBuild: generateBuildPath(),
