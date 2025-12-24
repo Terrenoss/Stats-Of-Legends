@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { ChampionService } from '@/services/ChampionService';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { CURRENT_PATCH } from '@/constants';
+import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl } from '@/utils/ddragon';
 
 // Helper for spell images
 const getSpellName = (id: string) => {
@@ -58,7 +60,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
     const searchParams = useSearchParams();
     const championName = params.name;
     const [role, setRole] = useState(searchParams.get('role') || 'MID');
-    const [rank, setRank] = useState(searchParams.get('rank') || 'CHALLENGER');
+    const [rank, setRank] = useState(searchParams.get('rank') || 'ALL');
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [runeMap, setRuneMap] = useState<Record<number, string>>({});
@@ -73,7 +75,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
 
                 // Fetch Rune Map
                 try {
-                    const patch = res.patch || '14.24.1';
+                    const patch = CURRENT_PATCH;
                     let runeRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${patch}/data/en_US/runesReforged.json`);
 
                     // Fallback to 14.23.1 if 403/404
@@ -152,8 +154,8 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
     };
 
     const getRuneIcon = (id: number) => {
-        if (!runeMap[id]) return 'https://ddragon.leagueoflegends.com/cdn/14.24.1/img/rune/8000.png'; // Fallback
-        return `https://ddragon.leagueoflegends.com/cdn/img/${runeMap[id]}`;
+        if (!runeMap[id]) return getRuneIconUrl('rune/8000.png'); // Fallback
+        return getRuneIconUrl(runeMap[id]);
     };
 
     const getShardIcon = (id: number) => {
@@ -168,7 +170,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
             5011: 'StatModsTenacityIcon.png',
             5013: 'StatModsHealthScalingIcon.png'
         };
-        return map[id] ? `https://ddragon.leagueoflegends.com/cdn/img/perk-images/StatMods/${map[id]}` : '';
+        return map[id] ? getRuneIconUrl(`perk-images/StatMods/${map[id]}`) : '';
     };
 
     return (
@@ -188,7 +190,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                     <div className="flex items-start gap-6 mb-8">
                         <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-lol-gold shadow-[0_0_20px_rgba(200,155,60,0.3)]">
                             <Image
-                                src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${championName}.png`}
+                                src={getChampionIconUrl(championName, CURRENT_PATCH)}
                                 alt={championName}
                                 fill
                                 className="object-cover"
@@ -208,7 +210,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                 {topSpells.slice(0, 2).map(spell => (
                                     <img
                                         key={spell.id}
-                                        src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/spell/${getSpellName(spell.id)}.png`}
+                                        src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
                                         className="w-8 h-8 rounded border border-white/20"
                                     />
                                 ))}
@@ -295,7 +297,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                         {data.matchups?.slice(0, 10).map((m: any) => (
                             <div key={m.opponentId} className="flex-shrink-0 w-24 bg-[#1a1a1a] rounded-lg p-3 text-center border border-white/5">
                                 <img
-                                    src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${m.opponentId}.png`}
+                                    src={getChampionIconUrl(m.opponentId, CURRENT_PATCH)}
                                     className="w-12 h-12 rounded-full mx-auto mb-2 border border-white/10"
                                 />
                                 <div className="font-bold text-sm truncate">{m.opponentId}</div>
@@ -439,7 +441,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                                 return (
                                                                     <div key={rune.id} className="relative group">
                                                                         <img
-                                                                            src={`https://ddragon.leagueoflegends.com/cdn/img/${rune.icon}`}
+                                                                            src={getRuneIconUrl(rune.icon)}
                                                                             className={`w-14 h-14 rounded-full border-2 transition-all ${active ? 'border-lol-gold opacity-100 scale-110 shadow-[0_0_15px_rgba(200,155,60,0.5)]' : 'border-transparent opacity-30 grayscale hover:opacity-60'}`}
                                                                         />
                                                                     </div>
@@ -465,7 +467,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                                 return (
                                                                     <div key={rune.id} className="relative group">
                                                                         <img
-                                                                            src={`https://ddragon.leagueoflegends.com/cdn/img/${rune.icon}`}
+                                                                            src={getRuneIconUrl(rune.icon)}
                                                                             className={`w-12 h-12 rounded-full border-2 transition-all ${active ? 'border-lol-blue opacity-100 scale-110 shadow-[0_0_15px_rgba(0,200,255,0.5)]' : 'border-transparent opacity-30 grayscale hover:opacity-60'}`}
                                                                         />
                                                                     </div>
@@ -533,7 +535,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                 {topSpells.slice(0, 2).map(spell => (
                                     <div key={spell.id} className="relative group">
                                         <img
-                                            src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/spell/${getSpellName(spell.id)}.png`}
+                                            src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
                                             className="w-12 h-12 rounded-lg border border-white/10"
                                         />
                                         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
@@ -576,7 +578,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                             <div className="flex -space-x-2">
                                                                 {stackedItems.map((item, i) => (
                                                                     <div key={i} className="relative z-10">
-                                                                        <img src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${item.id}.png`} className="w-10 h-10 rounded-full border-2 border-[#121212]" />
+                                                                        <img src={getItemIconUrl(item.id, CURRENT_PATCH)} className="w-10 h-10 rounded-full border-2 border-[#121212]" />
                                                                         {item.count > 1 && (
                                                                             <div className="absolute -bottom-1 -right-1 bg-[#121212] text-white text-[10px] font-bold px-1 rounded-full border border-white/20">
                                                                                 x{item.count}
@@ -608,7 +610,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                     <div className="flex items-center gap-4">
                                                         {data.itemPaths[0].path.map((id: number, i: number) => (
                                                             <div key={i} className="flex items-center gap-3">
-                                                                <img src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${id}.png`} className="w-14 h-14 rounded border border-lol-gold shadow-lg" />
+                                                                <img src={getItemIconUrl(id, CURRENT_PATCH)} className="w-14 h-14 rounded border border-lol-gold shadow-lg" />
                                                                 {i < data.itemPaths[0].path.length - 1 && <span className="text-gray-600 text-xl">→</span>}
                                                             </div>
                                                         ))}
@@ -640,7 +642,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                     {slot.data.map((item: any) => (
                                                         <div key={item.id} className="flex items-center justify-between bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5">
                                                             <div className="flex items-center gap-3">
-                                                                <img src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/item/${item.id}.png`} className="w-10 h-10 rounded border border-white/10" />
+                                                                <img src={getItemIconUrl(item.id, CURRENT_PATCH)} className="w-10 h-10 rounded border border-white/10" />
                                                                 <div className="text-xs text-gray-300 font-bold">
                                                                     {/* Item Name would be nice here */}
                                                                     <span className="text-gray-500">#{item.id}</span>
@@ -676,7 +678,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                         <div key={d.partnerId} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={`https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${d.partnerId}.png`}
+                                                    src={getChampionIconUrl(d.partnerId, CURRENT_PATCH)}
                                                     className="w-10 h-10 rounded-lg border border-white/10"
                                                 />
                                                 <div>

@@ -13,7 +13,7 @@ interface ChampionTierRowProps {
 
 export const ChampionTierRow: React.FC<ChampionTierRowProps> = ({ champion, rank }) => {
     const searchParams = useSearchParams();
-    const currentRank = searchParams.get('rank') || 'CHALLENGER';
+    const currentRank = searchParams.get('rank') || 'ALL';
 
     const getTrendIcon = (trend: string) => {
         switch (trend) {

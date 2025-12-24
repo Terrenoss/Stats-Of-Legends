@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CURRENT_PATCH } from '@/constants';
 
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
@@ -272,9 +273,7 @@ export async function GET(request: Request) {
     });
 
     // 4. Build Champions Map
-    const ddragonRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-    const versions = await ddragonRes.json();
-    const latest = versions[0];
+    const latest = CURRENT_PATCH;
     const champsRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${latest}/data/en_US/champion.json`);
     const champsJson = await champsRes.json();
 
@@ -323,14 +322,6 @@ export async function GET(request: Request) {
     const participantsWithRoles = participantsWithRanks.map((p: any) => {
       const champName = championsById[p.championId];
       let inferredRole = championRoles[champName] || 'UNKNOWN';
-
-      // Override for Smite -> JUNGLE (Strong signal)
-      // REMOVED: We handle this in frontend with weighted scoring to avoid conflicts (e.g. Smite Top)
-      /*
-      if (p.spell1Id === 11 || p.spell2Id === 11) {
-          inferredRole = 'JUNGLE';
-      }
-      */
 
       return {
         ...p,

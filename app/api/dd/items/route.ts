@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CURRENT_PATCH } from '@/constants';
 
 const DATA_BASE = process.env.DATA_BASE || '';
-
-async function fetchLatestPatch() {
-  try {
-    const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error('Failed versions');
-    const versions: string[] = await res.json();
-    return versions[0];
-  } catch {
-    return '15.22.1';
-  }
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,7 +10,7 @@ export async function GET(req: NextRequest) {
     const locale = url.searchParams.get('locale') || 'en_US';
 
     if (patch === 'latest') {
-      patch = await fetchLatestPatch();
+      patch = CURRENT_PATCH;
     }
 
     if (DATA_BASE) {
@@ -29,7 +19,7 @@ export async function GET(req: NextRequest) {
         if (upstream.ok) {
           return NextResponse.json(await upstream.json());
         }
-      } catch {}
+      } catch { }
     }
 
     const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/item.json`;

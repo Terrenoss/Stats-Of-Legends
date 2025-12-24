@@ -1,33 +1,97 @@
 import { CURRENT_PATCH } from '../constants';
 
 /**
+ * Helper to strip .png extension if present
+ */
+const cleanId = (id: string | number): string => {
+    return String(id).replace(/\.png$/, '');
+};
+
+const CHAMPION_ID_MAP: Record<string, string> = {
+    'FiddleSticks': 'Fiddlesticks',
+    'Wukong': 'MonkeyKing',
+    'Renata Glasc': 'Renata',
+    'Bel\'Veth': 'Belveth',
+    'Kog\'Maw': 'KogMaw',
+    'Cho\'Gath': 'Chogath',
+    'Kai\'Sa': 'Kaisa',
+    'Vel\'Koz': 'Velkoz',
+    'Kha\'Zix': 'Khazix',
+    'LeBlanc': 'Leblanc',
+    'Nunu & Willump': 'Nunu',
+    'Dr. Mundo': 'DrMundo',
+    'Jarvan IV': 'JarvanIV',
+    'Lee Sin': 'LeeSin',
+    'Master Yi': 'MasterYi',
+    'Miss Fortune': 'MissFortune',
+    'Tahm Kench': 'TahmKench',
+    'Twisted Fate': 'TwistedFate',
+    'Xin Zhao': 'XinZhao',
+    'Aurelion Sol': 'AurelionSol',
+    'Rek\'Sai': 'RekSai'
+};
+
+const normalizeChampionId = (id: string | number): string => {
+    const strId = String(id);
+    // Remove .png if present
+    const clean = strId.replace(/\.png$/, '');
+    // Check map
+    if (CHAMPION_ID_MAP[clean]) return CHAMPION_ID_MAP[clean];
+    // Check map for case-insensitive match if needed, but usually exact match is fine if we cover common cases.
+    // If it's a name with spaces, remove spaces?
+    // Most DDragon IDs are just Name with no spaces/apostrophes.
+    // Let's try a generic fallback: remove spaces and apostrophes.
+    // But preserve casing? DDragon is usually PascalCase.
+    // e.g. "Lee Sin" -> "LeeSin".
+    return clean;
+};
+
+/**
  * Generates the DDragon CDN URL for a champion's square icon.
  * @param championId The champion's ID or Name (e.g., "Aatrox" or "266" if key). 
- *                   Note: DDragon usually expects the *Name* (e.g. "Aatrox.png"), not the numeric ID.
- *                   However, for some APIs, we might have the numeric ID. 
- *                   Ideally, we should pass the "id" string from DDragon data (e.g. "MonkeyKing").
- * @param version Optional version. Defaults to CURRENT_PATCH.
  */
 export const getChampionIconUrl = (championId: string | number, version: string = CURRENT_PATCH): string => {
-    // If it's a numeric ID, we might have a problem if we don't have the map. 
-    // But in our app, 'championId' in ChampionTier is usually the string ID (e.g. "Aatrox").
-    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championId}.png`;
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${normalizeChampionId(championId)}.png`;
 };
 
 /**
  * Generates the DDragon CDN URL for an item icon.
- * @param itemId The item's numeric ID.
- * @param version Optional version. Defaults to CURRENT_PATCH.
+ * @param itemId The item's numeric ID or filename.
  */
-export const getItemIconUrl = (itemId: number, version: string = CURRENT_PATCH): string => {
-    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${itemId}.png`;
+export const getItemIconUrl = (itemId: number | string, version: string = CURRENT_PATCH): string => {
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${cleanId(itemId)}.png`;
 };
 
 /**
  * Generates the DDragon CDN URL for a profile icon.
  * @param iconId The profile icon ID.
- * @param version Optional version. Defaults to CURRENT_PATCH.
  */
 export const getProfileIconUrl = (iconId: number, version: string = CURRENT_PATCH): string => {
     return `https://ddragon.leagueoflegends.com/cdn/${version}/img/profileicon/${iconId}.png`;
+};
+
+/**
+ * Generates the DDragon CDN URL for a spell icon.
+ * @param spellId The spell ID or filename (e.g. "SummonerFlash").
+ */
+export const getSpellIconUrl = (spellId: string | number, version: string = CURRENT_PATCH): string => {
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${cleanId(spellId)}.png`;
+};
+
+/**
+ * Generates the DDragon CDN URL for a rune icon.
+ * Note: Runes are usually in a different path and often don't use the versioned CDN for the image path itself in some contexts,
+ * but DDragon docs say `https://ddragon.leagueoflegends.com/cdn/img/perk-images/...`
+ * @param iconPath The relative path to the icon (e.g. "perk-images/Styles/7201_Precision.png").
+ */
+export const getRuneIconUrl = (iconPath: string): string => {
+    return `https://ddragon.leagueoflegends.com/cdn/img/${iconPath}`;
+};
+
+/**
+ * Generates the DDragon CDN URL for a passive icon.
+ * @param passiveId The passive filename (e.g. "Anivia_P").
+ */
+export const getPassiveIconUrl = (passiveId: string, version: string = CURRENT_PATCH): string => {
+    return `https://ddragon.leagueoflegends.com/cdn/${version}/img/passive/${cleanId(passiveId)}.png`;
 };

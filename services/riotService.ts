@@ -107,11 +107,7 @@ export async function fetchLeagueEntriesByPuuid(puuid: string, platform: string)
 // --- New Scanner Methods (Object-based) ---
 
 export const RiotService = {
-  getVersions: async () => {
-    const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-    if (!res.ok) throw new Error('Failed to fetch versions');
-    return res.json();
-  },
+
 
   getChampionIdMap: async (version: string) => {
     const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`);

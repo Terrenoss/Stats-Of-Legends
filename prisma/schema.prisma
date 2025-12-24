@@ -136,6 +136,7 @@ model SummonerMatch {
   kills         Int
   deaths        Int
   assists       Int
+  role          String   @default("UNKNOWN")
   
   @@id([summonerPuuid, matchId])
   @@index([summonerPuuid])

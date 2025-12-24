@@ -1,6 +1,6 @@
 import { GameMode, Match, SummonerProfile, Item, Champion, DummyStats, Language, Region, HeatmapDay, LPPoint, DetailedChampionStats, RoleStat, Participant, Teammate, MatchTimelinePoint, ItemTimestamp, SeasonInfo } from './types';
 
-export const CURRENT_PATCH = "15.23.1";
+export const CURRENT_PATCH = "15.24.1";
 
 export const CURRENT_SEASON_INFO: SeasonInfo = {
   season: 'Season 2025',

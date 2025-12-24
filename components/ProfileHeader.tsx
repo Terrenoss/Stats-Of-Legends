@@ -1,7 +1,8 @@
 import React from 'react';
 import { SummonerProfile, Language } from '../types';
 import { YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { TRANSLATIONS, MOCK_ROLES, RANK_EMBLEMS, CURRENT_PATCH } from '../constants';
+import { TRANSLATIONS, MOCK_ROLES, RANK_EMBLEMS } from '../constants';
+import { getProfileIconUrl } from '../utils/ddragon';
 import { Clock } from 'lucide-react';
 
 interface ProfileHeaderProps {
@@ -20,7 +21,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
   const safeFlex = profile.ranks?.flex || { tier: null, rank: null, lp: null, wins: null, losses: null };
   const [now, setNow] = React.useState(() => Date.now());
   const hasLadder = typeof profile.ladderRank === 'number' && profile.ladderRank > 0 && typeof profile.topPercent === 'number' && profile.topPercent > 0;
-  const currentVersion = version || CURRENT_PATCH;
 
   React.useEffect(() => {
     // Rafraîchit l’horloge locale pour que "il y a X secondes" se mette à jour sans reload
@@ -137,7 +137,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
           <div className="relative">
             <div className="w-24 h-24 rounded-[1.5rem] bg-[#121212] p-1 border border-lol-gold/50 shadow-glow-gold relative z-10">
               <img
-                src={`https://ddragon.leagueoflegends.com/cdn/${currentVersion}/img/profileicon/${profile.profileIconId}.png`}
+                src={getProfileIconUrl(profile.profileIconId, version)}
                 alt="Icon"
                 className="w-full h-full object-cover rounded-[1.2rem]"
               />

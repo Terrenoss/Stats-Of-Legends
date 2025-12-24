@@ -7,6 +7,7 @@ import { useHistory } from '../hooks/useHistory';
 import { ItemCatalog } from './builder/ItemCatalog';
 import { RuneSelector } from './builder/RuneSelector';
 import { SelectedRunes } from '../types';
+import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl } from '../utils/ddragon';
 
 interface BuilderProps {
   lang?: Language;
@@ -84,7 +85,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
             name: c.name,
             title: c.title,
             imageUrl: c.imageFull
-              ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${c.imageFull}`
+              ? getChampionIconUrl(c.imageFull, patch)
               : '',
             baseStats: {
               hp: c.stats?.hp ?? 0,
@@ -112,7 +113,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
               id: ['Q', 'W', 'E', 'R'][idx] || String(idx),
               name: s.name,
               imageUrl: s.imageFull
-                ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/spell/${s.imageFull}`
+                ? getSpellIconUrl(s.imageFull, patch)
                 : '',
               description: s.description || s.tooltip || '',
               maxRank: s.maxRank || 5,
@@ -135,7 +136,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
             id: Number(it.id),
             name: it.name,
             imageUrl: it.imageFull
-              ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/item/${it.imageFull}`
+              ? getItemIconUrl(it.imageFull, patch)
               : '',
             price: it.gold?.total,
             stats: {

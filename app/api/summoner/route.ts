@@ -14,6 +14,7 @@ import {
   fetchLeagueEntriesByPuuid,
 } from '../../../services/RiotService';
 import { prisma } from '../../../lib/prisma';
+import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl } from '../../../utils/ddragon';
 
 // Helper to check if cache is valid (e.g., 10 minutes)
 const CACHE_TTL = 10 * 60 * 1000;
@@ -202,7 +203,7 @@ export async function GET(req: NextRequest) {
           select: { id: true },
         });
         const existingIds = new Set(existingMatches.map(m => m.id));
-        const newMatchIds = matchIds.filter(id => !existingIds.has(id));
+        const newMatchIds = matchIds.filter(id => !existingIds.has(id)).slice(0, 20);
 
         const processMatch = async (matchId: string) => {
           try {
@@ -258,6 +259,7 @@ export async function GET(req: NextRequest) {
                   kills: p.kills,
                   deaths: p.deaths,
                   assists: p.assists,
+                  role: p.teamPosition || 'UNKNOWN',
                 }
               });
             }
@@ -266,8 +268,11 @@ export async function GET(req: NextRequest) {
           // OPTIMIZATION: Process for Tier List immediately using existing JSON
           // This prevents re-fetching from Riot API later
           try {
-            // Use EMERALD as a safe default since we don't have the calculated average rank yet
-            const tier = 'EMERALD';
+            // Determine Tier from DB (use highest of Solo/Flex)
+            const ranks = dbSummoner?.ranks || [];
+            const solo = ranks.find(r => r.queueType === 'RANKED_SOLO_5x5');
+            const flex = ranks.find(r => r.queueType === 'RANKED_FLEX_SR');
+            const tier = solo?.tier || flex?.tier || 'EMERALD'; // Fallback to EMERALD if unranked
 
             // m is { id: string, data: any }
             await MatchProcessor.processMatch(m.id, region, tier, m.data);
@@ -305,16 +310,7 @@ export async function GET(req: NextRequest) {
       take: 60,
     });
 
-    let latestVersion = CURRENT_PATCH;
-    try {
-      const vRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', { next: { revalidate: 3600 } });
-      if (vRes.ok) {
-        const versions = await vRes.json();
-        latestVersion = versions[0];
-      }
-    } catch (e) {
-      console.error('Failed to fetch latest version, using fallback:', CURRENT_PATCH);
-    }
+    const latestVersion = CURRENT_PATCH;
 
     const matches = await Promise.all(summonerMatches.map(async (sm) => {
       const mj = sm.match.jsonData as any;
@@ -405,7 +401,7 @@ function getRuneImages(perks: any, runesData: any[]) {
     if (styleData && styleData.slots && styleData.slots[0]) {
       const keystoneData = styleData.slots[0].runes.find((r: any) => r.id === keystoneId);
       if (keystoneData) {
-        primaryImg = `https://ddragon.leagueoflegends.com/cdn/img/${keystoneData.icon}`;
+        primaryImg = getRuneIconUrl(keystoneData.icon);
       }
     }
   }
@@ -414,7 +410,7 @@ function getRuneImages(perks: any, runesData: any[]) {
   if (subStyle) {
     const styleData = runesData.find((r: any) => r.id === subStyle.style);
     if (styleData) {
-      secondaryImg = `https://ddragon.leagueoflegends.com/cdn/img/${styleData.icon}`;
+      secondaryImg = getRuneIconUrl(styleData.icon);
     }
   }
 
@@ -542,7 +538,7 @@ async function processMatchData(mj: any, puuid: string, version: string, average
         action,
         item: {
           id: itemId,
-          imageUrl: `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${itemId}.png`,
+          imageUrl: getItemIconUrl(itemId, version),
           name: `Item ${itemId}`,
           tags: [],
         },
@@ -603,16 +599,16 @@ async function processMatchData(mj: any, puuid: string, version: string, average
       champion: {
         id: p.championId,
         name: p.championName,
-        imageUrl: `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${p.championName}.png`
+        imageUrl: getChampionIconUrl(p.championName, version)
       },
       items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6].map(id => ({
         id,
-        imageUrl: id ? `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${id}.png` : '',
+        imageUrl: id ? getItemIconUrl(id, version) : '',
         name: `Item ${id}`
       })),
       spells: [p.summoner1Id, p.summoner2Id].map(id => ({
         id,
-        imageUrl: `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${getSpellName(id)}.png`
+        imageUrl: getSpellIconUrl(getSpellName(id), version)
       })),
       // Use Riot ID fields for V5
       summonerName: p.riotIdGameName || p.summonerName || 'Unknown',

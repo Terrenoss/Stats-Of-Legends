@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Shield, Play, Square, Trash2, Activity, Database } from 'lucide-react';
+import { CURRENT_PATCH } from '@/constants';
 
 export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,16 +20,13 @@ export default function AdminDashboard() {
 
     const tiers = ['CHALLENGER', 'GRANDMASTER', 'MASTER', 'DIAMOND', 'EMERALD', 'PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'IRON'];
     const divisions = ['I', 'II', 'III', 'IV'];
-    const regions = ['euw1', 'na1', 'kr', 'eun1', 'br1', 'la1'];
+    const regions = ['euw1', 'na1', 'kr', 'eun1', 'br1', 'la1', 'la2', 'oc1', 'ru', 'tr1', 'jp1', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
 
     const scanningRef = useRef(false);
 
     useEffect(() => {
-        // Auto-fetch patch on mount
-        fetch('https://ddragon.leagueoflegends.com/api/versions.json')
-            .then(res => res.json())
-            .then(data => setCurrentPatch(data[0]))
-            .catch(err => console.error("Failed to fetch patch", err));
+        // Use fixed patch version
+        setCurrentPatch(CURRENT_PATCH);
     }, []);
 
     const addLog = (msg: string) => {

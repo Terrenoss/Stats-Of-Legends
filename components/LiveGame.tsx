@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Radio, Shield, Swords, Timer } from 'lucide-react';
 import { useI18n } from "../app/LanguageContext";
+import { getChampionIconUrl, getSpellIconUrl } from '../utils/ddragon';
 
 interface LiveGameProps {
   summonerName: string;
@@ -89,7 +90,7 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
   const seconds = duration % 60;
 
   const getChampImg = (id: number) =>
-    `https://ddragon.leagueoflegends.com/cdn/${gameData.version || '14.24.1'}/img/champion/${gameData.championsById?.[id] || 'Aatrox'}.png`;
+    getChampionIconUrl(gameData.championsById?.[id] || 'Aatrox', gameData.version);
 
   const SPELL_MAP: Record<number, string> = {
     1: 'SummonerBoost',
@@ -106,7 +107,7 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
   };
 
   const getSpellImg = (id: number) =>
-    `https://ddragon.leagueoflegends.com/cdn/${gameData.version || '14.24.1'}/img/spell/${SPELL_MAP[id] || 'SummonerFlash'}.png`;
+    getSpellIconUrl(SPELL_MAP[id] || 'SummonerFlash', gameData.version);
 
   const assignRoles = (participants: any[]) => {
     const ROLES = ['TOP', 'JUNGLE', 'MID', 'ADC', 'SUPPORT'];

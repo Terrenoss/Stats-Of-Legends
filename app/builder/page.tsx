@@ -8,6 +8,7 @@ import { useHistory } from '../../hooks/useHistory';
 import { ItemCatalog } from '../../components/builder/ItemCatalog';
 import { BuilderGrid } from '../../components/builder/BuilderGrid';
 import { BuilderStats } from '../../components/builder/BuilderStats';
+import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl } from '../../utils/ddragon';
 
 export default function BuilderPage() {
   const [currentLang] = useState<Language>('FR');
@@ -50,7 +51,7 @@ export default function BuilderPage() {
             name: c.name,
             title: c.title,
             imageUrl: c.imageFull
-              ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${c.imageFull}`
+              ? getChampionIconUrl(c.imageFull, patch)
               : '',
             baseStats: {
               hp: c.stats?.hp ?? 0,
@@ -78,7 +79,7 @@ export default function BuilderPage() {
               id: ['Q', 'W', 'E', 'R'][idx] || String(idx),
               name: s.name,
               imageUrl: s.imageFull
-                ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/spell/${s.imageFull}`
+                ? getSpellIconUrl(s.imageFull, patch)
                 : '',
               description: s.description || s.tooltip || '',
               maxRank: s.maxRank || 5,
@@ -101,7 +102,7 @@ export default function BuilderPage() {
             id: Number(it.id),
             name: it.name,
             imageUrl: it.imageFull
-              ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/item/${it.imageFull}`
+              ? getItemIconUrl(it.imageFull, patch)
               : '',
             price: it.gold?.total,
             stats: {

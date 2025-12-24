@@ -25,21 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const t = TRANSLATIONS[currentLang];
 
   useEffect(() => {
-    // Automatically fetch latest patch version
-    const fetchVersion = async () => {
-      try {
-        const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-        if (res.ok) {
-          const versions = await res.json();
-          if (versions && versions.length > 0) {
-            setCurrentPatch(versions[0]);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to fetch patch version", e);
-      }
-    };
-    fetchVersion();
+    // Use fixed patch version
+    setCurrentPatch(CURRENT_PATCH);
   }, []);
 
   const handleNavClick = (e: React.MouseEvent, view: string) => {

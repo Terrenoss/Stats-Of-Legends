@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Teammate, Language } from '../types';
-import { TRANSLATIONS, CURRENT_PATCH } from '../constants';
+import { TRANSLATIONS } from '../constants';
+import { getProfileIconUrl } from '../utils/ddragon';
 import { useI18n } from '../app/LanguageContext';
 import Link from 'next/link';
 
@@ -33,7 +34,7 @@ export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammate
             <div className="flex items-center gap-3">
               <div className="relative">
                 <img
-                  src={`https://ddragon.leagueoflegends.com/cdn/${CURRENT_PATCH}/img/profileicon/${teammate.profileIconId || 0}.png`}
+                  src={getProfileIconUrl(teammate.profileIconId || 0)}
                   className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition"
                   alt="Icon"
                 />
