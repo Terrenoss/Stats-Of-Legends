@@ -28,18 +28,23 @@ export async function GET(req: NextRequest) {
     const response = await fetch(cdnUrl, { next: { revalidate: 3600 } });
     if (!response.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
     const json = await response.json();
-    const data = Object.keys(json.data || {}).map(id => {
-      const item = (json.data as any)[id];
-      return {
-        id: String(id),
-        name: item.name,
-        imageFull: item.image?.full || `${id}.png`,
-        stats: item.stats || {},
-        gold: item.gold || {},
-      };
-    });
+
+    const data = mapItemsData(json.data);
     return NextResponse.json({ patch, data });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }
+}
+
+function mapItemsData(itemsMap: any) {
+  return Object.keys(itemsMap || {}).map(id => {
+    const item = itemsMap[id];
+    return {
+      id: String(id),
+      name: item.name,
+      imageFull: item.image?.full || `${id}.png`,
+      stats: item.stats || {},
+      gold: item.gold || {},
+    };
+  });
 }

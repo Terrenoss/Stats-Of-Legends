@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
+import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { LanguageProvider } from "./LanguageContext";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  variable: "--font-cinzel",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Stats Of Legends",
@@ -16,10 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="dark">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body suppressHydrationWarning={true} className="antialiased bg-[#050505] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans">
+      <body suppressHydrationWarning={true} className={`${inter.variable} ${cinzel.variable} antialiased bg-[#050505] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans`}>
         <LanguageProvider>
           <Navbar />
           <main className="flex-grow">

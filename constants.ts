@@ -446,14 +446,12 @@ export const MOCK_PROFILE: SummonerProfile = {
   topPercent: 16.52,
   lastUpdated: Date.now() - (4 * 24 * 60 * 60 * 1000), // 4 days ago
   metrics: {
-    gpm: 450,
-    csm: 7.2,
-    dpm: 650,
-    dmgPercentage: 24.5,
-    kda: 3.2,
-    xpd15: 150,
-    csd15: 5,
-    gd15: 300
+    combat: 75,
+    objectives: 60,
+    vision: 45,
+    farming: 80,
+    survival: 70,
+    consistencyBadge: 'Rock Solid'
   }
 };
 

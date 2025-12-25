@@ -1,9 +1,30 @@
-/* Import Cinzel Font */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-lol-gold: #C8AA6E;
+  --color-lol-goldDim: #785A28;
+  --color-lol-goldLight: #F0E6D2;
+  --color-lol-red: #C23030;
+  --color-lol-redDark: #5e1313;
+  --color-lol-hextech: #9333EA;
+  --color-lol-hextechDim: #581c87;
+  --color-lol-blue: #9333EA;
+  --color-lol-dark: #050505;
+  --color-lol-panel: #121212;
+  --color-lol-card: #18181b;
+  --color-lol-win: #059669;
+  --color-lol-loss: #991B1B;
+
+  --font-display: "Beaufort for LOL", var(--font-inter), serif;
+  --font-cinzel: var(--font-cinzel), serif;
+
+  --background-image-hex-pattern: url('data:image/svg+xml,%3Csvg width="24" height="40" viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 40c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10s-10 4.477-10 10v20c0 5.523 4.477 10 10 10z" fill="%239333EA" fill-opacity="0.05" fill-rule="evenodd"/%3E%3C/svg%3E');
+  --background-image-gold-gradient: linear-gradient(to bottom, #C8AA6E, #785A28);
+
+  --shadow-glow-gold: 0 0 20px rgba(200, 170, 110, 0.15);
+  --shadow-glow-void: 0 0 20px rgba(147, 51, 234, 0.25);
+  --shadow-glow-red: 0 0 20px rgba(194, 48, 48, 0.3);
+}
 
 :root {
   --background: #050505;
@@ -13,7 +34,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), sans-serif;
   background-color: #020202;
   /* Cosmic God Mode Background - Optimized (No SVG Filter) */
   background-image:
@@ -152,74 +173,5 @@ body {
 }
 
 .font-cinzel {
-  font-family: 'Cinzel', serif;
-}
-
-.text-shimmer {
-  background: linear-gradient(to right,
-      #9ca3af 20%,
-      #ffffff 40%,
-      #ffffff 60%,
-      #9ca3af 80%);
-  background-size: 200% auto;
-  color: #000;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s linear infinite;
-}
-
-.text-gold-shimmer {
-  background: linear-gradient(to right,
-      #bf953f 20%,
-      #fcf6ba 40%,
-      #fcf6ba 60%,
-      #bf953f 80%);
-  background-size: 200% auto;
-  color: #000;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 4s linear infinite;
-}
-
-/* Utilitaires personnalisés */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.text-gold-gradient {
-  background: linear-gradient(to bottom, #F0E6D2, #C8AA6E);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Custom scrollbar to match dark LoL theme */
-/* Webkit (Chrome, Edge, Safari) */
-*::-webkit-scrollbar {
-  width: 6px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #c8aa6e, #785a28);
-  border-radius: 9999px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #f0e6d2, #c89b3c);
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #c8aa6e transparent;
+  font-family: var(--font-cinzel), serif;
 }
