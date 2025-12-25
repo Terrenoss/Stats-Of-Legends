@@ -85,6 +85,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   href="/builder"
                   onClick={(e) => handleNavClick(e, 'builder')}
                 />
+
+                {/* Visual Separator */}
+                <div className="h-6 w-px bg-white/10 mx-2"></div>
+
                 <NavButton
                   label={t.leaderboard}
                   icon={<Trophy className="w-4 h-4" />}
@@ -101,6 +105,56 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Search Bar - Global (Competitor Style) */}
+          <div className="hidden lg:flex items-center mx-4 flex-1 max-w-md xl:max-w-xl 2xl:max-w-2xl">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const input = form.elements.namedItem('search') as HTMLInputElement;
+                const regionSelect = form.elements.namedItem('region') as HTMLSelectElement;
+                if (input.value) {
+                  const [name, tag] = input.value.split('#');
+                  const region = regionSelect.value || 'EUW';
+                  window.location.href = `/summoner/${region}/${name}-${tag || 'EUW'}`;
+                }
+              }}
+              className="relative w-full group flex items-center bg-[#121212] border-2 border-white/10 focus-within:border-lol-gold rounded-lg overflow-hidden transition-all shadow-lg"
+            >
+              {/* Region Selector */}
+              <div className="relative border-r border-white/10 bg-[#1a1a1a] hover:bg-[#252525] transition-colors">
+                <select
+                  name="region"
+                  className="appearance-none bg-transparent text-xs font-bold text-gray-300 py-3 pl-4 pr-8 focus:outline-none cursor-pointer uppercase tracking-wider"
+                  defaultValue="EUW"
+                >
+                  <option value="EUW">EUW</option>
+                  <option value="NA1">NA</option>
+                  <option value="KR">KR</option>
+                  <option value="EUN1">EUNE</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+              </div>
+
+              {/* Input */}
+              <input
+                name="search"
+                type="text"
+                placeholder="Game Name + #Tag"
+                className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder:text-gray-500 font-medium focus:outline-none"
+              />
+
+              {/* Search Button */}
+              <button
+                type="submit"
+                className="bg-lol-gold hover:bg-lol-gold/90 text-black font-bold uppercase tracking-wider text-xs px-6 py-3 transition-colors flex items-center gap-2"
+              >
+                <span className="hidden xl:inline">Search</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </button>
+            </form>
           </div>
 
           <div className="flex items-center gap-6">
@@ -158,12 +212,12 @@ const NavButton = ({ label, icon, active, href, onClick }: { label: string, icon
     href={href}
     onClick={onClick}
     className={`
-      relative px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-full group flex items-center gap-2
+      relative px-3 lg:px-4 xl:px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-full group flex items-center gap-2 whitespace-nowrap
       ${active
         ? 'text-[#050505] bg-lol-gold shadow-[0_0_15px_rgba(200,170,110,0.3)]'
         : 'text-gray-400 hover:text-white hover:bg-white/5'}
     `}
   >
-    {icon} {label}
+    {icon} <span className="hidden xl:inline">{label}</span>
   </SafeLink>
 );

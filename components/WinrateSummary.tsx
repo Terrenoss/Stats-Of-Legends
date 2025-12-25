@@ -64,7 +64,7 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={`text-xl font-bold font-display ${winrate >= 50 ? 'text-lol-win' : 'text-lol-loss'}`}>{winrate}%</span>
+                    <span className={`text-2xl font-black font-display ${winrate >= 50 ? 'text-lol-win' : 'text-lol-loss'}`}>{winrate}%</span>
                     <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Winrate</span>
                 </div>
             </div>
@@ -76,7 +76,7 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
             </div>
 
             <div className="flex flex-col items-center gap-0.5">
-                <div className="text-lol-gold text-lg font-bold">{kda} <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">KDA</span></div>
+                <div className="text-lol-gold text-3xl font-black font-display tracking-tight">{kda} <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider align-middle">KDA</span></div>
                 <div className="text-gray-400 text-xs font-mono">{avgKills} / <span className="text-lol-red">{avgDeaths}</span> / {avgAssists}</div>
             </div>
 

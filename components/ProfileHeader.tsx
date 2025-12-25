@@ -160,6 +160,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
             >
               {t.update}
             </button>
+
             <div className="mt-2 text-[10px] text-gray-500 font-medium flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {t.lastUpdated}: <span className="text-gray-300">{getLastUpdatedText()}</span>
@@ -167,8 +168,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
             {/* Consistency Badge */}
             {profile.consistencyBadge && (
               <div className={`mt-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-max border ${profile.consistencyBadge === 'Rock Solid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                  profile.consistencyBadge === 'Coinflip' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                    'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                profile.consistencyBadge === 'Coinflip' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                  'bg-gray-500/10 text-gray-400 border-gray-500/20'
                 }`}>
                 {profile.consistencyBadge === 'Rock Solid' ? '🛡️ Rock Solid' :
                   profile.consistencyBadge === 'Coinflip' ? '🎰 Coinflip' : 'Average'}
@@ -205,23 +206,34 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
           </div>
 
           {/* Main Content */}
-          <div className="px-6 flex items-start justify-between relative z-10">
-            {/* Rank Icon */}
-            <div className="w-20 h-20 -ml-2">
+          <div className="px-6 flex items-center justify-between relative z-10">
+            {/* Rank Icon - SUPER SIZED */}
+            <div className="w-32 h-32 -ml-4 -my-4 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform hover:scale-110 duration-300">
               {typeof safeSolo.tier === 'string' && RANK_EMBLEMS[safeSolo.tier] ? (
-                <img src={RANK_EMBLEMS[safeSolo.tier]} className="w-full h-full object-contain drop-shadow-2xl" alt={safeSolo.tier} />
+                <img src={RANK_EMBLEMS[safeSolo.tier]} className="w-full h-full object-contain" alt={safeSolo.tier} />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl">🏆</div>
+                <div className="w-full h-full flex items-center justify-center text-6xl">🏆</div>
               )}
             </div>
 
             {/* Rank Details */}
-            <div className="text-right">
-              <div className="text-2xl font-black text-blue-200 font-display tracking-wide">
-                {formatRank(safeSolo.tier, safeSolo.rank)} <span className="text-white">– {safeSolo.lp ?? 0} LP</span>
+            <div className="text-right flex flex-col items-end">
+              <div className="text-3xl font-black text-white font-display tracking-wide flex items-center gap-3">
+                {formatRank(safeSolo.tier, safeSolo.rank)}
+                <span className="text-blue-300 text-2xl">{safeSolo.lp ?? 0} LP</span>
               </div>
-              <div className="text-gray-400 font-bold text-sm mt-0.5">
-                {safeSolo.wins ?? 0}W - {safeSolo.losses ?? 0}L <span className="text-gray-500">({safeSolo.wins && safeSolo.losses ? Math.round((safeSolo.wins / (safeSolo.wins + safeSolo.losses)) * 100) : 0}%)</span>
+
+              {/* Winrate Badge */}
+              <div className="flex items-center gap-3 mt-2">
+                <div className={`px-3 py-1 rounded-lg font-bold text-sm border ${(safeSolo.wins && safeSolo.losses && (safeSolo.wins / (safeSolo.wins + safeSolo.losses)) >= 0.5)
+                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                  }`}>
+                  {safeSolo.wins && safeSolo.losses ? Math.round((safeSolo.wins / (safeSolo.wins + safeSolo.losses)) * 100) : 0}% WR
+                </div>
+                <div className="text-gray-400 font-bold text-xs">
+                  {safeSolo.wins ?? 0}W - {safeSolo.losses ?? 0}L
+                </div>
               </div>
             </div>
           </div>

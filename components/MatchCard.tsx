@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Match, GameMode } from '../types';
+import { CURRENT_PATCH } from '../constants';
 import { ChevronDown } from 'lucide-react';
 import { useI18n } from "../app/LanguageContext";
 import { MatchSummary } from './match/tabs/MatchSummary';
@@ -10,6 +11,7 @@ import { MatchTeamAnalysis } from './match/tabs/MatchTeamAnalysis';
 import { MatchBuild } from './match/tabs/MatchBuild';
 import { MatchOther } from './match/tabs/MatchOther';
 import { getAverageRank } from '../utils/rankUtils';
+import { getChampionIconUrl } from '../utils/ddragon';
 
 interface MatchCardProps {
   match: Match;
@@ -27,6 +29,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const durationMin = Math.floor(durationSecondsTotal / 60);
   const durationSec = durationSecondsTotal % 60;
   const csPerMinHeader = (Number(me.cs ?? 0) && durationSecondsTotal > 0) ? +((Number(me.cs ?? 0) / (durationSecondsTotal / 60))).toFixed(1) : 0;
+  const version = match.gameVersion?.split('.').slice(0, 2).join('.') ?? '14.1';
 
   const [activeTab, setActiveTab] = useState<'NONE' | 'SUMMARY' | 'SCORE' | 'TEAM' | 'BUILD' | 'OTHER'>('NONE');
   const [ranks, setRanks] = useState<Record<string, any>>({});
@@ -67,8 +70,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     if (!tier || tier === 'Unranked') return null;
     return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-${tier.toLowerCase()}.png`;
   };
-
-
 
   const fetchRanks = async () => {
     if (ranksLoaded) return;
@@ -117,7 +118,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     return 'text-gray-400';
   };
 
-  const containerClass = 'mb-4 relative rounded-[1.5rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
+  const containerClass = 'mb-2 relative rounded-[1rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
 
   return (
     <div className={containerClass}>
@@ -145,7 +146,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         })()}
       </div>
       {/* Main Card Content (Collapsed) */}
-      <div className="p-4 pl-6 flex flex-col md:flex-row gap-6 items-center relative z-10">
+      <div className="p-2 pl-4 flex flex-col md:flex-row gap-3 items-center relative z-10">
         <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isWin ? 'bg-lol-win' : 'bg-lol-loss'}`}></div>
 
         {/* Game Info */}
@@ -153,42 +154,40 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           <span className={`font-black font-display uppercase tracking-wider text-[10px] ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
             {getQueueLabel()}
           </span>
-          <span className="text-[10px] text-gray-500 font-bold">{getTimeAgo()}</span>
-          <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white' : 'text-gray-500'}`}>{isWin ? t.win : t.loss}</span>
-          <span className="text-xs text-gray-500 font-mono">{durationMin}m {durationSec}s</span>
+          <span className="text-[10px] text-gray-400 font-bold">{getTimeAgo()}</span>
+          <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-gray-400 drop-shadow-[0_0_5px_rgba(255,255,255,0.1)]'}`}>{isWin ? t.win : t.loss}</span>
+          <span className="text-xs text-gray-400 font-mono">{durationMin}m {durationSec}s</span>
         </div>
 
         {/* Champion & Spells */}
         <div className="flex gap-3 items-center">
           <div className="relative group">
-            {champImg ? (
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/10 shadow-lg">
               <img
-                src={champImg}
+                src={getChampionIconUrl(champName)}
                 alt={champName}
-                className={`w-14 h-14 rounded-2xl border-2 ${isWin ? 'border-lol-win' : 'border-lol-loss'} object-cover shadow-lg`}
+                className="w-full h-full object-cover transform hover:scale-110 transition-transform"
               />
-            ) : (
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 ${isWin ? 'border-lol-win' : 'border-lol-loss'} bg-white/5 text-gray-200 font-bold`}>{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
-            )}
-            <div className="absolute -bottom-2 -right-2 bg-[#121212] text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-gray-700 text-white font-bold shadow-md z-10">
-              {me?.level ?? '-'}
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-[#0a0a0a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-white/20">
+              {me.champLevel}
             </div>
           </div>
           <div className="flex flex-col gap-1">
             {spells.map((spell: any, idx: number) => (
-              <img key={spell.id ?? spell ?? idx} src={spell.imageUrl} alt={spell.name ?? ''} className="w-6 h-6 rounded-md border border-white/10 bg-[#121212]" />
+              <img key={spell.id ?? spell ?? idx} src={spell.imageUrl} alt={spell.name ?? ''} className="w-6 h-6 md:w-7 md:h-7 rounded-md border border-white/10 bg-[#121212]" />
             ))}
           </div>
           <div className="flex flex-col gap-1">
             {me?.runes?.primary ? (
-              <img src={me.runes.primary} alt="Keystone" className="w-6 h-6 rounded-full bg-black border border-lol-gold/50 object-cover" />
+              <img src={me.runes.primary} alt="Keystone" className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 object-cover" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
+              <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
             )}
             {me?.runes?.secondary ? (
-              <img src={me.runes.secondary} alt="Secondary Rune" className="w-6 h-6 rounded-full bg-black border border-gray-700 object-cover p-1" />
+              <img src={me.runes.secondary} alt="Secondary Rune" className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 object-cover p-1" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
+              <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
             )}
           </div>
         </div>
@@ -196,10 +195,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         {/* KDA Stats */}
         <div className="flex flex-col items-center w-32">
           <div className="text-xl font-display font-black text-white tracking-widest">
-            {kills} <span className="text-gray-600 text-sm">/</span> <span className="text-lol-red">{deaths}</span> <span className="text-gray-600 text-sm">/</span> {assists}
+            {kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{deaths}</span> <span className="text-gray-500 text-sm">/</span> {assists}
           </div>
-          <div className="text-xs text-gray-400 font-mono mt-0.5">{kda} KDA</div>
-          <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: number, b: any) => a + b.kills, 0))) * 100)}%</div>
+          <div className="text-xs text-gray-300 font-mono mt-0.5">{kda} KDA</div>
+          <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: number, b: any) => a + b.kills, 0))) * 100)}%</div>
         </div>
 
         {/* Legend Score Badge */}
@@ -232,9 +231,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             ];
             return orderedItems.map((item: any, idx: number) => (
               item?.imageUrl ? (
-                <img key={`item-${idx}`} src={item.imageUrl} alt={item.name ?? ''} className={`w-8 h-8 rounded-lg bg-[#121212] border border-white/10 ${idx === 3 ? 'rounded-full' : ''}`} title={item.name ?? ''} />
+                <img key={`item-${idx}`} src={item.imageUrl} alt={item.name ?? ''} className={`w-6 h-6 rounded-md bg-[#121212] border border-white/10 ${idx === 3 ? 'rounded-full' : ''}`} title={item.name ?? ''} />
               ) : (
-                <div key={`empty-${idx}`} className="w-8 h-8 rounded-lg bg-white/5 border border-white/5"></div>
+                <div key={`empty-${idx}`} className="w-6 h-6 rounded-md bg-white/5 border border-white/5"></div>
               )
             ));
           })()}

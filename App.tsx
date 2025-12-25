@@ -15,6 +15,7 @@ import { WinrateSummary } from './components/WinrateSummary';
 import { MOCK_MATCHES, MOCK_PROFILE, TRANSLATIONS, MOCK_HEATMAP_DATA, MOCK_DETAILED_CHAMPIONS, MOCK_TEAMMATES } from './constants';
 import { SummonerProfile, Match, Language, Region, GameMode } from './types';
 import { Trophy, LayoutDashboard, Sword, Radio } from 'lucide-react';
+import { getChampionIconUrl } from './utils/ddragon';
 
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'builder' | 'leaderboard'>('home');
@@ -131,7 +132,7 @@ function App() {
                 <div className="lg:col-span-4 space-y-6">
                   <div className="h-72 bg-[#121212] border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
                     <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4 absolute top-6 left-6 z-10">Radar Stats</h3>
-                    <PerformanceRadar metrics={currentProfile?.metrics || null} />
+                    <PerformanceRadar metrics={currentProfile?.metrics || null} consistencyBadge={currentProfile?.consistencyBadge} />
                   </div>
 
                   <ActivityHeatmap data={MOCK_HEATMAP_DATA} lang={currentLang} />
@@ -143,7 +144,7 @@ function App() {
                       {MOCK_DETAILED_CHAMPIONS.slice(0, 5).map(champ => (
                         <div key={champ.id} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
                           <div className="flex items-center gap-3">
-                            <img src={champ.imageUrl} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition" alt="Champ" />
+                            <img src={getChampionIconUrl(champ.name)} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition" alt="Champ" />
                             <div className="flex flex-col">
                               <span className="text-gray-300 group-hover:text-white font-bold">{champ.name}</span>
                               <span className="text-[10px] text-gray-600 font-mono">{champ.kda.toFixed(2)} KDA</span>
@@ -188,25 +189,30 @@ function App() {
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+              </div >
+            )
+            }
 
             {/* TAB CONTENT: CHAMPIONS */}
-            {profileTab === 'champions' && (
-              <ChampionsTable champions={MOCK_DETAILED_CHAMPIONS} lang={currentLang} />
-            )}
+            {
+              profileTab === 'champions' && (
+                <ChampionsTable champions={MOCK_DETAILED_CHAMPIONS} lang={currentLang} />
+              )
+            }
 
             {/* TAB CONTENT: LIVE GAME */}
-            {profileTab === 'live' && (
-              <div className="flex flex-col items-center justify-center h-96 bg-[#121212] border border-white/5 rounded-[2rem]">
-                <Radio className="w-16 h-16 text-lol-red animate-pulse mb-6" />
-                <h3 className="text-2xl font-display font-bold text-white uppercase tracking-wider">Le joueur n'est pas en jeu</h3>
-                <p className="text-gray-500 mt-2">Revenez quand une partie aura commencé.</p>
-              </div>
-            )}
+            {
+              profileTab === 'live' && (
+                <div className="flex flex-col items-center justify-center h-96 bg-[#121212] border border-white/5 rounded-[2rem]">
+                  <Radio className="w-16 h-16 text-lol-red animate-pulse mb-6" />
+                  <h3 className="text-2xl font-display font-bold text-white uppercase tracking-wider">Le joueur n'est pas en jeu</h3>
+                  <p className="text-gray-500 mt-2">Revenez quand une partie aura commencé.</p>
+                </div>
+              )
+            }
           </>
         )}
-      </div>
+      </div >
     );
   };
 

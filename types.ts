@@ -140,6 +140,7 @@ export interface Participant {
   totalDamageDealtToChampions: number;
   physicalDamageDealtToChampions: number;
   magicDamageDealtToChampions: number;
+  trueDamageDealtToChampions?: number;
   ace?: boolean; // indicates ACE (all enemies killed) if present in source
   aceCount?: number; // number of ace occurrences (optional)
   puuid?: string; // player's unique id from Riot
@@ -168,6 +169,10 @@ export interface Participant {
   totalHeal?: number;
   totalHealsOnTeammates?: number;
   totalDamageShieldedOnTeammates?: number;
+  totalDamageTaken?: number;
+  level?: number;
+  rank?: string;
+  opScore?: number;
 
   // Legend Score V2/V3
   legendScore?: number;
@@ -226,6 +231,7 @@ export interface Match {
   gameCreation: number;
   gameDuration: number;
   gameMode: GameMode;
+  gameVersion?: string;
   averageRank?: string;
   queueId: number;
   participants: Participant[];

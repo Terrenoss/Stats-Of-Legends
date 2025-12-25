@@ -508,7 +508,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 103,
     name: "Ahri",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Ahri.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Ahri.png",
     games: 91,
     wins: 50,
     losses: 41,
@@ -526,7 +526,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 517,
     name: "Sylas",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Sylas.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Sylas.png",
     games: 18,
     wins: 8,
     losses: 10,
@@ -544,7 +544,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 61,
     name: "Orianna",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Orianna.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Orianna.png",
     games: 15,
     wins: 8,
     losses: 7,
@@ -562,7 +562,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 711,
     name: "Vex",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Vex.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Vex.png",
     games: 11,
     wins: 7,
     losses: 4,
@@ -580,7 +580,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 3,
     name: "Galio",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Galio.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Galio.png",
     games: 10,
     wins: 3,
     losses: 7,
@@ -598,7 +598,7 @@ export const MOCK_DETAILED_CHAMPIONS: DetailedChampionStats[] = [
   {
     id: 131,
     name: "Diana",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Diana.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Diana.png",
     games: 9,
     wins: 4,
     losses: 5,
@@ -620,14 +620,14 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 1,
     name: "Ahri",
     title: "The Nine-Tailed Fox",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Ahri.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Ahri.png",
     baseStats: { hp: 590, mp: 418, mpRegen: 8, ad: 53, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.668, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 96, mp: 25, mpRegen: 0.8, ad: 3, armor: 4.7, mr: 1.3, attackSpeed: 2 }, // AS is % growth
     spells: [
       {
         id: 'Q',
         name: 'Orb of Deception',
-        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/AhriQ.png',
+        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/AhriQ.png',
         description: "Ahri envoie son orbe puis le rappelle, infligeant des dégâts magiques à l'aller et des dégâts bruts au retour.",
         maxRank: 5,
         cooldown: [7, 7, 7, 7, 7],
@@ -639,7 +639,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
       {
         id: 'W',
         name: 'Fox-Fire',
-        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/AhriW.png',
+        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/AhriW.png',
         description: "Ahri libère 3 feux de renard qui verrouillent les ennemis proches.",
         maxRank: 5,
         cooldown: [9, 8, 7, 6, 5],
@@ -651,7 +651,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
       {
         id: 'E',
         name: 'Charm',
-        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/AhriE.png',
+        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/AhriE.png',
         description: "Ahri envoie un baiser qui inflige des dégâts et charme le premier ennemi touché.",
         maxRank: 5,
         cooldown: [14, 12, 12, 12, 12],
@@ -663,7 +663,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
       {
         id: 'R',
         name: 'Spirit Rush',
-        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/AhriR.png',
+        imageUrl: 'https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/AhriR.png',
         description: "Ahri se rue vers l'avant et tire des éclairs d'essence (3 charges).",
         maxRank: 3,
         cooldown: [130, 105, 80],
@@ -678,7 +678,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 2,
     name: "Darius",
     title: "Hand of Noxus",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Darius.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Darius.png",
     baseStats: { hp: 652, mp: 263, mpRegen: 6.6, ad: 64, ap: 0, armor: 39, mr: 32, haste: 0, crit: 0, moveSpeed: 340, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 114, mp: 57.5, mpRegen: 0.35, ad: 5, armor: 5.2, mr: 2.05, attackSpeed: 1 }
   },
@@ -686,7 +686,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 3,
     name: "Jinx",
     title: "The Loose Cannon",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Jinx.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Jinx.png",
     baseStats: { hp: 630, mp: 260, mpRegen: 6.7, ad: 59, ap: 0, armor: 26, mr: 30, haste: 0, crit: 0, moveSpeed: 325, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 105, mp: 50, mpRegen: 1, ad: 3.15, armor: 4.2, mr: 1.3, attackSpeed: 1 }
   },
@@ -694,7 +694,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 4,
     name: "Leona",
     title: "The Radiant Dawn",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Leona.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Leona.png",
     baseStats: { hp: 646, mp: 302, mpRegen: 6, ad: 60, ap: 0, armor: 47, mr: 32, haste: 0, crit: 0, moveSpeed: 335, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 112, mp: 40, mpRegen: 0.8, ad: 3, armor: 4.8, mr: 2.05, attackSpeed: 2.9 }
   },
@@ -702,7 +702,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 5,
     name: "Zed",
     title: "The Master of Shadows",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Zed.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Zed.png",
     baseStats: { hp: 654, mp: 200, mpRegen: 50, ad: 63, ap: 0, armor: 32, mr: 32, haste: 0, crit: 0, moveSpeed: 345, attackSpeed: 0.651, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 99, mp: 0, mpRegen: 0, ad: 3.4, armor: 4.7, mr: 2.05, attackSpeed: 3.3 }
   },
@@ -710,7 +710,7 @@ export const MOCK_CHAMPIONS: Champion[] = [
     id: 6,
     name: "Lux",
     title: "The Lady of Luminosity",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Lux.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Lux.png",
     baseStats: { hp: 580, mp: 480, mpRegen: 8, ad: 54, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.669, magicPen: 0, lethality: 0 },
     statsGrowth: { hp: 99, mp: 25, mpRegen: 0.8, ad: 3.3, armor: 4, mr: 1.3, attackSpeed: 1.36 }
   }
@@ -729,7 +729,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 1,
     name: "Luden's Companion",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3285.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3285.png",
     price: 3000,
     stats: { ap: 90, haste: 20, mp: 600, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0, magicPen: 0 },
     description: "Confère de la puissance de burst et du mana.",
@@ -739,7 +739,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 2,
     name: "Rabadon's Deathcap",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3089.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3089.png",
     price: 3600,
     stats: { ap: 140, haste: 0, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0 },
     description: "L'item ultime pour les mages.",
@@ -749,7 +749,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 3,
     name: "Shadowflame",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/4645.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/4645.png",
     price: 3200,
     stats: { ap: 120, haste: 0, mr: 0, armor: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0, magicPen: 12 },
     description: "Critiques magiques sur cibles fragiles.",
@@ -759,7 +759,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 4,
     name: "Infinity Edge",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3031.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3031.png",
     price: 3300,
     stats: { ad: 65, crit: 20, haste: 0, mr: 0, armor: 0, hp: 0, ap: 0, moveSpeed: 0 },
     description: "Augmente massivement les dégâts critiques.",
@@ -769,7 +769,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 5,
     name: "Trinity Force",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3078.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3078.png",
     price: 3333,
     stats: { ad: 45, hp: 300, haste: 20, moveSpeed: 20, attackSpeed: 33, crit: 0, mr: 0, armor: 0, ap: 0 },
     description: "L'item polyvalent par excellence.",
@@ -779,7 +779,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 6,
     name: "Zhonya's Hourglass",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3157.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3157.png",
     price: 3250,
     stats: { ap: 120, armor: 50, haste: 15, mr: 0, hp: 0, ad: 0, crit: 0, moveSpeed: 0 },
     description: "Protection contre le burst.",
@@ -789,7 +789,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 7,
     name: "Kraken Slayer",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/6672.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/6672.png",
     price: 3000,
     stats: { ad: 40, haste: 0, moveSpeed: 5, crit: 20, attackSpeed: 35, mr: 0, armor: 0, hp: 0, ap: 0 },
     description: "Anti-Tank via vitesse d'attaque.",
@@ -799,7 +799,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 8,
     name: "Heartsteel",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3084.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3084.png",
     price: 3000,
     stats: { hp: 800, haste: 0, mr: 0, armor: 0, ad: 0, ap: 0, crit: 0, moveSpeed: 0, mpRegen: 200 },
     description: "PV infinis stackables.",
@@ -809,7 +809,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 9,
     name: "Jak'Sho",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/6665.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/6665.png",
     price: 3200,
     stats: { hp: 300, armor: 50, mr: 50, haste: 0, ad: 0, ap: 0, crit: 0, moveSpeed: 0 },
     description: "Tanking ultime en combat prolongé.",
@@ -819,7 +819,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 10,
     name: "Blade of the Ruined King",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3153.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3153.png",
     price: 3200,
     stats: { ad: 40, haste: 0, moveSpeed: 0, crit: 0, attackSpeed: 25, mr: 0, armor: 0, hp: 0, ap: 0 },
     description: "Vol de vie et dégâts % PV actuels.",
@@ -829,7 +829,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 11,
     name: "Void Staff",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3135.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3135.png",
     price: 2800,
     stats: { ap: 80, magicPen: 40 }, // 40% pen
     description: "Pénétration magique brute.",
@@ -839,7 +839,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 12,
     name: "Collector",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/6676.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/6676.png",
     price: 3100,
     stats: { ad: 60, crit: 20, lethality: 12 },
     description: "Exécution des cibles faibles.",
@@ -849,7 +849,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 13,
     name: "Doran's Ring",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/1056.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/1056.png",
     price: 400,
     stats: { ap: 15, hp: 70 },
     description: "Starter AP",
@@ -859,7 +859,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 14,
     name: "Boots",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/1001.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/1001.png",
     price: 300,
     stats: { moveSpeed: 25 },
     description: "Speed",
@@ -869,7 +869,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 15,
     name: "Lost Chapter",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3802.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3802.png",
     price: 1100,
     stats: { ap: 40, haste: 10, mp: 300 },
     description: "Mana component",
@@ -879,7 +879,7 @@ export const BUILDER_ITEMS: Item[] = [
   {
     id: 16,
     name: "Sorcerer's Shoes",
-    imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/3020.png",
+    imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/item/3020.png",
     price: 1100,
     stats: { moveSpeed: 45, magicPen: 18 },
     description: "Magic Pen Boots",
@@ -1038,7 +1038,7 @@ export const MOCK_MATCHES: Match[] = [
     itemBuild: generateBuildPath(),
     me: {
       summonerName: "Faker",
-      champion: { id: 1, name: "Ahri", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Ahri.png" },
+      champion: { id: 1, name: "Ahri", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Ahri.png" },
       kills: 12,
       deaths: 2,
       assists: 8,
@@ -1046,8 +1046,8 @@ export const MOCK_MATCHES: Match[] = [
       win: true,
       items: BUILDER_ITEMS.slice(0, 6),
       spells: [
-        { id: 4, name: "Flash", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/SummonerFlash.png" },
-        { id: 14, name: "Ignite", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/SummonerDot.png" }
+        { id: 4, name: "Flash", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/SummonerFlash.png" },
+        { id: 14, name: "Ignite", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/SummonerDot.png" }
       ],
       visionScore: 35,
       totalDamageDealtToChampions: 32000,
@@ -1073,7 +1073,7 @@ export const MOCK_MATCHES: Match[] = [
     itemBuild: generateBuildPath(),
     me: {
       summonerName: "Faker",
-      champion: { id: 2, name: "Azir", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Azir.png" },
+      champion: { id: 2, name: "Azir", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Azir.png" },
       kills: 4,
       deaths: 5,
       assists: 12,
@@ -1083,8 +1083,8 @@ export const MOCK_MATCHES: Match[] = [
         BUILDER_ITEMS[4], BUILDER_ITEMS[5], BUILDER_ITEMS[1]
       ],
       spells: [
-        { id: 4, name: "Flash", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/SummonerFlash.png" },
-        { id: 12, name: "Teleport", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/spell/SummonerTeleport.png" }
+        { id: 4, name: "Flash", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/SummonerFlash.png" },
+        { id: 12, name: "Teleport", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/spell/SummonerTeleport.png" }
       ],
       visionScore: 42,
       totalDamageDealtToChampions: 28000,
@@ -1110,7 +1110,7 @@ export const MOCK_MATCHES: Match[] = [
     itemBuild: generateBuildPath(),
     me: {
       summonerName: "Faker",
-      champion: { id: 3, name: "Jinx", imageUrl: "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/Jinx.png" },
+      champion: { id: 3, name: "Jinx", imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Jinx.png" },
       kills: 15,
       deaths: 1,
       assists: 5,

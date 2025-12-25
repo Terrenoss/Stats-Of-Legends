@@ -7,17 +7,18 @@
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.env.local" beforeDir="false" afterPath="$PROJECT_DIR$/.env.local" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/summoner/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/summoner/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/analyze/match/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/analyze/match/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Navbar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/PerformanceRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/PerformanceRadar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ProfileHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchSummary.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MatchProcessor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/MatchProcessor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/WinrateSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/WinrateSummary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/constants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/AggregationService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/AggregationService.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/ddragon.ts" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ddragon.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +131,7 @@
       <workItem from="1766429787426" duration="14365000" />
       <workItem from="1766491940855" duration="8155000" />
       <workItem from="1766504465564" duration="17735000" />
-      <workItem from="1766613755977" duration="10162000" />
+      <workItem from="1766613755977" duration="14420000" />
     </task>
     <servers />
   </component>

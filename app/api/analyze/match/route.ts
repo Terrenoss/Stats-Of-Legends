@@ -1,10 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 // Robust API key lookup: support GEMINI_API_KEY, GOOGLE_API_KEY, or legacy API_KEY
 const getApiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY || '';
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || '1024');
+const ANALYSIS_VERSION = "1.0"; // Increment this to invalidate old cache
 
 async function streamResponseToText(ai: any, prompt: string, model: string, maxTokens: number): Promise<string> {
   try {
@@ -71,7 +73,7 @@ function extractTextFromResponse(response: any): { text: string; truncated: bool
       const t = extractFromContent(first);
       if (t) return { text: t, truncated };
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Candidates fallback
   if (response.candidates && Array.isArray(response.candidates) && response.candidates.length) {
@@ -94,12 +96,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Clé API manquante. Définissez GEMINI_API_KEY ou GOOGLE_API_KEY." }, { status: 500 });
   }
 
-  // create client using the resolved key
-  const ai = new GoogleGenAI({ apiKey });
-
   try {
     const body = await request.json();
     const { match } = body;
+
+    if (!match || !match.id) {
+      return NextResponse.json({ error: "Données de match invalides." }, { status: 400 });
+    }
+
+    // 1. Check Cache
+    const cachedAnalysis = await prisma.matchAnalysis.findUnique({
+      where: { matchId: match.id }
+    });
+
+    if (cachedAnalysis && cachedAnalysis.version === ANALYSIS_VERSION) {
+      console.log(`[Cache Hit] Returning cached analysis for match ${match.id}`);
+      // Cast Json to string (it should be stored as the result text or object)
+      // Our schema says `jsonResult Json`. We'll assume we store { result: string }
+      return NextResponse.json(cachedAnalysis.jsonResult);
+    }
+
+    // 2. Generate with AI
+    const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `
       You are an expert Challenger-level League of Legends coach.
@@ -161,7 +179,41 @@ export async function POST(request: Request) {
       console.warn('Gemini response truncated due to MAX_TOKENS');
     }
 
-    return NextResponse.json({ result: resultText });
+    const finalResult = { result: resultText };
+
+    // 3. Save to Cache
+    try {
+      // Ensure match exists in DB first (foreign key constraint)
+      // We might need to upsert the Match record if it doesn't exist, 
+      // but typically Match should be saved before analysis. 
+      // However, if we are just analyzing a match from Riot API that hasn't been fully persisted,
+      // we might hit a FK error. 
+      // For safety, we'll try to create the analysis. If it fails due to missing Match, we skip caching.
+      // Ideally, we should upsert the Match here too, but that requires mapping all match data.
+      // Let's assume the Match is created when the user views the match details page or list.
+
+      // Actually, looking at schema, MatchAnalysis has @relation to Match. 
+      // If the match isn't in DB, this will fail.
+      // We will wrap in try/catch and log warning if cache save fails.
+
+      await prisma.matchAnalysis.upsert({
+        where: { matchId: match.id },
+        update: {
+          jsonResult: finalResult,
+          version: ANALYSIS_VERSION,
+        },
+        create: {
+          matchId: match.id,
+          jsonResult: finalResult,
+          version: ANALYSIS_VERSION,
+        }
+      });
+      console.log(`[Cache Save] Saved analysis for match ${match.id}`);
+    } catch (dbError) {
+      console.warn(`[Cache Save Failed] Could not save analysis to DB. Match ID ${match.id} might not exist in Match table yet.`, dbError);
+    }
+
+    return NextResponse.json(finalResult);
   } catch (error) {
     console.error("Gemini Error:", error);
     // Return an explicit error status so the frontend can show an error message

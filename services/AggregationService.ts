@@ -52,8 +52,8 @@ export class AggregationService {
             champ.gold += me.goldEarned;
             champ.damage += me.totalDamageDealtToChampions;
 
-            // Teammates
-            if (match.teamMatesSummary && Array.isArray(match.teamMatesSummary)) {
+            // Teammates (Limit to last 20 matches for performance)
+            if (matches.indexOf(match) < 20 && match.teamMatesSummary && Array.isArray(match.teamMatesSummary)) {
                 match.teamMatesSummary.forEach((tm: any) => {
                     const key = `${tm.summonerName}#${tm.tagLine}`;
                     if (!teammatesMap.has(key)) {
