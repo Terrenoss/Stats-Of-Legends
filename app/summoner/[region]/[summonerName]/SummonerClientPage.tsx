@@ -13,8 +13,9 @@ import { MatchSkeleton } from '../../../../components/skeletons/MatchSkeleton';
 import { LiveGame } from '../../../../components/LiveGame';
 import { TRANSLATIONS } from '../../../../constants';
 import { SummonerProfile, Match, Language, GameMode, HeatmapDay, DetailedChampionStats, Teammate } from '../../../../types';
-import { LayoutDashboard, Sword, Radio } from 'lucide-react';
+import { LayoutDashboard, Sword, Radio, TrendingUp } from 'lucide-react';
 import { SafeLink } from '../../../../components/ui/SafeLink';
+import { YAxis, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, CartesianGrid } from 'recharts';
 
 export default function SummonerClientPage({ params }: { params: { region: string, summonerName: string } }) {
   const [loading, setLoading] = useState(true);
@@ -25,14 +26,14 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const [heatmap, setHeatmap] = useState<HeatmapDay[]>([]);
   const [champions, setChampions] = useState<DetailedChampionStats[]>([]);
   const [teammates, setTeammates] = useState<Teammate[]>([]);
-  const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live'>('overview');
+  const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live' | 'progression'>('overview');
   const [matchFilter, setMatchFilter] = useState<'ALL' | 'SOLO' | 'FLEX'>('ALL');
   const [currentLang] = useState<Language>('FR');
   const [performance, setPerformance] = useState<any>(null);
   const [lpHistory, setLpHistory] = useState<any[]>([]);
   const [visibleMatches, setVisibleMatches] = useState(10);
 
-  const [version, setVersion] = useState<string>('14.24.1'); // Default fallback
+  const [version, setVersion] = useState<string>('15.24.1'); // Default fallback
 
   const t = TRANSLATIONS[currentLang];
 
@@ -103,7 +104,6 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   };
 
   const mapGameMode = (m: Match): 'SOLO' | 'FLEX' | 'OTHER' => {
-    // Certains matches utilisent l’enum GameMode ("Ranked Solo/Duo"), d’autres une valeur brute comme "RANKED_SOLO_5x5"
     const mode: any = m.gameMode;
     if (mode === GameMode.SOLO_DUO || mode === 'RANKED_SOLO_5x5') return 'SOLO';
     if (mode === GameMode.FLEX || mode === 'RANKED_FLEX_SR') return 'FLEX';
@@ -118,6 +118,24 @@ export default function SummonerClientPage({ params }: { params: { region: strin
       if (matchFilter === 'FLEX') return kind === 'FLEX';
       return true;
     });
+
+  // Helper to get rank color for chart
+  const getRankColor = (tier: string | null) => {
+    switch (tier?.toUpperCase()) {
+      case 'IRON': return '#a19d94';
+      case 'BRONZE': return '#cd7f32';
+      case 'SILVER': return '#c0c0c0';
+      case 'GOLD': return '#ffd700';
+      case 'PLATINUM': return '#4ecdc4';
+      case 'EMERALD': return '#2ecc71';
+      case 'DIAMOND': return '#b9f2ff';
+      case 'MASTER': return '#9b59b6';
+      case 'GRANDMASTER': return '#e74c3c';
+      case 'CHALLENGER': return '#f1c40f';
+      default: return '#ffd700';
+    }
+  };
+  const rankColor = profile?.ranks?.solo?.tier ? getRankColor(profile.ranks.solo.tier) : '#ffd700';
 
   if (loading) {
     return (
@@ -177,6 +195,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
       <div className="flex gap-6 border-b border-white/5 mb-8">
         <TabButton active={profileTab === 'overview'} onClick={() => setProfileTab('overview')} icon={<LayoutDashboard size={16} />} label={t.overview} />
         <TabButton active={profileTab === 'champions'} onClick={() => setProfileTab('champions')} icon={<Sword size={16} />} label={t.champions} />
+        <TabButton active={profileTab === 'progression'} onClick={() => setProfileTab('progression')} icon={<TrendingUp size={16} />} label="Progression LP" />
         <TabButton active={profileTab === 'live'} onClick={() => setProfileTab('live')} icon={<Radio size={16} />} label={t.liveGame} />
       </div>
 
@@ -267,6 +286,82 @@ export default function SummonerClientPage({ params }: { params: { region: strin
       {/* TAB CONTENT: CHAMPIONS */}
       {profileTab === 'champions' && (
         <ChampionsTable champions={champions} lang={currentLang} />
+      )}
+
+      {/* TAB CONTENT: PROGRESSION LP */}
+      {profileTab === 'progression' && (
+        <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-8 shadow-xl animate-fadeIn">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-bold text-white font-display mb-1">Progression LP (30 Jours)</h3>
+              <p className="text-sm text-gray-500">Historique de vos gains et pertes de LP en Ranked Solo/Duo.</p>
+            </div>
+            {lpHistory.length > 1 && (
+              <div className={`px-4 py-2 rounded-xl border ${lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                <span className="text-lg font-black">{lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0 ? '+' : ''}{lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp} LP</span>
+              </div>
+            )}
+          </div>
+
+          <div className="h-[400px] w-full">
+            {lpHistory.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={lpHistory} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorLpMain" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={rankColor} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={rankColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#666"
+                    tick={{ fill: '#666', fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    minTickGap={30}
+                  />
+                  <YAxis
+                    stroke="#666"
+                    tick={{ fill: '#666', fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    domain={['dataMin - 20', 'dataMax + 20']}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-[#0f0e17] text-white p-3 rounded-xl shadow-2xl border border-white/10 text-xs backdrop-blur-md">
+                            <div className="font-bold text-lg mb-1" style={{ color: rankColor }}>{data.lp} LP</div>
+                            <div className="text-gray-400">{label}</div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="lp"
+                    stroke={rankColor}
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: '#121212', stroke: rankColor, strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: rankColor, stroke: '#fff', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <TrendingUp size={48} className="mb-4 opacity-20" />
+                <p>Aucune donnée d'historique disponible pour le moment.</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* TAB CONTENT: LIVE GAME */}

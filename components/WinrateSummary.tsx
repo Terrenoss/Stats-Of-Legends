@@ -29,7 +29,8 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
     const avgAssists = (totalAssists / Math.max(1, recentMatches.length)).toFixed(1);
 
     const kda = ((totalKills + totalAssists) / Math.max(1, totalDeaths)).toFixed(2);
-    const avgScore = 72; // Mock avg OP score
+    const totalLegendScore = recentMatches.reduce((acc, m) => acc + (m.me.legendScore || 0), 0);
+    const avgScore = recentMatches.length > 0 ? Math.round(totalLegendScore / recentMatches.length) : 0;
 
     const data = [
         { name: 'Wins', value: wins },
@@ -81,8 +82,10 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
             </div>
 
             <div className="flex flex-col items-center pr-4">
-                <div className="text-teal-400 text-4xl font-black font-cinzel drop-shadow-[0_0_15px_rgba(45,212,191,0.4)]">{avgScore}</div>
-                <div className="text-gray-600 text-[10px] uppercase font-bold tracking-widest">AI Score</div>
+                <div className="text-teal-400 text-4xl font-black font-cinzel drop-shadow-[0_0_15px_rgba(45,212,191,0.4)]">
+                    {avgScore} <span className="text-sm text-gray-500 font-bold">/ 100</span>
+                </div>
+                <div className="text-gray-600 text-[10px] uppercase font-bold tracking-widest">Legend Score</div>
             </div>
         </div>
     );

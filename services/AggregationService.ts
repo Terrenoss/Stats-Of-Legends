@@ -8,13 +8,12 @@ export class AggregationService {
         const lpHistory: any[] = [];
 
         // Performance Radar Data
-        const performance = {
+        const performance: any = {
             combat: 0,
             objectives: 0,
             vision: 0,
             farming: 0,
             survival: 0,
-            consistency: 0,
         };
 
         let totalScore = 0;
@@ -95,13 +94,15 @@ export class AggregationService {
             }
         });
 
-        // Normalize Performance
+        // Normalize Performance & Convert Z-Score to 0-100 Scale
         if (scoreCount > 0) {
-            performance.combat /= scoreCount;
-            performance.objectives /= scoreCount;
-            performance.vision /= scoreCount;
-            performance.farming /= scoreCount;
-            performance.survival /= scoreCount;
+            const zToScore = (z: number) => Math.max(0, Math.min(100, 50 + (z * 20)));
+
+            performance.combat = zToScore(performance.combat / scoreCount);
+            performance.objectives = zToScore(performance.objectives / scoreCount);
+            performance.vision = zToScore(performance.vision / scoreCount);
+            performance.farming = zToScore(performance.farming / scoreCount);
+            performance.survival = zToScore(performance.survival / scoreCount);
         }
 
         // Consistency Badge
@@ -114,7 +115,7 @@ export class AggregationService {
             if (stdDev < 8) consistencyBadge = 'Rock Solid';
             else if (stdDev > 18) consistencyBadge = 'Coinflip';
         }
-        (performance as any).consistencyBadge = consistencyBadge;
+        performance.consistencyBadge = consistencyBadge;
 
 
         // LP History (Filter for SOLO queue only)

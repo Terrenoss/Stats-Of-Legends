@@ -119,8 +119,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   };
 
   const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-300 group
-    ${isWin ? 'border-lol-win/30 bg-gradient-to-r from-[#0c1a15] to-[#0a0f0d] hover:to-[#0f1a15]' : 'border-lol-loss/30 bg-gradient-to-r from-[#1a0a0a] to-[#0f0a0a] hover:to-[#1a0f0f]'}
-    ${Number(kda) < 1 && !isWin ? 'opacity-50 grayscale-[0.5] hover:opacity-100 hover:grayscale-0' : ''}
+    ${isWin
+      ? 'border-lol-win/20 bg-[#0a120f] hover:bg-[#0f1a15]' // Win: Very dark green/black
+      : 'border-red-900/20 bg-gradient-to-r from-[#1a0505] to-[#0f0505] hover:to-[#2a0a0a]' // Loss: Dark Red/Black "Blood Moon"
+    }
   `;
 
   // MVP Check
@@ -129,18 +131,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const isMvp = myScore > 0 && myScore === maxScore && isWin;
 
   return (
-    <div className={containerClass} style={isMvp ? { borderColor: '#ffd700', boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)' } : {}}>
+    <div className={containerClass} style={isMvp ? { borderColor: '#ffd700', boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)' } : {}}>
       {/* Background Clipper for Particles & Rank */}
       <div className="absolute inset-0 overflow-hidden rounded-[1rem] pointer-events-none z-0">
         {/* Mythic MVP Particles */}
         {isMvp && (
           <div className="absolute inset-0">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-challenger.png')] bg-repeat opacity-5 mix-blend-overlay animate-pulse-gold"></div>
-            <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-gradient-to-br from-transparent via-yellow-500/10 to-transparent animate-spin-slow"></div>
+            <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-gradient-to-br from-transparent via-yellow-500/5 to-transparent animate-spin-slow"></div>
           </div>
         )}
-        {/* Rank Watermark */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[50%] opacity-40 hidden md:block">
+        {/* Rank Watermark - Subtle & Classy */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[40%] opacity-20 grayscale-[0.5] mix-blend-screen hidden md:block transition-all duration-500 group-hover:opacity-40 group-hover:grayscale-0 group-hover:translate-x-[35%]">
           {(() => {
             let avgRank = match.averageRank;
 
@@ -158,23 +160,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             const tier = avgRank.split(' ')[0];
             const icon = getRankIcon(tier);
             return icon ? (
-              <img src={icon} alt={avgRank} title={avgRank} className="w-[400px] h-[400px] max-w-none object-contain drop-shadow-lg" />
+              <img src={icon} alt={avgRank} title={avgRank} className="w-[350px] h-[350px] max-w-none object-contain drop-shadow-2xl" />
             ) : null;
           })()}
         </div>
       </div>
       {/* Main Card Content (Collapsed) */}
-      <div className="p-2 pl-4 flex flex-col md:flex-row gap-3 items-center relative z-10">
-        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-[1rem] ${isWin ? 'bg-lol-win shadow-[0_0_10px_#22c55e]' : 'bg-lol-loss shadow-[0_0_10px_#ef4444]'}`}></div>
+      <div className="p-3 pl-5 flex flex-col md:flex-row gap-4 items-center relative z-10">
+        {/* Side Indicator - The main color cue */}
+        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-[1rem] ${isWin ? 'bg-lol-win shadow-[0_0_15px_#22c55e]' : 'bg-red-900/50'}`}></div>
 
         {/* Game Info */}
-        <div className="w-full md:w-28 flex flex-col gap-1">
-          <span className={`font-black font-display uppercase tracking-wider text-[10px] ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
+        <div className="w-full md:w-28 flex flex-col gap-0.5">
+          <span className={`font-bold font-display uppercase tracking-wider text-[9px] ${isWin ? 'text-lol-win' : 'text-gray-600'}`}>
             {getQueueLabel()}
           </span>
-          <span className="text-[10px] text-gray-400 font-bold">{getTimeAgo()}</span>
-          <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'text-gray-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.3)]'}`}>{isWin ? t.win : t.loss}</span>
-          <span className="text-xs text-gray-400 font-mono">{durationMin}m {durationSec}s</span>
+          <span className="text-[9px] text-gray-600 font-bold">{getTimeAgo()}</span>
+          <span className={`font-black text-lg tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'text-gray-500'}`}>{isWin ? t.win : t.loss}</span>
+          <span className="text-[10px] text-gray-600 font-mono">{durationMin}m {durationSec}s</span>
         </div>
 
         {/* Champion & Spells */}
@@ -243,7 +246,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             {me.legendScoreGrade || '-'}
           </div>
           <div className="text-[10px] text-gray-500 font-bold">
-            {me.legendScore?.toFixed(1) || '-'}
+            {me.legendScore?.toFixed(0) || '-'} <span className="text-[8px]">/ 100</span>
           </div>
 
           {/* V2: Confidence & Contribution Tooltip/Badge */}
@@ -256,17 +259,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         </div>
 
         {/* Items */}
-        <div className="flex flex-wrap gap-1 max-w-[160px]">
+        <div className="grid grid-cols-4 gap-1 max-w-[120px]">
           {(() => {
+            // Backend now returns exactly 7 items (indices 0-6), with id=0 for empty slots.
             const rawItems = Array.isArray(me?.items) ? me.items : [];
+            // Ensure we have 7 items just in case
             const safeItems = [...rawItems];
             while (safeItems.length < 7) safeItems.push({ id: 0 });
+
+            // Order: Top Row [0, 1, 2, 6(Trinket)], Bottom Row [3, 4, 5]
             const orderedItems = [
               safeItems[0], safeItems[1], safeItems[2], safeItems[6],
               safeItems[3], safeItems[4], safeItems[5]
             ];
+
             return orderedItems.map((item: any, idx: number) => (
-              item?.imageUrl ? (
+              item?.id && item.id !== 0 ? (
                 <img key={`item-${idx}`} src={item.imageUrl} alt={item.name ?? ''} className={`w-6 h-6 rounded-md bg-[#121212] border border-white/10 ${idx === 3 ? 'rounded-full' : ''}`} title={item.name ?? ''} />
               ) : (
                 <div key={`empty-${idx}`} className="w-6 h-6 rounded-md bg-white/5 border border-white/5"></div>

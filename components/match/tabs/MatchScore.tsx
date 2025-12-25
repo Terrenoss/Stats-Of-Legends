@@ -129,7 +129,7 @@ export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineDa
                                 {selectedPlayer.legendScoreGrade}
                             </div>
                             <div className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                <span>Legend Score: {selectedPlayer.legendScore?.toFixed(1)}</span>
+                                <span>Legend Score: {selectedPlayer.legendScore?.toFixed(0)} <span className="text-[10px]">/ 100</span></span>
                                 {selectedPlayer.legendScoreSampleSize !== undefined && selectedPlayer.legendScoreSampleSize < 10 && (
                                     <div className="group relative pointer-events-auto">
                                         <span className="text-yellow-500 cursor-help">⚠️</span>

@@ -190,6 +190,13 @@ model SummonerMatch {
   assists       Int
   role          String   @default("UNKNOWN")
   
+  // Optimization Columns (V6)
+  totalDamageDealtToChampions Int @default(0)
+  totalMinionsKilled          Int @default(0)
+  goldEarned                  Int @default(0)
+  visionScore                 Int @default(0)
+  items                       Json? // Array of item IDs
+  
   @@id([summonerPuuid, matchId])
   @@index([summonerPuuid])
   @@index([matchId])

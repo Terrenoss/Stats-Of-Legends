@@ -18,30 +18,20 @@ export const PerformanceRadar: React.FC<PerformanceRadarProps> = ({ metrics, con
 
   // Default values if metrics are missing
   const safe = {
-    dpm: 0,
-    csm: 0,
-    kda: 0,
-    gpm: 0,
-    vision: 0, // Not in PerformanceMetrics yet
-    objectives: 0, // Not in PerformanceMetrics yet
+    combat: 50,
+    objectives: 50,
+    vision: 50,
+    farming: 50,
+    survival: 50,
     ...(metrics || {})
   };
 
-  // Z-Score to 0-100 Scale Mapping (approximate)
-  // We simulate Z-scores from raw stats for now since we don't have baselines here
-  const normalize = (val: number, baseline: number, stdDev: number) => {
-    if (!val) return 50; // Default to average if missing
-    const z = (val - baseline) / stdDev;
-    // Increased scaling factor from 20 to 25 to make the chart more dynamic/filled
-    return Math.max(10, Math.min(100, 50 + (z * 25)));
-  };
-
   const data = [
-    { subject: 'Combat', A: normalize(safe.dpm, 500, 200), fullMark: 100 },
-    { subject: 'Objectives', A: 65, fullMark: 100 }, // Placeholder - slightly above average
-    { subject: 'Vision', A: 60, fullMark: 100 }, // Placeholder - slightly above average
-    { subject: 'Farming', A: normalize(safe.csm, 6, 2), fullMark: 100 },
-    { subject: 'Survival', A: normalize(safe.kda, 3, 1.5), fullMark: 100 },
+    { subject: 'Combat', A: safe.combat, fullMark: 100 },
+    { subject: 'Objectives', A: safe.objectives, fullMark: 100 },
+    { subject: 'Vision', A: safe.vision, fullMark: 100 },
+    { subject: 'Farming', A: safe.farming, fullMark: 100 },
+    { subject: 'Survival', A: safe.survival, fullMark: 100 },
   ];
 
   // Debug logging

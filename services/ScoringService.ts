@@ -267,12 +267,12 @@ export class ScoringService {
 
         if (totalWeight > 0) rawScore /= totalWeight;
 
-        // 5. Transform to 0-10 Scale
+        // 5. Transform to 0-100 Scale
         const percentile = getPercentile(rawScore);
-        let finalScore = percentile * 10;
+        let finalScore = percentile * 100;
 
         // Bonus for Winning
-        if (p.win) finalScore += 1.0;
+        if (p.win) finalScore += 10.0;
 
         // V3: Matchup Difficulty Adjustment
         if (matchupWinRate !== undefined) {
@@ -281,7 +281,7 @@ export class ScoringService {
         }
 
         // Clamp
-        finalScore = Math.max(0, Math.min(10, finalScore));
+        finalScore = Math.max(0, Math.min(100, finalScore));
 
         // 6. ML Contribution
         const contribution = MLService.calculateMarginalContribution(
@@ -294,22 +294,22 @@ export class ScoringService {
             }
         );
 
-        if (contribution > 0.10) finalScore += 0.5;
+        if (contribution > 0.10) finalScore += 5.0;
 
         // Clamp again
-        finalScore = Math.max(0, Math.min(10, finalScore));
+        finalScore = Math.max(0, Math.min(100, finalScore));
 
         // 7. Grade
         let grade = 'B';
-        if (finalScore >= 9.5) grade = 'S+';
-        else if (finalScore >= 8.5) grade = 'S';
-        else if (finalScore >= 7.5) grade = 'A';
-        else if (finalScore >= 6.0) grade = 'B';
-        else if (finalScore >= 4.0) grade = 'C';
+        if (finalScore >= 95) grade = 'S+';
+        else if (finalScore >= 85) grade = 'S';
+        else if (finalScore >= 75) grade = 'A';
+        else if (finalScore >= 60) grade = 'B';
+        else if (finalScore >= 40) grade = 'C';
         else grade = 'D';
 
         return {
-            score: Number(finalScore.toFixed(1)),
+            score: Math.round(finalScore),
             grade,
             breakdown: {
                 kda: Number(zScores.kda.toFixed(2)),

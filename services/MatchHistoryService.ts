@@ -80,6 +80,11 @@ export class MatchHistoryService {
                                 deaths: p.deaths,
                                 assists: p.assists,
                                 role: p.teamPosition || 'UNKNOWN',
+                                totalDamageDealtToChampions: p.totalDamageDealtToChampions || 0,
+                                totalMinionsKilled: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
+                                goldEarned: p.goldEarned || 0,
+                                visionScore: p.visionScore || 0,
+                                items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
                             }
                         });
                     }
@@ -222,7 +227,7 @@ export class MatchHistoryService {
             const cachedAnalysis = await prisma.matchAnalysis.findUnique({
                 where: { matchId: mj.metadata.matchId }
             });
-            if (cachedAnalysis && cachedAnalysis.jsonResult) {
+            if (cachedAnalysis && cachedAnalysis.jsonResult && cachedAnalysis.version === "6.0") {
                 cachedScores = cachedAnalysis.jsonResult as Record<string, any>;
             }
         } catch (e) {
@@ -551,7 +556,7 @@ export class MatchHistoryService {
                 cs: pCs,
                 level: p.champLevel || 0,
                 visionScore: p.visionScore,
-                items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6].filter((id) => id !== 0).map((id) => ({
+                items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6].map((id) => ({
                     id,
                     imageUrl: getItemIconUrl(id, version),
                 })),
@@ -631,8 +636,8 @@ export class MatchHistoryService {
             // @ts-ignore
             prisma.matchAnalysis.upsert({
                 where: { matchId: mj.metadata.matchId },
-                update: { jsonResult: cacheData, version: "5.0" },
-                create: { matchId: mj.metadata.matchId, jsonResult: cacheData, version: "5.0" }
+                update: { jsonResult: cacheData, version: "6.0" },
+                create: { matchId: mj.metadata.matchId, jsonResult: cacheData, version: "6.0" }
             }).catch(err => console.error("Failed to save match analysis cache:", err));
         }
 

@@ -308,14 +308,12 @@ export interface DummyStats {
 
 // New Types for Advanced Stats
 export interface PerformanceMetrics {
-  gpm: number;
-  csm: number;
-  dpm: number;
-  dmgPercentage: number;
-  kda: number;
-  xpd15: number; // XP Diff @ 15
-  csd15: number; // CS Diff @ 15
-  gd15: number;  // Gold Diff @ 15
+  combat: number;
+  objectives: number;
+  vision: number;
+  farming: number;
+  survival: number;
+  consistencyBadge?: string;
 }
 
 export interface HeatmapDay {
