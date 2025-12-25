@@ -64,7 +64,7 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={`text-2xl font-black font-display ${winrate >= 50 ? 'text-lol-win' : 'text-lol-loss'}`}>{winrate}%</span>
+                    <span className={`text-3xl font-black font-cinzel ${winrate >= 50 ? 'text-lol-win drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'text-lol-loss drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]'}`}>{winrate}%</span>
                     <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Winrate</span>
                 </div>
             </div>
@@ -76,12 +76,12 @@ export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, t
             </div>
 
             <div className="flex flex-col items-center gap-0.5">
-                <div className="text-lol-gold text-3xl font-black font-display tracking-tight">{kda} <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider align-middle">KDA</span></div>
+                <div className="text-lol-gold text-5xl font-black font-cinzel tracking-tight drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]">{kda} <span className="text-xs text-gray-500 uppercase font-bold tracking-wider align-middle font-sans">KDA</span></div>
                 <div className="text-gray-400 text-xs font-mono">{avgKills} / <span className="text-lol-red">{avgDeaths}</span> / {avgAssists}</div>
             </div>
 
             <div className="flex flex-col items-center pr-4">
-                <div className="text-teal-400 text-2xl font-black drop-shadow-lg">{avgScore}</div>
+                <div className="text-teal-400 text-4xl font-black font-cinzel drop-shadow-[0_0_15px_rgba(45,212,191,0.4)]">{avgScore}</div>
                 <div className="text-gray-600 text-[10px] uppercase font-bold tracking-widest">AI Score</div>
             </div>
         </div>

@@ -128,37 +128,66 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
   const nextTier = getNextTier(currentTier);
   const isApex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(currentTier?.toUpperCase() || '');
 
+  const getRankColor = (tier: string | null) => {
+    switch (tier?.toUpperCase()) {
+      case 'IRON': return '#a19d94';
+      case 'BRONZE': return '#cd7f32';
+      case 'SILVER': return '#c0c0c0';
+      case 'GOLD': return '#ffd700';
+      case 'PLATINUM': return '#4ecdc4'; // Teal/Cyan
+      case 'EMERALD': return '#2ecc71';
+      case 'DIAMOND': return '#b9f2ff'; // Diamond Blue
+      case 'MASTER': return '#9b59b6'; // Purple
+      case 'GRANDMASTER': return '#e74c3c'; // Red
+      case 'CHALLENGER': return '#f1c40f'; // Gold/Blue mix
+      default: return '#ffd700';
+    }
+  };
+
+  const rankColor = getRankColor(safeSolo.tier);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
 
       {/* 1. Identity & Past Ranks (Col 4) */}
-      <div className="lg:col-span-4 bg-[#121212] border border-white/5 rounded-[2rem] p-6 relative overflow-hidden group shadow-2xl flex flex-col">
-        <div className="flex items-start gap-6 mb-6">
+      <div className="lg:col-span-4 bg-[#121212]/80 backdrop-blur-md border border-white/5 rounded-[2rem] p-6 relative overflow-hidden group shadow-2xl flex flex-col">
+        {/* Spotlight Effect */}
+        {/* Spotlight Effect */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none opacity-50 z-0"
+          style={{ background: `radial-gradient(circle at 50% 0%, ${rankColor}40 0%, transparent 70%)` }}
+        ></div>
+
+        <div className="flex items-start gap-6 mb-6 relative z-10">
           <div className="relative">
-            <div className="w-24 h-24 rounded-[1.5rem] bg-[#121212] p-1 border border-lol-gold/50 shadow-glow-gold relative z-10">
+            <div className="w-24 h-24 rounded-full bg-[#121212] p-1 border-2 relative z-10" style={{ borderColor: rankColor, boxShadow: `0 0 15px ${rankColor}40`, '--rank-glow': rankColor } as React.CSSProperties}>
               <img
                 src={getProfileIconUrl(profile.profileIconId, version)}
                 alt="Icon"
-                className="w-full h-full object-cover rounded-[1.2rem]"
+                className="w-full h-full object-cover rounded-full"
               />
+              {/* Mastery Ring Placeholder - Ideally this would be dynamic based on mastery points */}
+              <div className="absolute inset-0 rounded-full border-2 border-white/10 animate-pulse-rank" style={{ borderColor: rankColor }}></div>
             </div>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#050505] text-lol-gold text-[10px] px-3 py-0.5 rounded-full border border-lol-gold font-bold font-mono z-20 whitespace-nowrap">
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#050505] text-[10px] px-3 py-0.5 rounded-full border font-bold font-mono z-20 whitespace-nowrap" style={{ borderColor: rankColor, color: rankColor }}>
               Lvl {profile.level}
             </div>
           </div>
 
           <div className="flex flex-col pt-2">
             <div className="flex items-baseline gap-2 mb-1">
-              <h2 className="text-3xl font-bold text-white tracking-tight font-display uppercase leading-none">
+              <h2 className="text-3xl font-black text-white tracking-tight font-cinzel uppercase leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
                 {profile.name}
               </h2>
               <span className="text-gray-500 text-sm font-sans font-medium">#{profile.tag}</span>
             </div>
             <button
-              className="mt-1 w-max px-6 py-1.5 bg-lol-red/10 hover:bg-lol-red text-lol-red hover:text-white text-[10px] font-bold uppercase tracking-wider border border-lol-red/20 rounded-full transition-all"
+              className="mt-1 w-max px-6 py-1.5 bg-transparent hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest border transition-all duration-500 group relative overflow-hidden"
+              style={{ borderColor: rankColor, color: rankColor }}
               onClick={onUpdateRequest}
             >
-              {t.update}
+              <span className="relative z-10 group-hover:text-white transition-colors">Invoke Update</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </button>
 
             <div className="mt-2 text-[10px] text-gray-500 font-medium flex items-center gap-1">
@@ -179,7 +208,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
         </div>
 
         {/* Past Ranks */}
-        <div className="mt-auto border-t border-white/5 pt-4">
+        <div className="mt-auto border-t border-white/5 pt-4 relative z-10">
           <h4 className="text-[10px] uppercase text-gray-500 font-bold mb-2 tracking-widest">{t.pastRanks}</h4>
           <div className="flex flex-wrap gap-2">
             {safePastRanks.length === 0 ? (
@@ -198,7 +227,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
 
       {/* 2. Main Rank Card (Col 4) - Redesigned */}
       <div className="lg:col-span-4 flex flex-col gap-4">
-        <div className="bg-[#1e1b2e] border border-white/10 rounded-[1.5rem] relative overflow-hidden shadow-2xl flex flex-col h-full">
+        <div className="bg-[#1e1b2e]/90 backdrop-blur-md border border-white/10 rounded-[1.5rem] relative overflow-hidden shadow-2xl flex flex-col h-full">
           {/* Header */}
           <div className="p-5 pb-2 flex items-center gap-2">
             <div className="w-1 h-4 bg-white/50 rounded-full"></div>
@@ -207,8 +236,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
 
           {/* Main Content */}
           <div className="px-6 flex items-center justify-between relative z-10">
-            {/* Rank Icon - SUPER SIZED */}
-            <div className="w-32 h-32 -ml-4 -my-4 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform hover:scale-110 duration-300">
+            {/* Rank Icon - SUPER SIZED & LEVITATING */}
+            <div
+              className="w-36 h-36 -ml-6 -my-6 transition-transform hover:scale-110 duration-300 z-0 animate-float"
+              style={{ filter: `drop-shadow(0 0 30px ${rankColor}66)` }}
+            >
               {typeof safeSolo.tier === 'string' && RANK_EMBLEMS[safeSolo.tier] ? (
                 <img src={RANK_EMBLEMS[safeSolo.tier]} className="w-full h-full object-contain" alt={safeSolo.tier} />
               ) : (
@@ -217,17 +249,26 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
             </div>
 
             {/* Rank Details */}
-            <div className="text-right flex flex-col items-end">
-              <div className="text-3xl font-black text-white font-display tracking-wide flex items-center gap-3">
-                {formatRank(safeSolo.tier, safeSolo.rank)}
-                <span className="text-blue-300 text-2xl">{safeSolo.lp ?? 0} LP</span>
+            <div className="text-right flex flex-col items-end relative z-10">
+              <div className="text-4xl font-black font-cinzel tracking-wide flex flex-col items-end leading-none">
+                <span
+                  className="drop-shadow-md bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: `linear-gradient(to right, ${rankColor} 20%, #ffffff 50%, ${rankColor} 80%)`,
+                    backgroundSize: '200% auto',
+                    animation: 'shimmer 3s linear infinite'
+                  }}
+                >
+                  {formatRank(safeSolo.tier, safeSolo.rank)}
+                </span>
+                <span className="text-blue-300 text-2xl mt-1 font-bold font-sans">{safeSolo.lp ?? 0} LP</span>
               </div>
 
               {/* Winrate Badge */}
-              <div className="flex items-center gap-3 mt-2">
-                <div className={`px-3 py-1 rounded-lg font-bold text-sm border ${(safeSolo.wins && safeSolo.losses && (safeSolo.wins / (safeSolo.wins + safeSolo.losses)) >= 0.5)
-                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+              <div className="flex items-center gap-3 mt-3">
+                <div className={`px-3 py-1 rounded-full font-black text-sm border shadow-lg ${(safeSolo.wins && safeSolo.losses && (safeSolo.wins / (safeSolo.wins + safeSolo.losses)) >= 0.5)
+                  ? 'bg-gradient-to-r from-green-900/40 to-green-600/20 text-green-400 border-green-500/30'
+                  : 'bg-gradient-to-r from-red-900/40 to-red-600/20 text-red-400 border-red-500/30'
                   }`}>
                   {safeSolo.wins && safeSolo.losses ? Math.round((safeSolo.wins / (safeSolo.wins + safeSolo.losses)) * 100) : 0}% WR
                 </div>

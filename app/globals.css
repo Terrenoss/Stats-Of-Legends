@@ -1,3 +1,6 @@
+/* Import Cinzel Font */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,22 +14,185 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Inter', sans-serif;
-  background-color: #050505;
-  /* Hero Fade & Texture */
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(200, 170, 110, 0.08) 0%, transparent 60%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  background-color: #020202;
+  /* Cosmic God Mode Background - Optimized (No SVG Filter) */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(100, 80, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(200, 160, 50, 0.08) 0%, transparent 40%);
   background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* God Mode Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes slam {
+  0% {
+    transform: scale(3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes burn {
+  0% {
+    text-shadow: 0 0 4px #ff4500, 0 -5px 10px #ff8c00, 0 -10px 20px #ffd700;
+  }
+
+  50% {
+    text-shadow: 0 0 8px #ff4500, 0 -10px 20px #ff8c00, 0 -20px 40px #ffd700;
+  }
+
+  100% {
+    text-shadow: 0 0 4px #ff4500, 0 -5px 10px #ff8c00, 0 -10px 20px #ffd700;
+  }
+}
+
+@keyframes pulse-gold {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 215, 0, 0.3);
+  }
+}
+
+@keyframes pulse-rank {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--rank-glow, rgba(255, 215, 0, 0.5));
+  }
+
+  50% {
+    box-shadow: 0 0 25px var(--rank-glow, rgba(255, 215, 0, 0.8)), 0 0 50px var(--rank-glow, rgba(255, 215, 0, 0.3));
+  }
+}
+
+@keyframes void-shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-slam {
+  animation: slam 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-burn {
+  animation: burn 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+.animate-pulse-rank {
+  animation: pulse-rank 2s infinite;
+}
+
+.animate-void-shake {
+  animation: void-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.text-shimmer {
+  background: linear-gradient(to right,
+      #9ca3af 20%,
+      #ffffff 40%,
+      #ffffff 60%,
+      #9ca3af 80%);
+  background-size: 200% auto;
+  color: #000;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(to right,
+      #bf953f 20%,
+      #fcf6ba 40%,
+      #fcf6ba 60%,
+      #bf953f 80%);
+  background-size: 200% auto;
+  color: #000;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
 }
 
 /* Utilitaires personnalisés */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
+
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
 .text-gold-gradient {
   background: linear-gradient(to bottom, #F0E6D2, #C8AA6E);
   -webkit-background-clip: text;

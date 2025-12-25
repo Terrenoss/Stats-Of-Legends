@@ -118,36 +118,54 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     return 'text-gray-400';
   };
 
-  const containerClass = 'mb-2 relative rounded-[1rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
+  const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-300 group
+    ${isWin ? 'border-lol-win/30 bg-gradient-to-r from-[#0c1a15] to-[#0a0f0d] hover:to-[#0f1a15]' : 'border-lol-loss/30 bg-gradient-to-r from-[#1a0a0a] to-[#0f0a0a] hover:to-[#1a0f0f]'}
+    ${Number(kda) < 1 && !isWin ? 'opacity-50 grayscale-[0.5] hover:opacity-100 hover:grayscale-0' : ''}
+  `;
+
+  // MVP Check
+  const myScore = me.legendScore || 0;
+  const maxScore = Math.max(...(match.participants || []).map((p: any) => p.legendScore || 0));
+  const isMvp = myScore > 0 && myScore === maxScore && isWin;
 
   return (
-    <div className={containerClass}>
-      {/* Rank Watermark */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[50%] pointer-events-none opacity-40 z-0 hidden md:block">
-        {(() => {
-          let avgRank = match.averageRank;
+    <div className={containerClass} style={isMvp ? { borderColor: '#ffd700', boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)' } : {}}>
+      {/* Background Clipper for Particles & Rank */}
+      <div className="absolute inset-0 overflow-hidden rounded-[1rem] pointer-events-none z-0">
+        {/* Mythic MVP Particles */}
+        {isMvp && (
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-challenger.png')] bg-repeat opacity-5 mix-blend-overlay animate-pulse-gold"></div>
+            <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-gradient-to-br from-transparent via-yellow-500/10 to-transparent animate-spin-slow"></div>
+          </div>
+        )}
+        {/* Rank Watermark */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[50%] opacity-40 hidden md:block">
+          {(() => {
+            let avgRank = match.averageRank;
 
-          if (!avgRank) {
-            let validRanks: string[] = [];
-            if (ranksLoaded && Object.keys(ranks).length > 0) {
-              validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null).filter(Boolean) as string[];
+            if (!avgRank) {
+              let validRanks: string[] = [];
+              if (ranksLoaded && Object.keys(ranks).length > 0) {
+                validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null).filter(Boolean) as string[];
+              }
+              if (validRanks.length === 0 && match.participants) {
+                validRanks = match.participants.map((p: any) => p.rank).filter(Boolean);
+              }
+              avgRank = getAverageRank(validRanks);
             }
-            if (validRanks.length === 0 && match.participants) {
-              validRanks = match.participants.map((p: any) => p.rank).filter(Boolean);
-            }
-            avgRank = getAverageRank(validRanks);
-          }
 
-          const tier = avgRank.split(' ')[0];
-          const icon = getRankIcon(tier);
-          return icon ? (
-            <img src={icon} alt={avgRank} title={avgRank} className="w-[500px] h-[500px] max-w-none object-contain drop-shadow-md" />
-          ) : null;
-        })()}
+            const tier = avgRank.split(' ')[0];
+            const icon = getRankIcon(tier);
+            return icon ? (
+              <img src={icon} alt={avgRank} title={avgRank} className="w-[400px] h-[400px] max-w-none object-contain drop-shadow-lg" />
+            ) : null;
+          })()}
+        </div>
       </div>
       {/* Main Card Content (Collapsed) */}
       <div className="p-2 pl-4 flex flex-col md:flex-row gap-3 items-center relative z-10">
-        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isWin ? 'bg-lol-win' : 'bg-lol-loss'}`}></div>
+        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-[1rem] ${isWin ? 'bg-lol-win shadow-[0_0_10px_#22c55e]' : 'bg-lol-loss shadow-[0_0_10px_#ef4444]'}`}></div>
 
         {/* Game Info */}
         <div className="w-full md:w-28 flex flex-col gap-1">
@@ -155,14 +173,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             {getQueueLabel()}
           </span>
           <span className="text-[10px] text-gray-400 font-bold">{getTimeAgo()}</span>
-          <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-gray-400 drop-shadow-[0_0_5px_rgba(255,255,255,0.1)]'}`}>{isWin ? t.win : t.loss}</span>
+          <span className={`font-black text-xl tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'text-gray-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.3)]'}`}>{isWin ? t.win : t.loss}</span>
           <span className="text-xs text-gray-400 font-mono">{durationMin}m {durationSec}s</span>
         </div>
 
         {/* Champion & Spells */}
         <div className="flex gap-3 items-center">
           <div className="relative group">
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/10 shadow-lg">
+            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shadow-lg ${isWin ? 'border-lol-win' : 'border-lol-loss'}`}>
               <img
                 src={getChampionIconUrl(champName)}
                 alt={champName}
@@ -193,11 +211,29 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         </div>
 
         {/* KDA Stats */}
-        <div className="flex flex-col items-center w-32">
+        <div className="flex flex-col items-center w-32 relative">
+          {/* MVP Badge */}
+          {(() => {
+            const myScore = me.legendScore || 0;
+            const maxScore = Math.max(...(match.participants || []).map((p: any) => p.legendScore || 0));
+            const isMvp = myScore > 0 && myScore === maxScore;
+
+            if (isMvp && isWin) {
+              return (
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-t-lg shadow-[0_-2px_10px_rgba(255,215,0,0.5)] z-20 animate-pulse">
+                  MVP
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           <div className="text-xl font-display font-black text-white tracking-widest">
             {kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{deaths}</span> <span className="text-gray-500 text-sm">/</span> {assists}
           </div>
-          <div className="text-xs text-gray-300 font-mono mt-0.5">{kda} KDA</div>
+          <div className={`text-xs font-mono mt-0.5 font-bold ${Number(kda) >= 5 ? 'text-orange-500 animate-burn font-black' : Number(kda) >= 4 ? 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : Number(kda) >= 3 ? 'text-blue-400' : 'text-gray-400'}`}>
+            {kda} KDA
+          </div>
           <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: number, b: any) => a + b.kills, 0))) * 100)}%</div>
         </div>
 

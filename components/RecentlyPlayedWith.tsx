@@ -25,7 +25,7 @@ export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammate
         )}
 
 
-        {teammates.map((teammate, idx) => (
+        {teammates.filter(t => t.games >= 2).map((teammate, idx) => (
           <Link
             key={idx}
             href={`/summoner/${lang === 'FR' ? 'EUW' : 'EUW'}/${teammate.name}-${teammate.tag}`}
