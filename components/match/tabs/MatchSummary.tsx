@@ -53,11 +53,11 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                         const kda = ((p.kills + p.assists) / Math.max(1, p.deaths)).toFixed(2);
                         const dmgPct = maxDamage > 0 ? (p.totalDamageDealtToChampions / maxDamage) * 100 : 0;
                         const takenPct = maxTaken > 0 ? ((p.totalDamageTaken || 0) / maxTaken) * 100 : 0;
-                        const score = p.opScore?.toFixed(1) || '-';
-                        const rank = (p as any).opScoreRank || 0;
+                        const score = p.legendScore?.toFixed(1) || '-';
+                        const rank = (p as any).legendScoreRank || 0;
 
                         // Badges
-                        const teamBestRank = Math.min(...players.map((x: any) => x.opScoreRank || 10));
+                        const teamBestRank = Math.min(...players.map((x: any) => x.legendScoreRank || 10));
                         const isTeamBest = rank === teamBestRank;
 
                         let badge = null;
@@ -101,7 +101,7 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                                     </div>
                                 </div>
 
-                                {/* OP Score */}
+                                {/* Legend Score */}
                                 <div className="col-span-1 flex flex-col items-center justify-center">
                                     <span className="font-bold text-gray-300">{score}</span>
                                     {badge && <span className={`text-[10px] px-1.5 rounded ${badge.color} font-bold mt-0.5`}>{badge.text}</span>}

@@ -25,6 +25,16 @@ model ChampionStat {
   winRate   Float    @default(0)
   banRate   Float    @default(0)
 
+  // Performance Accumulators (for Legend Score)
+  totalKills    Int      @default(0)
+  totalDeaths   Int      @default(0)
+  totalAssists  Int      @default(0)
+  totalDamage   Int      @default(0) // To Champions
+  totalGold     Int      @default(0)
+  totalCs       Int      @default(0)
+  totalVision   Int      @default(0)
+  totalDuration Int      @default(0) // In seconds
+
   // Deep Stats (JSON)
   // Structure: { "itemId": { "wins": 10, "matches": 20 }, ... }
   items     Json?    
@@ -35,10 +45,25 @@ model ChampionStat {
   // Structure: { "Q-W-E-Q...": { "wins": 10, "matches": 20 }, ... }
   skillOrder Json?
 
+  // V2: Advanced Metrics & Context
+  durationBucket String @default("20-30") // "0-20", "20-30", "30+"
+  totalDamageShare Float @default(0)
+  totalGoldShare Float @default(0)
+  totalVisionScorePerMin Float @default(0)
+
+  totalObjectiveParticipation Float @default(0)
+
+  // V4.5: Variance Tracking (Sum of Squares) for Lane Dominance Normalization
+  totalGd15Sq      Float    @default(0) // Sum of (GD@15)^2
+  totalCsd15Sq     Float    @default(0) // Sum of (CSD@15)^2
+  totalXpd15Sq     Float    @default(0) // Sum of (XPD@15)^2
+  totalDamageShareSq Float  @default(0) // Sum of (Dmg%)^2
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([championId, role, tier, patch])
-  @@index([role, tier, patch])
+  @@unique([championId, role, tier, patch, durationBucket])
+  @@index([championId, role, tier, patch])
 }
 
 model ScannedMatch {
@@ -58,8 +83,34 @@ model MatchupStat {
   wins        Int      @default(0)
   matches     Int      @default(0)
 
-  @@unique([championId, opponentId, role, tier, patch])
-  @@index([championId, role, tier, patch])
+  // Performance Accumulators (for Legend Score - Matchup Specific)
+  totalKills    Int      @default(0)
+  totalDeaths   Int      @default(0)
+  totalAssists  Int      @default(0)
+  totalDamage   Int      @default(0)
+  totalGold     Int      @default(0)
+  totalCs       Int      @default(0)
+  totalVision   Int      @default(0)
+  totalDuration Int      @default(0)
+
+  // V2: Advanced Metrics & Context
+  durationBucket String @default("20-30")
+  totalDamageShare Float @default(0)
+  totalGoldShare Float @default(0)
+  totalVisionScorePerMin Float @default(0)
+  totalObjectiveParticipation Float @default(0)
+
+  // V4.5: Variance Tracking
+  totalGd15Sq      Float    @default(0)
+  totalCsd15Sq     Float    @default(0)
+  totalXpd15Sq     Float    @default(0)
+  totalDamageShareSq Float  @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@unique([championId, opponentId, role, tier, patch, durationBucket])
+  @@index([championId, opponentId, role, tier, patch])
 }
 
 model DuoStat {
@@ -123,6 +174,7 @@ model Match {
   jsonData      Json     // Full match details from Riot API
   
   participants  SummonerMatch[]
+  analysis      MatchAnalysis?
 }
 
 model SummonerMatch {
@@ -157,4 +209,13 @@ model LeagueSnapshot {
   losses        Int
   
   @@index([summonerPuuid, timestamp])
+}
+
+model MatchAnalysis {
+  matchId       String   @id
+  match         Match    @relation(fields: [matchId], references: [id])
+  jsonResult    Json     // The full calculated ScoreResult (cached)
+  version       String   // To invalidate cache if algorithm changes (e.g. "5.0")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

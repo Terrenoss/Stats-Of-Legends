@@ -110,6 +110,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const displaySummoner = me?.summonerName ? (me.summonerName + (me.tagLine ? `#${me.tagLine}` : '')) : (me?.summonerName ?? 'Unranked');
   const displayRank = me?.rank || 'Unranked';
 
+  const getGradeColor = (grade?: string) => {
+    if (grade === 'S+' || grade === 'S') return 'text-yellow-400';
+    if (grade === 'A') return 'text-emerald-400';
+    if (grade === 'B') return 'text-blue-400';
+    return 'text-gray-400';
+  };
+
   const containerClass = 'mb-4 relative rounded-[1.5rem] overflow-hidden border transition-all duration-300 ' + (isWin ? 'border-lol-win/20 bg-[#0c1a15]/80 hover:bg-[#0c1a15]' : 'border-lol-loss/20 bg-[#1a0a0a]/80 hover:bg-[#1a0a0a]');
 
   return (
@@ -195,6 +202,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: number, b: any) => a + b.kills, 0))) * 100)}%</div>
         </div>
 
+        {/* Legend Score Badge */}
+        <div className="flex flex-col items-center justify-center w-16 hidden md:flex relative group">
+          <div className={`text-xl font-black font-display ${getGradeColor(me.legendScoreGrade)}`}>
+            {me.legendScoreGrade || '-'}
+          </div>
+          <div className="text-[10px] text-gray-500 font-bold">
+            {me.legendScore?.toFixed(1) || '-'}
+          </div>
+
+          {/* V2: Confidence & Contribution Tooltip/Badge */}
+          {(me.legendScoreSampleSize !== undefined && me.legendScoreSampleSize < 10) && (
+            <div className="absolute -top-2 -right-2 w-3 h-3 bg-yellow-500 rounded-full border border-black" title="Low Sample Size (<10 matches) - Score may be volatile"></div>
+          )}
+          {me.legendScoreContribution !== undefined && me.legendScoreContribution > 0.01 && (
+            <div className="text-[9px] text-emerald-400 font-bold mt-0.5">+{Math.round(me.legendScoreContribution * 100)}% Win</div>
+          )}
+        </div>
+
         {/* Items */}
         <div className="flex flex-wrap gap-1 max-w-[160px]">
           {(() => {
@@ -237,7 +262,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
       {activeTab !== 'NONE' && (
         <div className="flex border-t border-white/5 bg-[#121212]">
           <button onClick={() => setActiveTab('SUMMARY')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'SUMMARY' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>Vue d'ensemble</button>
-          <button onClick={() => setActiveTab('SCORE')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'SCORE' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>OP Score</button>
+          <button onClick={() => setActiveTab('SCORE')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'SCORE' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>Legend Score</button>
           <button onClick={() => setActiveTab('TEAM')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'TEAM' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>Analyse d'équipe</button>
           <button onClick={() => setActiveTab('BUILD')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'BUILD' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>Build</button>
           <button onClick={() => setActiveTab('OTHER')} className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'OTHER' ? 'text-white border-white bg-white/5' : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'}`}>Autre</button>
@@ -248,7 +273,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
       {activeTab !== 'NONE' && (
         <div className="bg-[#0e0e0e] border-t border-white/5 p-4 animate-fadeIn">
           {activeTab === 'SUMMARY' && <MatchSummary participants={match.participants} maxDamage={maxDamage} maxTaken={maxTaken} ranks={ranks} lang={lang} region={region} gameDurationSeconds={match.gameDuration} teams={match.teams} />}
-          {activeTab === 'SCORE' && <MatchScore participants={match.participants} timelineData={match.timelineData || []} />}
+          {activeTab === 'SCORE' && <MatchScore participants={match.participants} timelineData={match.timelineData || []} me={me} averageRank={match.averageRank} />}
           {activeTab === 'TEAM' && <MatchTeamAnalysis participants={match.participants} maxDamage={maxDamage} maxTaken={maxTaken} />}
           {activeTab === 'BUILD' && <MatchBuild match={match} />}
           {activeTab === 'OTHER' && <MatchOther me={me} participants={match.participants} />}

@@ -164,6 +164,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
               <Clock className="w-3 h-3" />
               {t.lastUpdated}: <span className="text-gray-300">{getLastUpdatedText()}</span>
             </div>
+            {/* Consistency Badge */}
+            {profile.consistencyBadge && (
+              <div className={`mt-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-max border ${profile.consistencyBadge === 'Rock Solid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                  profile.consistencyBadge === 'Coinflip' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                    'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                }`}>
+                {profile.consistencyBadge === 'Rock Solid' ? '🛡️ Rock Solid' :
+                  profile.consistencyBadge === 'Coinflip' ? '🎰 Coinflip' : 'Average'}
+              </div>
+            )}
           </div>
         </div>
 

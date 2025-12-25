@@ -95,3 +95,26 @@ export const getRuneIconUrl = (iconPath: string): string => {
 export const getPassiveIconUrl = (passiveId: string, version: string = CURRENT_PATCH): string => {
     return `https://ddragon.leagueoflegends.com/cdn/${version}/img/passive/${cleanId(passiveId)}.png`;
 };
+
+const SPELL_MAP: Record<number, string> = {
+    1: "SummonerBoost",
+    3: "SummonerExhaust",
+    4: "SummonerFlash",
+    6: "SummonerHaste",
+    7: "SummonerHeal",
+    11: "SummonerSmite",
+    12: "SummonerTeleport",
+    13: "SummonerMana",
+    14: "SummonerDot",
+    21: "SummonerBarrier",
+    30: "SummonerPoroRecall",
+    31: "SummonerPoroThrow",
+    32: "SummonerSnowball",
+    39: "SummonerSnowURFSnowball_Mark",
+    2201: "SummonerCherryHold",
+    2202: "SummonerCherryFlash",
+};
+
+export const getSpellName = (spellId: number): string => {
+    return SPELL_MAP[spellId] || `Summoner${spellId}`;
+};

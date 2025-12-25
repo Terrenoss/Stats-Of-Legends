@@ -140,12 +140,6 @@ export interface Participant {
   totalDamageDealtToChampions: number;
   physicalDamageDealtToChampions: number;
   magicDamageDealtToChampions: number;
-  trueDamageDealtToChampions: number;
-  totalDamageTaken?: number; // Ajouté : dégâts subis
-  goldEarned: number;
-  level: number;
-  rank?: string; // e.g., "P4"
-  opScore?: number; // 0-100 score
   ace?: boolean; // indicates ACE (all enemies killed) if present in source
   aceCount?: number; // number of ace occurrences (optional)
   puuid?: string; // player's unique id from Riot
@@ -162,6 +156,45 @@ export interface Participant {
   wardsKilled?: number;
   visionWardsBoughtInGame?: number;
   killParticipation?: number;
+  challenges?: {
+    dragonTakedowns?: number;
+    baronTakedowns?: number;
+    turretTakedowns?: number;
+    inhibitorTakedowns?: number;
+    [key: string]: any;
+  };
+  goldEarned?: number;
+  timeCCingOthers?: number;
+  totalHeal?: number;
+  totalHealsOnTeammates?: number;
+  totalDamageShieldedOnTeammates?: number;
+
+  // Legend Score V2/V3
+  legendScore?: number;
+  legendScoreGrade?: string;
+  legendScoreBreakdown?: {
+    kda: number;
+    damage: number;
+    gold: number;
+    vision: number;
+    cs: number;
+    objective: number;
+    utility: number;
+    lane?: number;
+  };
+  legendScoreComparison?: string;
+  legendScoreContribution?: number;
+  legendScoreSampleSize?: number;
+  roleAveragePerformance?: {
+    kda: number;
+    damage: number;
+    gold: number;
+    vision: number;
+    cs: number;
+    objective: number;
+    utility: number;
+    lane?: number;
+  };
 }
 
 export interface TeamObjective {
@@ -244,6 +277,7 @@ export interface SummonerProfile {
   topPercent: number; // Top % of players
   lastUpdated: number; // Timestamp
   metrics?: PerformanceMetrics;
+  consistencyBadge?: 'Rock Solid' | 'Coinflip' | 'Average';
 }
 
 export interface Teammate {

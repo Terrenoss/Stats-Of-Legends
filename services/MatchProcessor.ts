@@ -39,6 +39,20 @@ export class MatchProcessor {
             const champMap = await RiotService.getChampionIdMap(patch + ".1");
             const itemMap = await RiotService.getItemMap(patch + ".1");
 
+            // V2: Duration Bucket
+            const duration = info.gameDuration || 0;
+            const durationBucket = duration < 1200 ? "0-20" : duration < 1800 ? "20-30" : "30+";
+
+            // V2: Calculate Team Totals for Shares
+            const teamStats: Record<number, { damage: number; gold: number }> = { 100: { damage: 0, gold: 0 }, 200: { damage: 0, gold: 0 } };
+            for (const p of info.participants) {
+                const tid = p.teamId;
+                if (teamStats[tid]) {
+                    teamStats[tid].damage += p.totalDamageDealtToChampions || 0;
+                    teamStats[tid].gold += p.goldEarned || 0;
+                }
+            }
+
             // 2a. Process Bans
             for (const team of info.teams) {
                 for (const ban of team.bans) {
@@ -47,11 +61,12 @@ export class MatchProcessor {
                         if (champName) {
                             await prisma.championStat.upsert({
                                 where: {
-                                    championId_role_tier_patch: {
+                                    championId_role_tier_patch_durationBucket: {
                                         championId: champName,
                                         role: 'ALL',
                                         tier: tier,
-                                        patch: patch
+                                        patch: patch,
+                                        durationBucket: durationBucket
                                     }
                                 },
                                 update: { bans: { increment: 1 } },
@@ -60,6 +75,7 @@ export class MatchProcessor {
                                     role: 'ALL',
                                     tier: tier,
                                     patch: patch,
+                                    durationBucket: durationBucket,
                                     bans: 1
                                 }
                             });
@@ -274,14 +290,23 @@ export class MatchProcessor {
                         skillOrderData[skillOrderString] = { wins: p.win ? 1 : 0, matches: 1 };
                     }
 
+                    // V2: Calculate Shares
+                    const myTeamStats = teamStats[p.teamId] || { damage: 1, gold: 1 };
+                    const damageShare = (p.totalDamageDealtToChampions || 0) / Math.max(1, myTeamStats.damage);
+                    const goldShare = (p.goldEarned || 0) / Math.max(1, myTeamStats.gold);
+                    const visionPerMin = (p.visionScore || 0) / Math.max(1, duration / 60);
+                    // Objective participation: use challenges if available, else 0 for now
+                    const objPart = p.challenges?.teamObjectives ? (p.challenges.teamObjectives) : 0; // Placeholder if not available
+
                     // Upsert Champion Stats (Merge Logic)
                     const existingStat = await prisma.championStat.findUnique({
                         where: {
-                            championId_role_tier_patch: {
+                            championId_role_tier_patch_durationBucket: {
                                 championId: championId,
                                 role: role,
                                 tier: tier,
-                                patch: patch
+                                patch: patch,
+                                durationBucket: durationBucket
                             }
                         }
                     });
@@ -345,6 +370,20 @@ export class MatchProcessor {
                             data: {
                                 matches: { increment: 1 },
                                 wins: { increment: p.win ? 1 : 0 },
+                                totalKills: { increment: p.kills },
+                                totalDeaths: { increment: p.deaths },
+                                totalAssists: { increment: p.assists },
+                                totalDamage: { increment: p.totalDamageDealtToChampions },
+                                totalGold: { increment: p.goldEarned },
+                                totalCs: { increment: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0) },
+                                totalVision: { increment: p.visionScore },
+                                totalDuration: { increment: info.gameDuration },
+                                totalDamageShare: { increment: damageShare },
+                                totalGoldShare: { increment: goldShare },
+                                totalVisionScorePerMin: { increment: visionPerMin },
+                                totalObjectiveParticipation: { increment: objPart },
+                                // V4.5: Variance
+                                totalDamageShareSq: { increment: Math.pow(damageShare, 2) },
                                 items: itemsToSave as any,
                                 runes: finalRunes as any,
                                 spells: finalSpells as any,
@@ -360,6 +399,26 @@ export class MatchProcessor {
                                 patch: patch,
                                 matches: 1,
                                 wins: p.win ? 1 : 0,
+                                totalKills: p.kills,
+                                totalDeaths: p.deaths,
+                                totalAssists: p.assists,
+                                totalDamage: p.totalDamageDealtToChampions,
+                                totalGold: p.goldEarned,
+                                totalCs: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
+                                totalVision: p.visionScore,
+                                totalDuration: info.gameDuration,
+                                durationBucket: durationBucket,
+                                totalDamageShare: damageShare,
+                                totalGoldShare: goldShare,
+                                totalVisionScorePerMin: visionPerMin,
+                                totalObjectiveParticipation: objPart,
+                                // V4.5: Variance
+                                totalGd15Sq: 0, // Need lane stats for this, but MatchProcessor usually runs on full match.
+                                // TODO: We need to extract lane stats here too if we want to store them.
+                                // For now, initializing to 0. Real implementation requires calculating CSD@15 here.
+                                totalCsd15Sq: 0,
+                                totalXpd15Sq: 0,
+                                totalDamageShareSq: Math.pow(damageShare, 2),
                                 items: itemsToSave as any,
                                 runes: finalRunes as any,
                                 spells: finalSpells as any,
@@ -374,17 +433,31 @@ export class MatchProcessor {
                         const opponentId = opponent.championName;
                         await prisma.matchupStat.upsert({
                             where: {
-                                championId_opponentId_role_tier_patch: {
+                                championId_opponentId_role_tier_patch_durationBucket: {
                                     championId: championId,
                                     opponentId: opponentId,
                                     role: role,
                                     tier: tier,
-                                    patch: patch
+                                    patch: patch,
+                                    durationBucket: durationBucket
                                 }
                             },
                             update: {
                                 matches: { increment: 1 },
-                                wins: { increment: p.win ? 1 : 0 }
+                                wins: { increment: p.win ? 1 : 0 },
+                                totalKills: { increment: p.kills },
+                                totalDeaths: { increment: p.deaths },
+                                totalAssists: { increment: p.assists },
+                                totalDamage: { increment: p.totalDamageDealtToChampions },
+                                totalGold: { increment: p.goldEarned },
+                                totalCs: { increment: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0) },
+                                totalVision: { increment: p.visionScore },
+                                totalDuration: { increment: info.gameDuration },
+                                totalDamageShare: { increment: damageShare },
+                                totalGoldShare: { increment: goldShare },
+                                totalVisionScorePerMin: { increment: visionPerMin },
+                                totalObjectiveParticipation: { increment: objPart },
+                                totalDamageShareSq: { increment: Math.pow(damageShare, 2) }
                             },
                             create: {
                                 championId: championId,
@@ -393,7 +466,24 @@ export class MatchProcessor {
                                 tier: tier,
                                 patch: patch,
                                 matches: 1,
-                                wins: p.win ? 1 : 0
+                                wins: p.win ? 1 : 0,
+                                totalKills: p.kills,
+                                totalDeaths: p.deaths,
+                                totalAssists: p.assists,
+                                totalDamage: p.totalDamageDealtToChampions,
+                                totalGold: p.goldEarned,
+                                totalCs: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
+                                totalVision: p.visionScore,
+                                totalDuration: info.gameDuration,
+                                durationBucket: durationBucket,
+                                totalDamageShare: damageShare,
+                                totalGoldShare: goldShare,
+                                totalVisionScorePerMin: visionPerMin,
+                                totalObjectiveParticipation: objPart,
+                                totalDamageShareSq: Math.pow(damageShare, 2),
+                                totalGd15Sq: 0,
+                                totalCsd15Sq: 0,
+                                totalXpd15Sq: 0
                             }
                         });
                     }
