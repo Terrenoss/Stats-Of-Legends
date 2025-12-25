@@ -19,21 +19,23 @@ export async function GET(req: NextRequest) {
         if (upstream.ok) {
           return NextResponse.json(await upstream.json());
         }
-      } catch { }
+      } catch (error) {
+        console.error('Upstream fetch failed:', error);
+      }
     }
 
     const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/item.json`;
-    const r = await fetch(cdnUrl, { next: { revalidate: 3600 } });
-    if (!r.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
-    const json = await r.json();
+    const response = await fetch(cdnUrl, { next: { revalidate: 3600 } });
+    if (!response.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
+    const json = await response.json();
     const data = Object.keys(json.data || {}).map(id => {
-      const it = (json.data as any)[id];
+      const item = (json.data as any)[id];
       return {
         id: String(id),
-        name: it.name,
-        imageFull: it.image?.full || `${id}.png`,
-        stats: it.stats || {},
-        gold: it.gold || {},
+        name: item.name,
+        imageFull: item.image?.full || `${id}.png`,
+        stats: item.stats || {},
+        gold: item.gold || {},
       };
     });
     return NextResponse.json({ patch, data });

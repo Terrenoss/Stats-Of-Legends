@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Participant } from '../../../types';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { LegendScoreRadar } from '../../LegendScoreRadar';
+import { getGradeColor } from '../../../utils/formatUtils';
 
 interface MatchScoreProps {
     participants: Participant[];
@@ -17,13 +18,6 @@ export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineDa
 
     const winningTeam = participants.filter(p => p.win).sort((a, b) => (b.legendScore || 0) - (a.legendScore || 0));
     const losingTeam = participants.filter(p => !p.win).sort((a, b) => (b.legendScore || 0) - (a.legendScore || 0));
-
-    const getGradeColor = (grade?: string) => {
-        if (grade === 'S+' || grade === 'S') return 'bg-yellow-500 text-black border border-yellow-300';
-        if (grade === 'A') return 'bg-emerald-500 text-white border border-emerald-400';
-        if (grade === 'B') return 'bg-blue-500 text-white border border-blue-400';
-        return 'bg-gray-600 text-gray-200 border border-gray-500';
-    };
 
     const zToScore = (z?: number) => {
         if (z === undefined) return 50;

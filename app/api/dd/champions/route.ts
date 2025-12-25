@@ -42,29 +42,31 @@ export async function GET(req: NextRequest) {
         if (upstream.ok) {
           return NextResponse.json(await upstream.json());
         }
-      } catch { }
+      } catch (error) {
+        console.error('Upstream fetch failed:', error);
+      }
     }
 
     // Use championFull.json to get all data in one go
     const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/championFull.json`;
-    const r = await fetch(cdnUrl, { next: { revalidate: 3600 } });
-    if (!r.ok) return NextResponse.json({ error: 'Failed to fetch champions from CDN' }, { status: 500 });
-    const json = await r.json();
+    const response = await fetch(cdnUrl, { next: { revalidate: 3600 } });
+    if (!response.ok) return NextResponse.json({ error: 'Failed to fetch champions from CDN' }, { status: 500 });
+    const json = await response.json();
 
     const result: any[] = [];
     const entries = Object.values(json.data || {});
 
-    for (const c of entries as any[]) {
+    for (const championEntry of entries as any[]) {
       let spells: any[] = [];
 
-      // c in championFull.json already has spells and detailed stats
-      if (Array.isArray(c.spells)) {
-        spells = c.spells.map((s: any, idx: number) => {
+      // championEntry in championFull.json already has spells and detailed stats
+      if (Array.isArray(championEntry.spells)) {
+        spells = championEntry.spells.map((spell: any, idx: number) => {
           let base: number[] = [];
-          if (Array.isArray(s.effect) && s.effect[1]) {
-            base = (s.effect[1] as number[]).map(v => Number(v) || 0);
-          } else if (Array.isArray(s.effectBurn) && s.effectBurn[1]) {
-            const parts = String(s.effectBurn[1]).split('/');
+          if (Array.isArray(spell.effect) && spell.effect[1]) {
+            base = (spell.effect[1] as number[]).map(v => Number(v) || 0);
+          } else if (Array.isArray(spell.effectBurn) && spell.effectBurn[1]) {
+            const parts = String(spell.effectBurn[1]).split('/');
             base = parts.map(p => {
               const n = parseFloat(p.replace(/[^0-9.]/g, ''));
               return isNaN(n) ? 0 : n;
@@ -72,10 +74,10 @@ export async function GET(req: NextRequest) {
           }
 
           if (!base || !base.some(n => n > 0)) {
-            base = approximateBaseFromTooltip(s);
+            base = approximateBaseFromTooltip(spell);
           }
 
-          const mr = s.maxrank || s.maxRank || 5;
+          const mr = spell.maxrank || spell.maxRank || 5;
           if (!base || !base.some(n => n > 0)) {
             if (mr === 3) base = [100, 200, 300];
             else if (mr === 4) base = [60, 105, 150, 195];
@@ -84,8 +86,8 @@ export async function GET(req: NextRequest) {
 
           let apRatio = 0;
           let adRatio = 0;
-          if (Array.isArray(s.vars)) {
-            for (const v of s.vars) {
+          if (Array.isArray(spell.vars)) {
+            for (const v of spell.vars) {
               if (v.link === 'spelldamage' || v.key === 'a') {
                 const coeff = Array.isArray(v.coeff) ? v.coeff[0] : v.coeff;
                 apRatio = Number(coeff) || apRatio;
@@ -97,18 +99,18 @@ export async function GET(req: NextRequest) {
             }
           }
 
-          const rawDamageType = (s.damageType || '').toLowerCase();
+          const rawDamageType = (spell.damageType || '').toLowerCase();
           const damageType = rawDamageType === 'physical' ? 'physical' : rawDamageType === 'true' ? 'true' : 'magic';
 
           return {
             id: ['Q', 'W', 'E', 'R'][idx] || String(idx),
-            name: s.name,
-            imageFull: s.image?.full || null,
-            description: s.description || '',
-            tooltip: s.tooltip || '',
+            name: spell.name,
+            imageFull: spell.image?.full || null,
+            description: spell.description || '',
+            tooltip: spell.tooltip || '',
             maxRank: mr,
-            cooldown: s.cooldown || [],
-            cost: s.cost || [],
+            cooldown: spell.cooldown || [],
+            cost: spell.cost || [],
             baseDamage: base,
             ratios: { ap: apRatio, ad: adRatio },
             damageType,
@@ -117,12 +119,12 @@ export async function GET(req: NextRequest) {
       }
 
       result.push({
-        id: c.id,
-        key: c.key,
-        name: c.name,
-        title: c.title,
-        imageFull: c.image?.full || null,
-        stats: c.stats || {},
+        id: championEntry.id,
+        key: championEntry.key,
+        name: championEntry.name,
+        title: championEntry.title,
+        imageFull: championEntry.image?.full || null,
+        stats: championEntry.stats || {},
         spells,
       });
     }

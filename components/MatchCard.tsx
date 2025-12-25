@@ -12,6 +12,7 @@ import { MatchBuild } from './match/tabs/MatchBuild';
 import { MatchOther } from './match/tabs/MatchOther';
 import { getAverageRank } from '../utils/rankUtils';
 import { getChampionIconUrl } from '../utils/ddragon';
+import { getGradeColor, getRankIconUrl } from '../utils/formatUtils';
 
 interface MatchCardProps {
   match: Match;
@@ -66,10 +67,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     return `${diffDays}d ago`;
   };
 
-  const getRankIcon = (tier: string) => {
-    if (!tier || tier === 'Unranked') return null;
-    return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-${tier.toLowerCase()}.png`;
-  };
+
+
+  // ... (rest of imports)
+
+  // Inside component:
+  // Remove getRankIcon and getGradeColor definitions.
+  // Use imported functions.
 
   const fetchRanks = async () => {
     if (ranksLoaded) return;
@@ -111,13 +115,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const displaySummoner = me?.summonerName ? (me.summonerName + (me.tagLine ? `#${me.tagLine}` : '')) : (me?.summonerName ?? 'Unranked');
   const displayRank = me?.rank || 'Unranked';
 
-  const getGradeColor = (grade?: string) => {
-    if (grade === 'S+' || grade === 'S') return 'text-yellow-400';
-    if (grade === 'A') return 'text-emerald-400';
-    if (grade === 'B') return 'text-blue-400';
-    return 'text-gray-400';
-  };
-
   const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-300 group
     ${isWin
       ? 'border-lol-win/20 bg-[#0a120f] hover:bg-[#0f1a15]' // Win: Very dark green/black
@@ -158,7 +155,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             }
 
             const tier = avgRank.split(' ')[0];
-            const icon = getRankIcon(tier);
+            const icon = getRankIconUrl(tier);
             return icon ? (
               <img src={icon} alt={avgRank} title={avgRank} className="w-[350px] h-[350px] max-w-none object-contain drop-shadow-2xl" />
             ) : null;

@@ -2,6 +2,7 @@ import React from 'react';
 import { SummonerProfile, Language } from '../types';
 import { TRANSLATIONS, MOCK_ROLES, RANK_EMBLEMS } from '../constants';
 import { getProfileIconUrl } from '../utils/ddragon';
+import { getRankColor, formatRank } from '../utils/formatUtils';
 import { Clock } from 'lucide-react';
 
 interface ProfileHeaderProps {
@@ -72,31 +73,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
       `hace ${diffDays} días`,
       `${diffDays}일 전`
     );
-  };
-
-  const formatRank = (tier: string | null, rank: string | null) => {
-    if (!tier) return 'UNRANKED';
-    const t = tier.toUpperCase();
-    if (['CHALLENGER', 'GRANDMASTER', 'MASTER'].includes(t)) {
-      return t;
-    }
-    return `${t} ${rank || ''}`;
-  };
-
-  const getRankColor = (tier: string | null) => {
-    switch (tier?.toUpperCase()) {
-      case 'IRON': return '#a19d94';
-      case 'BRONZE': return '#cd7f32';
-      case 'SILVER': return '#c0c0c0';
-      case 'GOLD': return '#ffd700';
-      case 'PLATINUM': return '#4ecdc4'; // Teal/Cyan
-      case 'EMERALD': return '#2ecc71';
-      case 'DIAMOND': return '#b9f2ff'; // Diamond Blue
-      case 'MASTER': return '#9b59b6'; // Purple
-      case 'GRANDMASTER': return '#e74c3c'; // Red
-      case 'CHALLENGER': return '#f1c40f'; // Gold/Blue mix
-      default: return '#ffd700';
-    }
   };
 
   const rankColor = getRankColor(safeSolo.tier);
