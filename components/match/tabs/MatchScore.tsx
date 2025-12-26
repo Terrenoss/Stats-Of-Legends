@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Participant } from '../../../types';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { LegendScoreRadar } from '../../LegendScoreRadar';
@@ -183,7 +184,7 @@ export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineDa
                                     }}
                                 >
                                     <div className="relative">
-                                        <img src={p.champion.imageUrl} className="w-10 h-10 rounded-lg border border-blue-500/30" />
+                                        <Image src={p.champion.imageUrl} width={40} height={40} className="w-10 h-10 rounded-lg border border-blue-500/30" alt={p.champion.name} />
                                         <div
                                             className={`absolute -bottom-2 -right-2 ${getGradeColor(p.legendScoreGrade)} text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md flex gap-1 items-center`}
                                         >
@@ -220,7 +221,7 @@ export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineDa
                                     }}
                                 >
                                     <div className="relative">
-                                        <img src={p.champion.imageUrl} className="w-10 h-10 rounded-lg border border-red-500/30" />
+                                        <Image src={p.champion.imageUrl} width={40} height={40} className="w-10 h-10 rounded-lg border border-red-500/30" alt={p.champion.name} />
                                         <div
                                             className={`absolute -bottom-2 -right-2 ${getGradeColor(p.legendScoreGrade)} text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md flex gap-1 items-center`}
                                         >

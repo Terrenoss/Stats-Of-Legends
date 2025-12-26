@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { Teammate, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getProfileIconUrl } from '../utils/ddragon';
@@ -33,8 +34,10 @@ export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammate
           >
             <div className="flex items-center gap-3">
               <div className="relative">
-                <img
+                <Image
                   src={getProfileIconUrl(teammate.profileIconId || 0)}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition"
                   alt="Icon"
                 />

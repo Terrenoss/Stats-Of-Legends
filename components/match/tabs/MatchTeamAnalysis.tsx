@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Participant } from '../../../types';
 
 interface MatchTeamAnalysisProps {
@@ -34,7 +35,7 @@ export const MatchTeamAnalysis: React.FC<MatchTeamAnalysisProps> = ({ participan
                                     <div style={{ width: `${(getValue(p) / localMax) * 100}%` }} className="h-full bg-blue-500 rounded-l-full"></div>
                                 </div>
                                 <span className="text-[10px] text-gray-300 w-8 text-right">{formatValue ? formatValue(getValue(p)) : getValue(p)}</span>
-                                <img src={p.champion.imageUrl} className="w-6 h-6 rounded border border-gray-700" />
+                                <Image src={p.champion.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-gray-700" alt={p.champion.name} />
                             </div>
                         ))}
                     </div>
@@ -53,7 +54,7 @@ export const MatchTeamAnalysis: React.FC<MatchTeamAnalysisProps> = ({ participan
                     <div className="flex-1 flex flex-col gap-1">
                         {team200.map((p, i) => (
                             <div key={i} className="flex items-center gap-2 h-6">
-                                <img src={p.champion.imageUrl} className="w-6 h-6 rounded border border-gray-700" />
+                                <Image src={p.champion.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-gray-700" alt={p.champion.name} />
                                 <span className="text-[10px] text-gray-300 w-8">{formatValue ? formatValue(getValue(p)) : getValue(p)}</span>
                                 <div className="flex-1 h-2 bg-gray-800 rounded-r-full">
                                     <div style={{ width: `${(getValue(p) / localMax) * 100}%` }} className="h-full bg-red-500 rounded-r-full"></div>

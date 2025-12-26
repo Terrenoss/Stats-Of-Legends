@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Participant, MatchTeam } from '../../../types';
 import { TRANSLATIONS } from '../../../constants';
 import { SafeLink } from '../../ui/SafeLink';
@@ -73,19 +74,19 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                                 {/* Champion & Summoner & Runes */}
                                 <div className="col-span-3 flex items-center gap-3">
                                     <div className="relative group cursor-pointer" onClick={() => window.open(summonerLink, '_blank')}>
-                                        <img src={p.champion.imageUrl} className="w-12 h-12 rounded-lg border border-gray-700" alt={p.champion.name} />
+                                        <Image src={p.champion.imageUrl} width={48} height={48} className="w-12 h-12 rounded-lg border border-gray-700" alt={p.champion.name} />
                                         <div className="absolute -bottom-1 -right-1 bg-black text-[10px] w-5 h-5 flex items-center justify-center rounded border border-gray-700 text-gray-400">{p.level}</div>
                                     </div>
 
                                     {/* Spells & Runes - 2x2 Grid */}
                                     <div className="grid grid-cols-2 gap-0.5">
                                         {/* Row 1: Spell 1, Primary Rune */}
-                                        <img src={p.spells[0]?.imageUrl} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 1" />
-                                        {p.runes?.primary && <img src={p.runes.primary} className="w-6 h-6 rounded-full bg-black border border-white/10" alt="Primary Rune" />}
+                                        <Image src={p.spells[0]?.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 1" />
+                                        {p.runes?.primary && <Image src={p.runes.primary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10" alt="Primary Rune" />}
 
                                         {/* Row 2: Spell 2, Secondary Rune */}
-                                        <img src={p.spells[1]?.imageUrl} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 2" />
-                                        {p.runes?.secondary && <img src={p.runes.secondary} className="w-6 h-6 rounded-full bg-black border border-white/10 p-0.5" alt="Secondary Rune" />}
+                                        <Image src={p.spells[1]?.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 2" />
+                                        {p.runes?.secondary && <Image src={p.runes.secondary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10 p-0.5" alt="Secondary Rune" />}
                                     </div>
 
                                     <div className="flex flex-col min-w-0 ml-1">
@@ -146,7 +147,7 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                                 <div className="col-span-3 flex justify-end gap-0.5">
                                     {(p.items || []).map((it, idx) => (
                                         <div key={idx} className="w-8 h-8 rounded bg-[#1a1a1a] border border-white/10 overflow-hidden">
-                                            {it.imageUrl && <img src={it.imageUrl} className="w-full h-full object-cover" title={it.name} />}
+                                            {it.imageUrl && <Image src={it.imageUrl} width={32} height={32} className="w-full h-full object-cover" title={it.name} alt={it.name || 'Item'} />}
                                         </div>
                                     ))}
                                 </div>
@@ -158,52 +159,60 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
         );
     };
 
-    const getObjectiveIcon = (name: string, teamId: number) => {
-        // User provided specific URLs for grubs and towers
-        if (name === 'voidGrub') {
-            return <img src="https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/grub.png" className="w-5 h-5" alt="Void Grub" />;
-        }
-        if (name === 'tower') {
-            return <img src="https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/tower.png" className="w-5 h-5" alt="Tower" />;
-        }
+    const ObjectiveIcon = ({ name, teamId }: { name: string, teamId: number }) => {
+        const [src, setSrc] = React.useState<string>("");
 
-        // Try multiple paths for others
-        const basePath = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-match-history/global/default";
-        const altPath = "https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons";
+        React.useEffect(() => {
+            if (name === 'voidGrub') {
+                setSrc("https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/grub.png");
+                return;
+            }
+            if (name === 'tower') {
+                setSrc("https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons/tower.png");
+                return;
+            }
 
-        let iconName = "";
-        switch (name) {
-            case 'baron': iconName = `icon_baron-${teamId}.png`; break;
-            case 'dragon': iconName = `icon_dragon-${teamId}.png`; break;
-            case 'riftHerald': iconName = `icon_rift_herald-${teamId}.png`; break;
-            case 'inhibitor': iconName = `icon_inhibitor-${teamId}.png`; break;
-        }
+            const basePath = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-match-history/global/default";
+            let iconName = "";
+            switch (name) {
+                case 'baron': iconName = `icon_baron-${teamId}.png`; break;
+                case 'dragon': iconName = `icon_dragon-${teamId}.png`; break;
+                case 'riftHerald': iconName = `icon_rift_herald-${teamId}.png`; break;
+                case 'inhibitor': iconName = `icon_inhibitor-${teamId}.png`; break;
+            }
+            setSrc(`${basePath}/${iconName}`);
+        }, [name, teamId]);
+
+        const handleError = () => {
+            const altPath = "https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons";
+            let altName = "";
+            switch (name) {
+                case 'baron': altName = "baron.png"; break;
+                case 'dragon': altName = "dragon.png"; break;
+                case 'riftHerald': altName = "riftherald.png"; break;
+                case 'inhibitor': altName = "inhibitor.png"; break;
+            }
+
+            if (altName) {
+                // Try lowercase first
+                const newSrc = `${altPath}/${altName}`;
+                if (src !== newSrc) {
+                    setSrc(newSrc);
+                }
+            }
+        };
+
+        if (!src) return null;
 
         return (
-            <img
-                src={`${basePath}/${iconName}`}
+            <Image
+                src={src}
+                width={20}
+                height={20}
                 className="w-5 h-5"
                 alt={name}
-                onError={(e) => {
-                    // Fallback to minimap icons
-                    let altName = "";
-                    switch (name) {
-                        case 'baron': altName = "baron.png"; break;
-                        case 'dragon': altName = "dragon.png"; break;
-                        case 'riftHerald': altName = "riftherald.png"; break;
-                        case 'inhibitor': altName = "inhibitor.png"; break;
-                    }
-
-                    if (altName) {
-                        e.currentTarget.src = `${altPath}/${altName}`;
-                        // Second fallback if minimap fails (e.g. case sensitivity)
-                        e.currentTarget.onerror = (e2: any) => {
-                            // Try capitalized
-                            const capitalized = altName.charAt(0).toUpperCase() + altName.slice(1);
-                            (e2.currentTarget as HTMLImageElement).src = `${altPath}/${capitalized}`;
-                        };
-                    }
-                }}
+                onError={handleError}
+                unoptimized // External CDragon images
             />
         );
     };
@@ -225,13 +234,13 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                     {/* Blue Objectives */}
                     {teams && (
                         <div className="grid grid-cols-4 gap-x-3 gap-y-1 ml-4 border-l border-white/10 pl-4">
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Baron">{getObjectiveIcon('baron', 100)} {teams.find(t => t.teamId === 100)?.objectives.baron.kills}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Dragon">{getObjectiveIcon('dragon', 100)} {teams.find(t => t.teamId === 100)?.objectives.dragon.kills}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Rift Herald">{getObjectiveIcon('riftHerald', 100)} {teams.find(t => t.teamId === 100)?.objectives.riftHerald.kills}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Void Grubs">{getObjectiveIcon('voidGrub', 100)} {teams.find(t => t.teamId === 100)?.objectives.voidGrub?.kills || 0}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Baron"><ObjectiveIcon name="baron" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.baron.kills}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Dragon"><ObjectiveIcon name="dragon" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.dragon.kills}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Rift Herald"><ObjectiveIcon name="riftHerald" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.riftHerald.kills}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Void Grubs"><ObjectiveIcon name="voidGrub" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.voidGrub?.kills || 0}</div>
 
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Tower">{getObjectiveIcon('tower', 100)} {teams.find(t => t.teamId === 100)?.objectives.tower.kills}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Inhibitor">{getObjectiveIcon('inhibitor', 100)} {teams.find(t => t.teamId === 100)?.objectives.inhibitor.kills}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Tower"><ObjectiveIcon name="tower" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.tower.kills}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Inhibitor"><ObjectiveIcon name="inhibitor" teamId={100} /> {teams.find(t => t.teamId === 100)?.objectives.inhibitor.kills}</div>
                         </div>
                     )}
                 </div>
@@ -241,13 +250,13 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                     {/* Red Objectives */}
                     {teams && (
                         <div className="grid grid-cols-4 gap-x-3 gap-y-1 mr-4 border-r border-white/10 pr-4">
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Baron">{teams.find(t => t.teamId === 200)?.objectives.baron.kills} {getObjectiveIcon('baron', 200)}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Dragon">{teams.find(t => t.teamId === 200)?.objectives.dragon.kills} {getObjectiveIcon('dragon', 200)}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Rift Herald">{teams.find(t => t.teamId === 200)?.objectives.riftHerald.kills} {getObjectiveIcon('riftHerald', 200)}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Void Grubs">{teams.find(t => t.teamId === 200)?.objectives.voidGrub?.kills || 0} {getObjectiveIcon('voidGrub', 200)}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Baron">{teams.find(t => t.teamId === 200)?.objectives.baron.kills} <ObjectiveIcon name="baron" teamId={200} /></div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Dragon">{teams.find(t => t.teamId === 200)?.objectives.dragon.kills} <ObjectiveIcon name="dragon" teamId={200} /></div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Rift Herald">{teams.find(t => t.teamId === 200)?.objectives.riftHerald.kills} <ObjectiveIcon name="riftHerald" teamId={200} /></div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Void Grubs">{teams.find(t => t.teamId === 200)?.objectives.voidGrub?.kills || 0} <ObjectiveIcon name="voidGrub" teamId={200} /></div>
 
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Tower">{teams.find(t => t.teamId === 200)?.objectives.tower.kills} {getObjectiveIcon('tower', 200)}</div>
-                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Inhibitor">{teams.find(t => t.teamId === 200)?.objectives.inhibitor.kills} {getObjectiveIcon('inhibitor', 200)}</div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Tower">{teams.find(t => t.teamId === 200)?.objectives.tower.kills} <ObjectiveIcon name="tower" teamId={200} /></div>
+                            <div className="flex items-center gap-1 text-gray-400 text-xs" title="Inhibitor">{teams.find(t => t.teamId === 200)?.objectives.inhibitor.kills} <ObjectiveIcon name="inhibitor" teamId={200} /></div>
                         </div>
                     )}
 

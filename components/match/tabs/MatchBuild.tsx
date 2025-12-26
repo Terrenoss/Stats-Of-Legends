@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Match } from '../../../types';
 import { ArrowRight } from 'lucide-react';
 
@@ -29,10 +30,13 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
                         <div key={idx} className="flex items-center">
                             <div className="flex flex-col items-center gap-2 group">
                                 <div className="relative">
-                                    <img
+                                    <Image
                                         src={step.item.imageUrl}
+                                        width={40}
+                                        height={40}
                                         className={`w-10 h-10 rounded-lg border transition-colors ${step.action === 'ITEM_SOLD' ? 'border-red-500/50 opacity-60 grayscale' : 'border-gray-700 group-hover:border-lol-gold'}`}
                                         title={`${step.item.name} (${step.action})`}
+                                        alt={step.item.name || 'Item'}
                                     />
                                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-[9px] px-1.5 rounded border border-white/10 whitespace-nowrap">{step.timestamp}</div>
                                     {step.action === 'ITEM_SOLD' && (
@@ -56,13 +60,13 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
                 <div className="flex items-center gap-6">
                     {runes?.primary ? (
                         <div className="flex flex-col items-center gap-2">
-                            <img src={runes.primary} className="w-16 h-16 rounded-full bg-black border border-lol-gold/50" />
+                            <Image src={runes.primary} width={64} height={64} className="w-16 h-16 rounded-full bg-black border border-lol-gold/50" alt="Keystone" />
                             <span className="text-xs text-lol-gold font-bold">Keystone</span>
                         </div>
                     ) : null}
                     {runes?.secondary ? (
                         <div className="flex flex-col items-center gap-2">
-                            <img src={runes.secondary} className="w-12 h-12 rounded-full bg-black border border-gray-600 p-2" />
+                            <Image src={runes.secondary} width={48} height={48} className="w-12 h-12 rounded-full bg-black border border-gray-600 p-2" alt="Secondary" />
                             <span className="text-xs text-gray-400 font-bold">Secondary</span>
                         </div>
                     ) : null}

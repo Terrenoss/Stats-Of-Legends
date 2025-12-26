@@ -173,6 +173,7 @@ export interface Participant {
   level?: number;
   rank?: string;
   opScore?: number;
+  champLevel?: number;
 
   // Legend Score V2/V3
   legendScore?: number;

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { ChampionTier } from '../../types';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -32,8 +33,10 @@ export const ChampionTierRow: React.FC<ChampionTierRowProps> = ({ champion, rank
                     className="flex items-center gap-4 group"
                 >
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 group-hover:border-lol-gold transition-colors relative">
-                        <img
+                        <Image
                             src={getChampionIconUrl(champion.id)}
+                            width={40}
+                            height={40}
                             alt={champion.name}
                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                         />
@@ -60,8 +63,10 @@ export const ChampionTierRow: React.FC<ChampionTierRowProps> = ({ champion, rank
                 <div className="flex gap-1">
                     {champion.counters?.map((counterId, i) => (
                         <div key={i} className="relative w-8 h-8 rounded-full border border-black/50" title={counterId}>
-                            <img
+                            <Image
                                 src={getChampionIconUrl(counterId)}
+                                width={32}
+                                height={32}
                                 alt={counterId}
                                 className="w-full h-full object-cover"
                             />

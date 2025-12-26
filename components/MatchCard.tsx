@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Match, GameMode } from '../types';
+import Image from 'next/image';
+import { Match, GameMode, Participant } from '../types';
 import { CURRENT_PATCH } from '../constants';
 import { ChevronDown } from 'lucide-react';
 import { useI18n } from "../app/LanguageContext";
@@ -20,7 +21,7 @@ interface MatchCardProps {
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) => {
-  const me: any = match.me ?? {};
+  const me: Participant = match.me ?? {} as Participant;
   const isWin = !!me.win;
   const kills = Number(me.kills ?? 0);
   const deaths = Number(me.deaths ?? 0);
@@ -44,7 +45,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     if (match.queueId === 450) return 'ARAM';
     if (match.queueId === 400 || match.queueId === 430) return t.normal;
 
-    const mode = match.gameMode as any;
+    const mode = match.gameMode as string;
     if (mode === GameMode.SOLO_DUO || mode === 'RANKED_SOLO_5x5') return t.rankSolo;
     if (mode === GameMode.FLEX || mode === 'RANKED_FLEX_SR') return 'Ranked Flex';
     if (mode === GameMode.ARAM || mode === 'ARAM') return 'ARAM';
@@ -67,18 +68,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     return `${diffDays}d ago`;
   };
 
-
-
-  // ... (rest of imports)
-
-  // Inside component:
-  // Remove getRankIcon and getGradeColor definitions.
-  // Use imported functions.
-
   const fetchRanks = async () => {
     if (ranksLoaded) return;
     try {
-      const puuids = match.participants.map((p: any) => p.puuid).filter(Boolean);
+      const puuids = match.participants.map((p) => p.puuid).filter(Boolean);
       const res = await fetch('/api/match/ranks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,12 +99,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     }
   };
 
-  const maxDamage = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p: any) => Number(p.totalDamageDealtToChampions ?? 0)) : [0]));
-  const maxTaken = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p: any) => Number(p.totalDamageTaken ?? 0)) : [0]));
+  const maxDamage = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p) => Number(p.totalDamageDealtToChampions ?? 0)) : [0]));
+  const maxTaken = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p) => Number(p.totalDamageTaken ?? 0)) : [0]));
 
   const champImg = me?.champion?.imageUrl ?? null;
   const champName = me?.champion?.name ?? 'Unknown';
-  const spells = Array.isArray(me?.spells) ? me.spells : ([] as any[]);
+  const spells = Array.isArray(me?.spells) ? me.spells : [];
   const displaySummoner = me?.summonerName ? (me.summonerName + (me.tagLine ? `#${me.tagLine}` : '')) : (me?.summonerName ?? 'Unranked');
   const displayRank = me?.rank || 'Unranked';
 
@@ -124,7 +117,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
 
   // MVP Check
   const myScore = me.legendScore || 0;
-  const maxScore = Math.max(...(match.participants || []).map((p: any) => p.legendScore || 0));
+  const maxScore = Math.max(...(match.participants || []).map((p) => p.legendScore || 0));
   const isMvp = myScore > 0 && myScore === maxScore && isWin;
 
   return (
@@ -149,7 +142,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
                 validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null).filter(Boolean) as string[];
               }
               if (validRanks.length === 0 && match.participants) {
-                validRanks = match.participants.map((p: any) => p.rank).filter(Boolean);
+                validRanks = match.participants.map((p) => p.rank).filter(Boolean) as string[];
               }
               avgRank = getAverageRank(validRanks);
             }
@@ -157,7 +150,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             const tier = avgRank.split(' ')[0];
             const icon = getRankIconUrl(tier);
             return icon ? (
-              <img src={icon} alt={avgRank} title={avgRank} className="w-[350px] h-[350px] max-w-none object-contain drop-shadow-2xl" />
+              <Image src={icon} alt={avgRank} title={avgRank} width={350} height={350} className="max-w-none object-contain drop-shadow-2xl" />
             ) : null;
           })()}
         </div>
@@ -181,9 +174,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         <div className="flex gap-3 items-center">
           <div className="relative group">
             <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shadow-lg ${isWin ? 'border-lol-win' : 'border-lol-loss'}`}>
-              <img
+              <Image
                 src={getChampionIconUrl(champName)}
                 alt={champName}
+                width={48}
+                height={48}
                 className="w-full h-full object-cover transform hover:scale-110 transition-transform"
               />
             </div>
@@ -192,18 +187,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            {spells.map((spell: any, idx: number) => (
-              <img key={spell.id ?? spell ?? idx} src={spell.imageUrl} alt={spell.name ?? ''} className="w-6 h-6 md:w-7 md:h-7 rounded-md border border-white/10 bg-[#121212]" />
+            {spells.map((spell, idx) => (
+              <Image key={spell.id || idx} src={spell.imageUrl} alt={spell.name ?? ''} width={24} height={24} className="w-6 h-6 md:w-7 md:h-7 rounded-md border border-white/10 bg-[#121212]" />
             ))}
           </div>
           <div className="flex flex-col gap-1">
             {me?.runes?.primary ? (
-              <img src={me.runes.primary} alt="Keystone" className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 object-cover" />
+              <Image src={me.runes.primary} alt="Keystone" width={24} height={24} className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 object-cover" />
             ) : (
               <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
             )}
             {me?.runes?.secondary ? (
-              <img src={me.runes.secondary} alt="Secondary Rune" className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 object-cover p-1" />
+              <Image src={me.runes.secondary} alt="Secondary Rune" width={24} height={24} className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 object-cover p-1" />
             ) : (
               <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
             )}
@@ -215,7 +210,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           {/* MVP Badge */}
           {(() => {
             const myScore = me.legendScore || 0;
-            const maxScore = Math.max(...(match.participants || []).map((p: any) => p.legendScore || 0));
+            const maxScore = Math.max(...(match.participants || []).map((p) => p.legendScore || 0));
             const isMvp = myScore > 0 && myScore === maxScore;
 
             if (isMvp && isWin) {
@@ -234,7 +229,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           <div className={`text-xs font-mono mt-0.5 font-bold ${Number(kda) >= 5 ? 'text-orange-500 animate-burn font-black' : Number(kda) >= 4 ? 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : Number(kda) >= 3 ? 'text-blue-400' : 'text-gray-400'}`}>
             {kda} KDA
           </div>
-          <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: number, b: any) => a + b.kills, 0))) * 100)}%</div>
+          <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p) => p.win) : match.participants.filter((p) => !p.win)).reduce((a, b) => a + b.kills, 0))) * 100)}%</div>
         </div>
 
         {/* Legend Score Badge */}
@@ -262,7 +257,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
             const rawItems = Array.isArray(me?.items) ? me.items : [];
             // Ensure we have 7 items just in case
             const safeItems = [...rawItems];
-            while (safeItems.length < 7) safeItems.push({ id: 0 });
+            while (safeItems.length < 7) safeItems.push({ id: 0, name: '', imageUrl: '' });
 
             // Order: Top Row [0, 1, 2, 6(Trinket)], Bottom Row [3, 4, 5]
             const orderedItems = [
@@ -270,9 +265,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
               safeItems[3], safeItems[4], safeItems[5]
             ];
 
-            return orderedItems.map((item: any, idx: number) => (
+            return orderedItems.map((item, idx) => (
               item?.id && item.id !== 0 ? (
-                <img key={`item-${idx}`} src={item.imageUrl} alt={item.name ?? ''} className={`w-6 h-6 rounded-md bg-[#121212] border border-white/10 ${idx === 3 ? 'rounded-full' : ''}`} title={item.name ?? ''} />
+                <Image key={`item-${idx}`} src={item.imageUrl} alt={item.name ?? ''} width={24} height={24} className={`w-6 h-6 rounded-md bg-[#121212] border border-white/10 ${idx === 3 ? 'rounded-full' : ''}`} title={item.name ?? ''} />
               ) : (
                 <div key={`empty-${idx}`} className="w-6 h-6 rounded-md bg-white/5 border border-white/5"></div>
               )

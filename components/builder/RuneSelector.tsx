@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { RuneStyle, SelectedRunes, Rune } from '../../types';
 import { Check, X } from 'lucide-react';
 import { getRuneIconUrl } from '../../utils/ddragon';
@@ -126,7 +127,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
                                     }`}
                                 title={style.name}
                             >
-                                <img src={getRuneIconUrl(style.icon)} alt={style.name} className="w-full h-full object-contain" />
+                                <Image src={getRuneIconUrl(style.icon)} alt={style.name} width={48} height={48} className="w-full h-full object-contain" />
                             </button>
                         ))}
                     </div>
@@ -199,7 +200,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
                                     }`}
                                 title={style.name}
                             >
-                                <img src={getRuneIconUrl(style.icon)} alt={style.name} className="w-full h-full object-contain" />
+                                <Image src={getRuneIconUrl(style.icon)} alt={style.name} width={40} height={40} className="w-full h-full object-contain" />
                             </button>
                         ))}
                     </div>
@@ -309,8 +310,10 @@ const RuneIcon = ({ rune, isSelected, onClick, isKeystone, size = 48 }: { rune: 
         <div className={`w-full h-full rounded-full border-2 transition-all duration-300 flex items-center justify-center overflow-hidden ${isSelected
             ? 'border-lol-gold shadow-[0_0_15px_rgba(200,155,60,0.6)] grayscale-0 scale-110 bg-black/50'
             : 'border-transparent grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-110'}`}>
-            <img
+            <Image
                 src={getRuneIconUrl(rune.icon)}
+                width={size}
+                height={size}
                 alt={rune.name}
                 className="object-contain transition-transform"
                 style={{

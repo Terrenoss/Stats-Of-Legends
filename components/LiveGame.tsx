@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Radio, Shield, Swords, Timer } from 'lucide-react';
 import { useI18n } from "../app/LanguageContext";
 import { getChampionIconUrl, getSpellIconUrl } from '../utils/ddragon';
@@ -196,14 +197,16 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
                 }`}
             >
               <div className="relative">
-                <img
+                <Image
                   src={getChampImg(p.championId)}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-lg border border-gray-700"
                   alt="Champion"
                 />
                 <div className="absolute -bottom-1 -right-1 flex gap-0.5">
-                  <img src={getSpellImg(p.spell1Id)} className="w-4 h-4 rounded border border-gray-600" alt="Spell 1" />
-                  <img src={getSpellImg(p.spell2Id)} className="w-4 h-4 rounded border border-gray-600" alt="Spell 2" />
+                  <Image src={getSpellImg(p.spell1Id)} width={16} height={16} className="w-4 h-4 rounded border border-gray-600" alt="Spell 1" />
+                  <Image src={getSpellImg(p.spell2Id)} width={16} height={16} className="w-4 h-4 rounded border border-gray-600" alt="Spell 2" />
                 </div>
               </div>
               <div>
@@ -257,8 +260,10 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
                     key={i}
                     className="w-8 h-8 rounded border border-blue-500/30 bg-black/50 grayscale opacity-70"
                   >
-                    <img
+                    <Image
                       src={getChampImg(ban.championId)}
+                      width={32}
+                      height={32}
                       className="w-full h-full object-cover opacity-60"
                       alt="Ban"
                     />
@@ -276,8 +281,10 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
                     key={i}
                     className="w-8 h-8 rounded border border-red-500/30 bg-black/50 grayscale opacity-70"
                   >
-                    <img
+                    <Image
                       src={getChampImg(ban.championId)}
+                      width={32}
+                      height={32}
                       className="w-full h-full object-cover opacity-60"
                       alt="Ban"
                     />

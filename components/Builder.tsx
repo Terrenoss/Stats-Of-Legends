@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Search, Plus, X, Zap, Shield, Swords, Brain, RotateCcw, Crosshair, Users, ChevronDown, Wand2, Gauge, CheckSquare, Square, Undo, Redo } from 'lucide-react';
 import { Item, Champion, Stats, DummyStats, Language } from '../types';
 import { DEFAULT_DUMMY, TRANSLATIONS } from '../constants';
@@ -482,7 +483,9 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
             <div className="flex items-center gap-8 relative z-10">
               <div className="relative cursor-pointer group" onClick={() => setIsChampSelectOpen(!isChampSelectOpen)}>
                 <div className="absolute -inset-2 bg-lol-gold rounded-full opacity-0 group-hover:opacity-20 blur-xl transition-opacity"></div>
-                <img src={currentChampion?.imageUrl} alt={currentChampion?.name} className="relative w-28 h-28 rounded-full border-4 border-[#121212] ring-2 ring-lol-gold shadow-2xl transition-transform group-hover:scale-105 object-cover" />
+                {currentChampion?.imageUrl && (
+                  <Image src={currentChampion.imageUrl} width={112} height={112} alt={currentChampion.name} className="relative w-28 h-28 rounded-full border-4 border-[#121212] ring-2 ring-lol-gold shadow-2xl transition-transform group-hover:scale-105 object-cover" />
+                )}
                 <div className="absolute bottom-0 right-0 bg-[#091428] border border-lol-gold rounded-full p-1.5 z-20">
                   <ChevronDown className="w-4 h-4 text-lol-gold" />
                 </div>
@@ -515,7 +518,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
                 <div key={spell.id} className="relative group/spell flex flex-col items-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="relative w-14 h-14">
-                      <img src={spell.imageUrl} className="w-full h-full rounded-2xl border border-gray-600 group-hover/spell:border-lol-gold transition-colors shadow-lg" alt={spell.name} />
+                      <Image src={spell.imageUrl} width={56} height={56} className="w-full h-full rounded-2xl border border-gray-600 group-hover/spell:border-lol-gold transition-colors shadow-lg" alt={spell.name} />
                       <div className="absolute -bottom-2 -right-2 bg-[#091428] text-[10px] w-6 h-6 flex items-center justify-center border border-gray-600 rounded-full text-white font-bold">
                         {spell.id}
                       </div>
@@ -565,7 +568,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
                     onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
                     className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${currentChampion?.id === champ.id ? 'border-lol-gold bg-lol-gold/10' : 'border-transparent hover:border-lol-gold/30'}`}
                   >
-                    <img src={champ.imageUrl} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
+                    <Image src={champ.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
                     <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
                   </div>
                 ))}
@@ -596,7 +599,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
                   onDragStart={(e) => handleDragStart(e, 'slot', idx)}
                   className="w-full h-full relative cursor-grab active:cursor-grabbing p-1.5"
                 >
-                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-[1.2rem]" />
+                  <Image src={item.imageUrl} width={96} height={96} alt={item.name} className="w-full h-full object-cover rounded-[1.2rem]" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center rounded-[1.2rem]">
                     <button
                       onClick={() => handleRemoveItem(idx)}

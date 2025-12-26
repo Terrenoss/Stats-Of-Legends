@@ -208,9 +208,12 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                             <div className="flex gap-2 mt-4">
                                 {/* Spell Order Visualization (Placeholder using top spells for now) */}
                                 {topSpells.slice(0, 2).map(spell => (
-                                    <img
+                                    <Image
                                         key={spell.id}
                                         src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
+                                        alt={`Spell ${spell.id}`}
+                                        width={32}
+                                        height={32}
                                         className="w-8 h-8 rounded border border-white/20"
                                     />
                                 ))}
@@ -234,7 +237,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                     <div className="flex gap-4">
                         <div className="relative">
                             <div className="flex items-center bg-[#1a1a1a] border border-white/10 rounded-lg px-2">
-                                {getRoleIcon(role) && <img src={getRoleIcon(role)} className="w-5 h-5 mr-2 opacity-70" alt={role} />}
+                                {getRoleIcon(role) && <Image src={getRoleIcon(role)} alt={role} width={20} height={20} className="w-5 h-5 mr-2 opacity-70" />}
                                 <select
                                     value={role}
                                     onChange={(e) => handleRoleChange(e.target.value)}
@@ -296,8 +299,11 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                     <div className="flex gap-4 overflow-x-auto pb-2">
                         {data.matchups?.slice(0, 10).map((m: any) => (
                             <div key={m.opponentId} className="flex-shrink-0 w-24 bg-[#1a1a1a] rounded-lg p-3 text-center border border-white/5">
-                                <img
+                                <Image
                                     src={getChampionIconUrl(m.opponentId, CURRENT_PATCH)}
+                                    alt={m.opponentId}
+                                    width={48}
+                                    height={48}
                                     className="w-12 h-12 rounded-full mx-auto mb-2 border border-white/10"
                                 />
                                 <div className="font-bold text-sm truncate">{m.opponentId}</div>
@@ -396,8 +402,8 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                             <div className="flex gap-1">
                                 {data.runePages && data.runePages.length > 0 && (
                                     <>
-                                        <img src={getRuneIcon(data.runePages[0].primaryStyle)} className="w-5 h-5" />
-                                        <img src={getRuneIcon(data.runePages[0].subStyle)} className="w-5 h-5" />
+                                        <Image src={getRuneIcon(data.runePages[0].primaryStyle)} alt="Primary Style" width={20} height={20} className="w-5 h-5" />
+                                        <Image src={getRuneIcon(data.runePages[0].subStyle)} alt="Sub Style" width={20} height={20} className="w-5 h-5" />
                                     </>
                                 )}
                             </div>
@@ -429,7 +435,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                             {/* Primary Tree */}
                                             <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
                                                 <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                                                    <img src={getRuneIcon(page.primaryStyle)} className="w-10 h-10" />
+                                                    <Image src={getRuneIcon(page.primaryStyle)} alt="Primary Style" width={40} height={40} className="w-10 h-10" />
                                                     <span className="text-2xl font-bold text-white">{primaryTree?.name || 'Primary'}</span>
                                                 </div>
 
@@ -440,8 +446,11 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                                 const active = page.perks.includes(rune.id);
                                                                 return (
                                                                     <div key={rune.id} className="relative group">
-                                                                        <img
+                                                                        <Image
                                                                             src={getRuneIconUrl(rune.icon)}
+                                                                            alt={`Rune ${rune.id}`}
+                                                                            width={56}
+                                                                            height={56}
                                                                             className={`w-14 h-14 rounded-full border-2 transition-all ${active ? 'border-lol-gold opacity-100 scale-110 shadow-[0_0_15px_rgba(200,155,60,0.5)]' : 'border-transparent opacity-30 grayscale hover:opacity-60'}`}
                                                                         />
                                                                     </div>
@@ -455,7 +464,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                             {/* Secondary Tree */}
                                             <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
                                                 <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                                                    <img src={getRuneIcon(page.subStyle)} className="w-10 h-10" />
+                                                    <Image src={getRuneIcon(page.subStyle)} alt="Sub Style" width={40} height={40} className="w-10 h-10" />
                                                     <span className="text-2xl font-bold text-white">{subTree?.name || 'Secondary'}</span>
                                                 </div>
 
@@ -466,8 +475,11 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                                 const active = page.perks.includes(rune.id);
                                                                 return (
                                                                     <div key={rune.id} className="relative group">
-                                                                        <img
+                                                                        <Image
                                                                             src={getRuneIconUrl(rune.icon)}
+                                                                            alt={`Rune ${rune.id}`}
+                                                                            width={48}
+                                                                            height={48}
                                                                             className={`w-12 h-12 rounded-full border-2 transition-all ${active ? 'border-lol-blue opacity-100 scale-110 shadow-[0_0_15px_rgba(0,200,255,0.5)]' : 'border-transparent opacity-30 grayscale hover:opacity-60'}`}
                                                                         />
                                                                     </div>
@@ -504,7 +516,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                                     const iconUrl = getShardIcon(shardId);
                                                                     return (
                                                                         <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? 'border-white opacity-100 scale-110 bg-[#333]' : 'border-transparent opacity-20 grayscale bg-[#222]'}`}>
-                                                                            {iconUrl && <img src={iconUrl} className="w-full h-full p-1" />}
+                                                                            {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
                                                                         </div>
                                                                     );
                                                                 })}
@@ -534,8 +546,11 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                             <div className="flex gap-4">
                                 {topSpells.slice(0, 2).map(spell => (
                                     <div key={spell.id} className="relative group">
-                                        <img
+                                        <Image
                                             src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
+                                            alt={`Summoner Spell ${spell.id}`}
+                                            width={48}
+                                            height={48}
                                             className="w-12 h-12 rounded-lg border border-white/10"
                                         />
                                         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
@@ -578,7 +593,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                             <div className="flex -space-x-2">
                                                                 {stackedItems.map((item, i) => (
                                                                     <div key={i} className="relative z-10">
-                                                                        <img src={getItemIconUrl(item.id, CURRENT_PATCH)} className="w-10 h-10 rounded-full border-2 border-[#121212]" />
+                                                                        <Image src={getItemIconUrl(item.id, CURRENT_PATCH)} alt={`Item ${item.id}`} width={40} height={40} className="w-10 h-10 rounded-full border-2 border-[#121212]" />
                                                                         {item.count > 1 && (
                                                                             <div className="absolute -bottom-1 -right-1 bg-[#121212] text-white text-[10px] font-bold px-1 rounded-full border border-white/20">
                                                                                 x{item.count}
@@ -610,7 +625,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                     <div className="flex items-center gap-4">
                                                         {data.itemPaths[0].path.map((id: number, i: number) => (
                                                             <div key={i} className="flex items-center gap-3">
-                                                                <img src={getItemIconUrl(id, CURRENT_PATCH)} className="w-14 h-14 rounded border border-lol-gold shadow-lg" />
+                                                                <Image src={getItemIconUrl(id, CURRENT_PATCH)} alt={`Core Item ${id}`} width={56} height={56} className="w-14 h-14 rounded border border-lol-gold shadow-lg" />
                                                                 {i < data.itemPaths[0].path.length - 1 && <span className="text-gray-600 text-xl">→</span>}
                                                             </div>
                                                         ))}
@@ -642,7 +657,7 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                                     {slot.data.map((item: any) => (
                                                         <div key={item.id} className="flex items-center justify-between bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5">
                                                             <div className="flex items-center gap-3">
-                                                                <img src={getItemIconUrl(item.id, CURRENT_PATCH)} className="w-10 h-10 rounded border border-white/10" />
+                                                                <Image src={getItemIconUrl(item.id, CURRENT_PATCH)} alt={`Item ${item.id}`} width={40} height={40} className="w-10 h-10 rounded border border-white/10" />
                                                                 <div className="text-xs text-gray-300 font-bold">
                                                                     {/* Item Name would be nice here */}
                                                                     <span className="text-gray-500">#{item.id}</span>
@@ -677,8 +692,11 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                     return uniqueDuos?.map((d: any) => (
                                         <div key={d.partnerId} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
                                             <div className="flex items-center gap-3">
-                                                <img
+                                                <Image
                                                     src={getChampionIconUrl(d.partnerId, CURRENT_PATCH)}
+                                                    alt={d.partnerId}
+                                                    width={40}
+                                                    height={40}
                                                     className="w-10 h-10 rounded-lg border border-white/10"
                                                 />
                                                 <div>

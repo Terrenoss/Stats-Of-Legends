@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { DetailedChampionStats } from '../types';
 import { Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { getChampionIconUrl } from '../utils/ddragon';
@@ -149,7 +150,7 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       {champ.name ? (
-                        <img src={getChampionIconUrl(champ.name)} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
+                        <Image src={getChampionIconUrl(champ.name)} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
                       ) : (
                         <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}</div>
                       )}

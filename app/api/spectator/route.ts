@@ -5,13 +5,13 @@ import { CURRENT_PATCH } from '@/constants';
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
 async function riotFetch(url: string) {
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       'X-Riot-Token': RIOT_API_KEY || '',
     },
     next: { revalidate: 0 }, // No caching for live data
   });
-  return res;
+  return response;
 }
 
 // Helper for concurrency control
@@ -97,7 +97,6 @@ export async function GET(request: Request) {
   try {
     // 1. Get Account (PUUID)
     const accountUrl = `https://${regionalRouting}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
-    console.log('[Spectator] Fetching Account:', accountUrl);
     const accountRes = await riotFetch(accountUrl);
 
     if (!accountRes.ok) {
@@ -108,15 +107,12 @@ export async function GET(request: Request) {
 
     const account = await accountRes.json();
     const puuid = account.puuid;
-    console.log('[Spectator] Got PUUID:', puuid);
 
     // 2. Get Active Game (Spectator V5 uses PUUID)
     const spectatorUrl = `https://${routing}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${puuid}`;
-    console.log('[Spectator] Fetching Active Game (V5):', spectatorUrl);
     const spectatorRes = await riotFetch(spectatorUrl);
 
     if (spectatorRes.status === 404) {
-      console.log('[Spectator] No Active Game Found (404)');
       return NextResponse.json({ noActiveGame: true });
     }
 
@@ -127,20 +123,19 @@ export async function GET(request: Request) {
     }
 
     const gameData = await spectatorRes.json();
-    // console.log('[Spectator] Raw Participants (Sample):', gameData.participants[0]);
 
     // 3. Enrich Participants with Ranks (Concurrency Limited)
-    const participantsWithRanks = await mapWithConcurrency(gameData.participants, 1, async (p: any) => {
+    const participantsWithRanks = await mapWithConcurrency(gameData.participants, 1, async (participant: any) => {
       let rank = 'UNRANKED';
-      let summonerId = p.summonerId;
-      let displayName = p.riotId ? p.riotId.split('#')[0] : p.summonerName;
+      let summonerId = participant.summonerId;
+      let displayName = participant.riotId ? participant.riotId.split('#')[0] : participant.summonerName;
 
       // 1. Check Cache (DB)
-      if (p.puuid) {
+      if (participant.puuid) {
         try {
           const cachedRank = await prisma.summonerRank.findFirst({
             where: {
-              summonerPuuid: p.puuid,
+              summonerPuuid: participant.puuid,
               queueType: 'RANKED_SOLO_5x5',
               updatedAt: { gt: new Date(Date.now() - 1000 * 60 * 60 * 24) } // 24h cache
             }
@@ -152,9 +147,8 @@ export async function GET(request: Request) {
             } else {
               rank = `${cachedRank.tier} ${cachedRank.rank}`;
             }
-            // console.log(`[Spectator] Cache hit for ${displayName}: ${rank}`);
             return {
-              ...p,
+              ...participant,
               summonerName: displayName || 'Unknown',
               rank
             };
@@ -165,9 +159,9 @@ export async function GET(request: Request) {
       }
 
       // Fallback: If summonerId or displayName is missing, fetch Summoner V4 by PUUID
-      if ((!summonerId || !displayName) && p.puuid) {
+      if ((!summonerId || !displayName) && participant.puuid) {
         try {
-          const sumUrl = `https://${routing}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${p.puuid}`;
+          const sumUrl = `https://${routing}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${participant.puuid}`;
           const sumRes = await riotFetch(sumUrl);
           if (sumRes.ok) {
             const sumData = await sumRes.json();
@@ -177,21 +171,21 @@ export async function GET(request: Request) {
             // Upsert Summoner to DB to ensure foreign key exists
             try {
               await prisma.summoner.upsert({
-                where: { puuid: p.puuid },
+                where: { puuid: participant.puuid },
                 update: {
                   summonerId: sumData.id,
                   accountId: sumData.accountId,
                   gameName: displayName,
-                  tagLine: p.riotId ? p.riotId.split('#')[1] : 'EUW', // Fallback tag
+                  tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW', // Fallback tag
                   profileIconId: sumData.profileIconId,
                   summonerLevel: sumData.summonerLevel,
                 },
                 create: {
-                  puuid: p.puuid,
+                  puuid: participant.puuid,
                   summonerId: sumData.id,
                   accountId: sumData.accountId,
                   gameName: displayName,
-                  tagLine: p.riotId ? p.riotId.split('#')[1] : 'EUW',
+                  tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW',
                   profileIconId: sumData.profileIconId,
                   summonerLevel: sumData.summonerLevel,
                 }
@@ -206,14 +200,14 @@ export async function GET(request: Request) {
       }
 
       // Use PUUID to fetch ranks directly (New Riot API)
-      if (p.puuid) {
+      if (participant.puuid) {
         try {
-          const leagueUrl = `https://${routing}.api.riotgames.com/lol/league/v4/entries/by-puuid/${p.puuid}`;
+          const leagueUrl = `https://${routing}.api.riotgames.com/lol/league/v4/entries/by-puuid/${participant.puuid}`;
           const leagueRes = await riotFetch(leagueUrl);
 
           if (leagueRes.ok) {
             const leagues = await leagueRes.json();
-            const solo = leagues.find((l: any) => l.queueType === 'RANKED_SOLO_5x5');
+            const solo = leagues.find((league: any) => league.queueType === 'RANKED_SOLO_5x5');
 
             if (solo) {
               // Format Rank
@@ -228,7 +222,7 @@ export async function GET(request: Request) {
                 await prisma.summonerRank.upsert({
                   where: {
                     summonerPuuid_queueType: {
-                      summonerPuuid: p.puuid,
+                      summonerPuuid: participant.puuid,
                       queueType: 'RANKED_SOLO_5x5'
                     }
                   },
@@ -240,7 +234,7 @@ export async function GET(request: Request) {
                     losses: solo.losses,
                   },
                   create: {
-                    summonerPuuid: p.puuid,
+                    summonerPuuid: participant.puuid,
                     queueType: 'RANKED_SOLO_5x5',
                     tier: solo.tier,
                     rank: solo.rank,
@@ -250,15 +244,15 @@ export async function GET(request: Request) {
                   }
                 });
               } catch (cacheErr) {
-                // console.error('[Spectator] Cache write failed:', cacheErr);
+                // Cache write failed silently
               }
 
             } else {
-              const flex = leagues.find((l: any) => l.queueType === 'RANKED_FLEX_SR');
+              const flex = leagues.find((league: any) => league.queueType === 'RANKED_FLEX_SR');
               if (flex) rank = `${flex.tier} ${flex.rank} (Flex)`;
             }
           } else {
-            console.error(`[Spectator] Rank fetch failed for ${displayName} (${p.puuid}): ${leagueRes.status}`);
+            console.error(`[Spectator] Rank fetch failed for ${displayName} (${participant.puuid}): ${leagueRes.status}`);
           }
         } catch (e) {
           console.error('[Spectator] Rank fetch failed for', displayName, e);
@@ -266,7 +260,7 @@ export async function GET(request: Request) {
       }
 
       return {
-        ...p,
+        ...participant,
         summonerName: displayName || 'Unknown',
         rank
       };

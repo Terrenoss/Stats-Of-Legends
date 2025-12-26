@@ -23,7 +23,7 @@ async function streamResponseToText(ai: any, prompt: string, model: string, maxT
       else if (typeof chunk === 'string') collected += chunk;
     }
     return collected;
-  } catch (e) {
+  } catch (e: any) {
     console.warn('Streaming fallback failed:', e?.message || e);
     return '';
   }
@@ -73,7 +73,9 @@ function extractTextFromResponse(response: any): { text: string; truncated: bool
       const t = extractFromContent(first);
       if (t) return { text: t, truncated };
     }
-  } catch (e) { }
+  } catch (error) {
+    console.warn('Error parsing response output:', error);
+  }
 
   // Candidates fallback
   if (response.candidates && Array.isArray(response.candidates) && response.candidates.length) {
@@ -110,7 +112,6 @@ export async function POST(request: Request) {
     });
 
     if (cachedAnalysis && cachedAnalysis.version === ANALYSIS_VERSION) {
-      console.log(`[Cache Hit] Returning cached analysis for match ${match.id}`);
       // Cast Json to string (it should be stored as the result text or object)
       // Our schema says `jsonResult Json`. We'll assume we store { result: string }
       return NextResponse.json(cachedAnalysis.jsonResult);
@@ -208,7 +209,6 @@ export async function POST(request: Request) {
           version: ANALYSIS_VERSION,
         }
       });
-      console.log(`[Cache Save] Saved analysis for match ${match.id}`);
     } catch (dbError) {
       console.warn(`[Cache Save Failed] Could not save analysis to DB. Match ID ${match.id} might not exist in Match table yet.`, dbError);
     }

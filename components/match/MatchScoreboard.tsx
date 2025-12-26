@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Participant } from '../../types';
 import { TRANSLATIONS } from '../../constants';
 import { SafeLink } from '../ui/SafeLink';
@@ -169,7 +170,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
               <div className="col-span-4 lg:col-span-3 flex items-center gap-3 overflow-hidden">
                 <div className="relative">
                   {champImg ? (
-                    <img src={champImg} className="w-8 h-8 rounded-lg border border-gray-700" alt={champName} />
+                    <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700" alt={champName} />
                   ) : (
                     <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
                   )}
@@ -223,7 +224,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
                     let title;
                     if (item.name) title = item.name + (action ? ' (' + action + ')' : '');
                     return (
-                      <img key={idx} src={item.imageUrl} className="w-6 h-6 rounded bg-[#121212] border border-white/10" alt={item.name} title={title} />
+                      <Image key={idx} src={item.imageUrl} width={24} height={24} className="w-6 h-6 rounded bg-[#121212] border border-white/10" alt={item.name || 'Item'} title={title} />
                     );
                   }
                   return (<div key={idx} className="w-6 h-6 rounded bg-white/5 border border-white/10" />);
@@ -234,7 +235,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
                   const wardType = normalizeWardType(wardItem) || 'Ward';
                   return (
                     <div className="w-6 h-6 rounded-full bg-black border border-gray-700 ml-1 flex items-center justify-center text-[10px] font-bold text-gray-200" title={wardItem?.name || wardType}>
-                      {wardItem?.imageUrl ? <img src={wardItem.imageUrl} className="w-4 h-4" alt={wardItem?.name || 'Ward'} /> : <span>W</span>}
+                      {wardItem?.imageUrl ? <Image src={wardItem.imageUrl} width={16} height={16} className="w-4 h-4" alt={wardItem?.name || 'Ward'} /> : <span>W</span>}
                     </div>
                   );
                 })() : (

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { SummonerProfile, Language } from '../types';
 import { TRANSLATIONS, MOCK_ROLES, RANK_EMBLEMS } from '../constants';
 import { getProfileIconUrl } from '../utils/ddragon';
@@ -85,10 +86,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
         <div className="flex items-center gap-4 relative z-10">
           <div className="relative group">
             <div className="w-32 h-32 rounded-full bg-[#121212] p-0.5 border-2 relative z-10 transition-transform duration-500 group-hover:scale-105" style={{ borderColor: rankColor, boxShadow: `0 0 20px ${rankColor}20`, '--rank-glow': rankColor } as React.CSSProperties}>
-              <img
+              <Image
                 src={getProfileIconUrl(profile.profileIconId, version)}
                 alt="Icon"
+                width={128}
+                height={128}
                 className="w-full h-full object-cover rounded-full"
+                priority
               />
               <div className="absolute inset-0 rounded-full border border-white/20 animate-pulse-rank" style={{ borderColor: rankColor }}></div>
             </div>
@@ -149,11 +153,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
         <div className="flex items-center justify-center gap-4">
           {/* Rank Icon - SIZE 33 V10 */}
           <div
-            className="w-[8.25rem] h-[8.25rem] -my-1 transition-transform duration-500 group-hover:scale-105 z-10 drop-shadow-2xl flex-shrink-0"
+            className="w-[8.25rem] h-[8.25rem] -my-1 transition-transform duration-500 group-hover:scale-105 z-10 drop-shadow-2xl flex-shrink-0 relative"
             style={{ filter: `drop-shadow(0 0 25px ${rankColor}40)` }}
           >
             {typeof safeSolo.tier === 'string' && RANK_EMBLEMS[safeSolo.tier] ? (
-              <img src={RANK_EMBLEMS[safeSolo.tier]} className="w-full h-full object-contain max-w-none" alt={safeSolo.tier} />
+              <Image
+                src={RANK_EMBLEMS[safeSolo.tier]}
+                alt={safeSolo.tier}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-8xl">🏆</div>
             )}

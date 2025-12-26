@@ -34,16 +34,6 @@ export const PerformanceRadar: React.FC<PerformanceRadarProps> = ({ metrics, con
     { subject: 'Survival', A: safe.survival, fullMark: 100 },
   ];
 
-  // Debug logging
-  useEffect(() => {
-    if (metrics) {
-      console.log('PerformanceRadar Metrics:', metrics);
-      console.log('PerformanceRadar Data:', data);
-    } else {
-      console.warn('PerformanceRadar: No metrics provided');
-    }
-  }, [metrics]);
-
   // Calculate average score for center display
   const averageScore = Math.round(data.reduce((acc, curr) => acc + curr.A, 0) / data.length);
 

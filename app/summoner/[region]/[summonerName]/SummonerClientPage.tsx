@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ProfileHeader } from '../../../../components/ProfileHeader';
 import { MatchCard } from '../../../../components/MatchCard';
 import { ActivityHeatmap } from '../../../../components/ActivityHeatmap';
@@ -218,7 +219,9 @@ export default function SummonerClientPage({ params }: { params: { region: strin
                 {champions.slice(0, 5).map(champ => (
                   <div key={champ.id} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
                     <div className="flex items-center gap-3">
-                      <img src={champ.imageUrl} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold transition" alt={champ.name} />
+                      <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-gray-700 group-hover:border-lol-gold transition">
+                        <Image src={champ.imageUrl} alt={champ.name} fill className="object-cover" />
+                      </div>
                       <div className="flex flex-col">
                         <span className="text-gray-300 group-hover:text-white font-bold">{champ.name}</span>
                         <span className="text-[10px] text-gray-600 font-mono">{champ.kda.toFixed(2)} KDA</span>
