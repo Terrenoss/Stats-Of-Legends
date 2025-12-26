@@ -1,104 +1,40 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import { ProfileHeader } from '../../../../components/ProfileHeader';
 import { ChampionsTable } from '../../../../components/ChampionsTable';
-import { Skeleton } from '../../../../components/ui/Skeleton';
-import { MatchSkeleton } from '../../../../components/skeletons/MatchSkeleton';
 import { LiveGame } from '../../../../components/LiveGame';
 import { TRANSLATIONS } from '../../../../constants';
-import { SummonerProfile, Match, Language, GameMode, HeatmapDay, DetailedChampionStats, Teammate } from '../../../../types';
+import { Match, Language, GameMode } from '../../../../types';
 import { LayoutDashboard, Sword, Radio, TrendingUp } from 'lucide-react';
 import { SafeLink } from '../../../../components/ui/SafeLink';
 import { OverviewTab } from './OverviewTab';
 import { ProgressionTab } from './ProgressionTab';
+import { useSummonerData } from '@/hooks/useSummonerData';
+import { SummonerPageSkeleton } from '@/components/skeletons/SummonerPageSkeleton';
 
 export default function SummonerClientPage({ params }: { params: { region: string, summonerName: string } }) {
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [updateError, setUpdateError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<SummonerProfile | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [heatmap, setHeatmap] = useState<HeatmapDay[]>([]);
-  const [champions, setChampions] = useState<DetailedChampionStats[]>([]);
-  const [teammates, setTeammates] = useState<Teammate[]>([]);
+  const {
+    loading,
+    updating,
+    updateError,
+    profile,
+    matches,
+    heatmap,
+    champions,
+    teammates,
+    performance,
+    lpHistory,
+    version,
+    updateData
+  } = useSummonerData(params.region, params.summonerName);
+
   const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live' | 'progression'>('overview');
   const [matchFilter, setMatchFilter] = useState<'ALL' | 'SOLO' | 'FLEX'>('ALL');
   const [currentLang] = useState<Language>('FR');
-  const [performance, setPerformance] = useState<any>(null);
-  const [lpHistory, setLpHistory] = useState<any[]>([]);
   const [visibleMatches, setVisibleMatches] = useState(10);
 
-  const [version, setVersion] = useState<string>('15.24.1'); // Default fallback
-
   const t = TRANSLATIONS[currentLang];
-
-  const loadData = async () => {
-    setLoading(true);
-    setUpdateError(null);
-    const nameParam = decodeURIComponent(params.summonerName as string);
-    let name = nameParam;
-    let tag = params.region as string;
-
-    if (nameParam.includes('-')) {
-      [name, tag] = nameParam.split('-');
-    }
-
-    try {
-      const url = new URL(`/api/summoner`, window.location.origin);
-      url.searchParams.append('region', params.region);
-      url.searchParams.append('name', name);
-      url.searchParams.append('tag', tag);
-      if (updating) {
-        url.searchParams.append('force', 'true');
-      }
-
-      const res = await fetch(url.toString());
-
-      if (res.ok) {
-        const realData = await res.json();
-
-        setProfile(realData.profile as SummonerProfile);
-        setMatches(realData.matches as Match[]);
-        setHeatmap(realData.heatmap as HeatmapDay[]);
-        setChampions(realData.champions as DetailedChampionStats[]);
-        setTeammates(realData.teammates as Teammate[]);
-        setLpHistory(realData.lpHistory || []);
-        setPerformance(realData.performance || null);
-        if (realData.version) setVersion(realData.version);
-      } else {
-        const errJson = await res.json().catch(() => null);
-        if (errJson?.error === 'RIOT_FORBIDDEN') {
-          setUpdateError('Impossible de mettre à jour les données : accès Riot API refusé (403).');
-        } else {
-          setUpdateError('Échec de la mise à jour des données du joueur.');
-        }
-        throw new Error('Fetch summoner failed');
-      }
-
-    } catch (e) {
-      console.error('Failed to fetch summoner', e);
-      setProfile(null);
-      setMatches([]);
-      setHeatmap([]);
-      setChampions([]);
-      setTeammates([]);
-    } finally {
-      setLoading(false);
-      setUpdating(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.region, params.summonerName]);
-
-  const handleUpdateClick = async () => {
-    setUpdating(true);
-    await loadData();
-  };
 
   const mapGameMode = (m: Match): 'SOLO' | 'FLEX' | 'OTHER' => {
     const mode: any = m.gameMode;
@@ -135,34 +71,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const rankColor = profile?.ranks?.solo?.tier ? getRankColor(profile.ranks.solo.tier) : '#ffd700';
 
   if (loading) {
-    return (
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <Skeleton className="lg:col-span-4 h-64 rounded-[2rem]" />
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <Skeleton className="h-32 rounded-[1.5rem]" />
-            <Skeleton className="h-28 rounded-[1.5rem]" />
-          </div>
-          <Skeleton className="lg:col-span-4 h-64 rounded-[1.5rem]" />
-        </div>
-        <div className="flex gap-6">
-          <Skeleton className="w-32 h-10" />
-          <Skeleton className="w-32 h-10" />
-          <Skeleton className="w-32 h-10" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 space-y-6">
-            <Skeleton className="h-72 rounded-[2rem]" />
-            <Skeleton className="h-64 rounded-[2rem]" />
-          </div>
-          <div className="lg:col-span-8 space-y-4">
-            <MatchSkeleton />
-            <MatchSkeleton />
-            <MatchSkeleton />
-          </div>
-        </div>
-      </div>
-    );
+    return <SummonerPageSkeleton />;
   }
 
   if (!profile) return <div className="text-center py-20 text-xl">Invocateur introuvable</div>;
@@ -179,7 +88,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
         </div>
       )}
 
-      <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={handleUpdateClick} lpHistory={lpHistory} version={version} />
+      <ProfileHeader profile={profile} lang={currentLang} onUpdateRequest={updateData} lpHistory={lpHistory} version={version} />
 
       {updating && (
         <div className="mt-2 mb-4 text-xs text-gray-400 flex items-center gap-2">

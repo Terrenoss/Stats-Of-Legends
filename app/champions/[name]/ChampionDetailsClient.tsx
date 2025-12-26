@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ChampionService } from '@/services/ChampionService';
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { CURRENT_PATCH } from '@/constants';
-import { getChampionIconUrl, getSpellIconUrl } from '@/utils/ddragon';
+import { getSpellIconUrl } from '@/utils/ddragon';
+import { useChampionData } from '@/hooks/useChampionData';
 
 // Sub-components
 import { ChampionMatchups } from './components/ChampionMatchups';
@@ -13,6 +13,7 @@ import { ChampionSkillPath } from './components/ChampionSkillPath';
 import { ChampionRunes } from './components/ChampionRunes';
 import { ChampionBuildPath } from './components/ChampionBuildPath';
 import { ChampionDuos } from './components/ChampionDuos';
+import { ChampionHeader } from './components/ChampionHeader';
 
 // Helper for spell images
 const getSpellName = (id: string) => {
@@ -68,60 +69,8 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
     const championName = params.name;
     const [role, setRole] = useState(searchParams.get('role') || 'MID');
     const [rank, setRank] = useState(searchParams.get('rank') || 'ALL');
-    const [data, setData] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [runeMap, setRuneMap] = useState<Record<number, string>>({});
-    const [allRunes, setAllRunes] = useState<any[]>([]);
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            try {
-                const res = await ChampionService.getChampionDetails(championName, role, rank);
-                setData(res);
-
-                // Fetch Rune Map
-                try {
-                    const patch = CURRENT_PATCH;
-                    let runeRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${patch}/data/en_US/runesReforged.json`);
-
-                    // Fallback to 14.23.1 if 403/404
-                    if (!runeRes.ok) {
-                        console.warn(`Failed to fetch runes for patch ${patch}, trying fallback 14.23.1`);
-                        runeRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/14.23.1/data/en_US/runesReforged.json`);
-                    }
-
-                    if (runeRes.ok) {
-                        const runeData = await runeRes.json();
-                        setAllRunes(runeData); // Store full rune data
-                        const map: Record<number, string> = {};
-
-                        const processTree = (tree: any) => {
-                            map[tree.id] = tree.icon;
-                            tree.slots.forEach((slot: any) => {
-                                slot.runes.forEach((rune: any) => {
-                                    map[rune.id] = rune.icon;
-                                });
-                            });
-                        };
-
-                        runeData.forEach(processTree);
-                        setRuneMap(map);
-                    } else {
-                        console.error('Failed to fetch runes (fallback also failed):', runeRes.status);
-                    }
-                } catch (runeError) {
-                    console.error('Error loading runes:', runeError);
-                }
-
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, [championName, role, rank]);
+    const { data, loading, runeMap, allRunes } = useChampionData(championName, role, rank);
 
     if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white flex items-center justify-center">Loading...</div>;
     if (!data) return <div className="min-h-screen bg-[#0a0a0c] text-white flex items-center justify-center">No data found</div>;
@@ -161,59 +110,16 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
     return (
         <div className="min-h-screen bg-[#0a0a0c] text-white pb-32">
 
-            {/* Header Section */}
-            <div className="bg-[#111] border-b border-white/5 pt-8 pb-0">
-                <div className="max-w-7xl mx-auto px-8">
-                    {/* Back Button */}
-                    <button
-                        onClick={() => router.push('/tierlist?rank=ALL')}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6 text-sm font-bold"
-                    >
-                        <span>←</span> Back to Tier List
-                    </button>
-
-                    <div className="flex items-start gap-6 mb-8">
-                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-lol-gold shadow-[0_0_20px_rgba(200,155,60,0.3)]">
-                            <Image
-                                src={getChampionIconUrl(championName, CURRENT_PATCH)}
-                                alt={championName}
-                                fill
-                                className="object-cover"
-                            />
-                            <div className="absolute top-0 left-0 bg-lol-gold text-black text-xs font-bold px-2 py-0.5 rounded-br-lg">
-                                {tier}
-                            </div>
-                        </div>
-                        <div>
-                            <h1 className="text-5xl font-display font-bold text-white mb-2 flex items-center gap-4">
-                                {championName}
-                                <span className="text-2xl font-normal text-gray-400">{role} Build, {formatTier(rank)}</span>
-                                <span className="text-xs bg-[#222] text-gray-300 px-2 py-1 rounded border border-white/10">Patch {data.patch}</span>
-                            </h1>
-                            <div className="flex gap-2 mt-4">
-                                {/* Spell Order Visualization (Placeholder using top spells for now) */}
-                                {topSpells.slice(0, 2).map(spell => (
-                                    <Image
-                                        key={spell.id}
-                                        src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
-                                        alt={`Spell ${spell.id}`}
-                                        width={32}
-                                        height={32}
-                                        className="w-8 h-8 rounded border border-white/20"
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="flex gap-8 text-sm font-bold text-gray-400 border-b border-white/10">
-                        <button className="pb-4 border-b-2 border-lol-blue text-white">Build</button>
-                        <button className="pb-4 hover:text-white transition-colors">Counters</button>
-                        <button className="pb-4 hover:text-white transition-colors">Pro Builds</button>
-                    </div>
-                </div>
-            </div>
+            <ChampionHeader
+                championName={championName}
+                role={role}
+                rank={rank}
+                tier={tier}
+                patch={data.patch}
+                topSpells={topSpells}
+                formatTier={formatTier}
+                getSpellName={getSpellName}
+            />
 
             {/* Filters & Stats Bar */}
             <div className="bg-[#0f0f0f] border-b border-white/5 py-4">

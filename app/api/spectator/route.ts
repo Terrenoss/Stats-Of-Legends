@@ -28,7 +28,7 @@ const mapWithConcurrency = async <T, U>(
     results.push(p);
 
     if (limit <= array.length) {
-      const e = p.then(() => {
+      const e: Promise<void> = p.then(() => {
         executing.splice(executing.indexOf(e), 1);
       }).catch(() => {
         // Catch rejection here to prevent unhandled rejection in the race
@@ -75,38 +75,39 @@ async function fetchSummonerFallback(participant: any, routing: string) {
     const sumUrl = `https://${routing}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${participant.puuid}`;
     const sumRes = await riotFetch(sumUrl);
 
-    if (sumRes.ok) {
-      const sumData = await sumRes.json();
-      const displayName = sumData.name;
+    if (!sumRes.ok) return null;
 
-      // Upsert Summoner to DB
-      try {
-        await prisma.summoner.upsert({
-          where: { puuid: participant.puuid },
-          update: {
-            summonerId: sumData.id,
-            accountId: sumData.accountId,
-            gameName: displayName,
-            tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW',
-            profileIconId: sumData.profileIconId,
-            summonerLevel: sumData.summonerLevel,
-          },
-          create: {
-            puuid: participant.puuid,
-            summonerId: sumData.id,
-            accountId: sumData.accountId,
-            gameName: displayName,
-            tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW',
-            profileIconId: sumData.profileIconId,
-            summonerLevel: sumData.summonerLevel,
-          }
-        });
-      } catch (dbErr) {
-        console.warn('[Spectator] DB Upsert failed:', dbErr);
-      }
+    const sumData = await sumRes.json();
+    const displayName = sumData.name;
 
-      return { summonerId: sumData.id, displayName };
+    // Upsert Summoner to DB
+    try {
+      await prisma.summoner.upsert({
+        where: { puuid: participant.puuid },
+        update: {
+          summonerId: sumData.id,
+          accountId: sumData.accountId,
+          gameName: displayName,
+          tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW',
+          profileIconId: sumData.profileIconId,
+          summonerLevel: sumData.summonerLevel,
+        },
+        create: {
+          puuid: participant.puuid,
+          summonerId: sumData.id,
+          accountId: sumData.accountId,
+          gameName: displayName,
+          tagLine: participant.riotId ? participant.riotId.split('#')[1] : 'EUW',
+          profileIconId: sumData.profileIconId,
+          summonerLevel: sumData.summonerLevel,
+        }
+      });
+    } catch (dbErr) {
+      console.warn('[Spectator] DB Upsert failed:', dbErr);
     }
+
+    return { summonerId: sumData.id, displayName };
+
   } catch (e) {
     console.error('[Spectator] Failed to fetch summoner fallback:', e);
   }
@@ -120,52 +121,54 @@ async function fetchRankFromRiot(participant: any, routing: string) {
     const leagueUrl = `https://${routing}.api.riotgames.com/lol/league/v4/entries/by-puuid/${participant.puuid}`;
     const leagueRes = await riotFetch(leagueUrl);
 
-    if (leagueRes.ok) {
-      const leagues = await leagueRes.json();
-      const solo = leagues.find((league: any) => league.queueType === 'RANKED_SOLO_5x5');
-
-      if (solo) {
-        // Cache to DB
-        try {
-          await prisma.summonerRank.upsert({
-            where: {
-              summonerPuuid_queueType: {
-                summonerPuuid: participant.puuid,
-                queueType: 'RANKED_SOLO_5x5'
-              }
-            },
-            update: {
-              tier: solo.tier,
-              rank: solo.rank,
-              leaguePoints: solo.leaguePoints,
-              wins: solo.wins,
-              losses: solo.losses,
-            },
-            create: {
-              summonerPuuid: participant.puuid,
-              queueType: 'RANKED_SOLO_5x5',
-              tier: solo.tier,
-              rank: solo.rank,
-              leaguePoints: solo.leaguePoints,
-              wins: solo.wins,
-              losses: solo.losses,
-            }
-          });
-        } catch (cacheErr) {
-          console.warn('[Spectator] Rank cache write failed:', cacheErr);
-        }
-
-        if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(solo.tier)) {
-          return `${solo.tier} ${solo.leaguePoints} LP`;
-        }
-        return `${solo.tier} ${solo.rank}`;
-      } else {
-        const flex = leagues.find((league: any) => league.queueType === 'RANKED_FLEX_SR');
-        if (flex) return `${flex.tier} ${flex.rank} (Flex)`;
-      }
-    } else {
+    if (!leagueRes.ok) {
       console.error(`[Spectator] Rank fetch failed: ${leagueRes.status}`);
+      return 'UNRANKED';
     }
+
+    const leagues = await leagueRes.json();
+    const solo = leagues.find((league: any) => league.queueType === 'RANKED_SOLO_5x5');
+
+    if (solo) {
+      // Cache to DB
+      try {
+        await prisma.summonerRank.upsert({
+          where: {
+            summonerPuuid_queueType: {
+              summonerPuuid: participant.puuid,
+              queueType: 'RANKED_SOLO_5x5'
+            }
+          },
+          update: {
+            tier: solo.tier,
+            rank: solo.rank,
+            leaguePoints: solo.leaguePoints,
+            wins: solo.wins,
+            losses: solo.losses,
+          },
+          create: {
+            summonerPuuid: participant.puuid,
+            queueType: 'RANKED_SOLO_5x5',
+            tier: solo.tier,
+            rank: solo.rank,
+            leaguePoints: solo.leaguePoints,
+            wins: solo.wins,
+            losses: solo.losses,
+          }
+        });
+      } catch (cacheErr) {
+        console.warn('[Spectator] Rank cache write failed:', cacheErr);
+      }
+
+      if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(solo.tier)) {
+        return `${solo.tier} ${solo.leaguePoints} LP`;
+      }
+      return `${solo.tier} ${solo.rank}`;
+    }
+
+    const flex = leagues.find((league: any) => league.queueType === 'RANKED_FLEX_SR');
+    if (flex) return `${flex.tier} ${flex.rank} (Flex)`;
+
   } catch (e) {
     console.error('[Spectator] Rank fetch failed:', e);
   }
@@ -238,16 +241,11 @@ async function getInferredRoles(gameData: any) {
   return { championsById, championRoles };
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+function resolveSummoner(searchParams: URLSearchParams): { gameName: string | null, tagLine: string | null, region: string } {
   const name = searchParams.get('name');
   const tag = searchParams.get('tag');
   const region = searchParams.get('region') || 'euw1';
   const summonerNameParam = searchParams.get('summoner');
-
-  if (!RIOT_API_KEY) {
-    return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
-  }
 
   let gameName = name;
   let tagLine = tag;
@@ -260,11 +258,10 @@ export async function GET(request: Request) {
       tagLine = region.toUpperCase();
     }
   }
+  return { gameName, tagLine, region };
+}
 
-  if (!gameName || !tagLine) {
-    return NextResponse.json({ error: 'Missing summoner name or tag' }, { status: 400 });
-  }
-
+function getRegionRouting(region: string) {
   const regionMap: Record<string, string> = {
     'euw': 'euw1', 'eune': 'eun1', 'na': 'na1', 'kr': 'kr', 'br': 'br1',
     'lan': 'la1', 'las': 'la2', 'oce': 'oc1', 'ru': 'ru', 'tr': 'tr1',
@@ -278,6 +275,23 @@ export async function GET(request: Request) {
   if (['na1', 'br1', 'la1', 'la2'].includes(routing)) regionalRouting = 'americas';
   if (['kr', 'jp1'].includes(routing)) regionalRouting = 'asia';
   if (['ph2', 'sg2', 'th2', 'tw2', 'vn2', 'oc1'].includes(routing)) regionalRouting = 'sea';
+
+  return { routing, regionalRouting };
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const { gameName, tagLine, region } = resolveSummoner(searchParams);
+
+  if (!RIOT_API_KEY) {
+    return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
+  }
+
+  if (!gameName || !tagLine) {
+    return NextResponse.json({ error: 'Missing summoner name or tag' }, { status: 400 });
+  }
+
+  const { routing, regionalRouting } = getRegionRouting(region);
 
   try {
     // 1. Get Account

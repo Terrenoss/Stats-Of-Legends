@@ -41,33 +41,38 @@ const CLASS_MODIFIERS: Record<string, Record<string, number>> = {
     Support: { utility: 1.3, vision: 1.2, damage: 0.7 }
 };
 
+export interface ScoreCalculationParams {
+    participant: Participant;
+    duration: number;
+    championStats?: any;
+    matchupStats?: any;
+    teamStats?: { damage: number; gold: number; kills: number };
+    laneStats?: { csd15: number; gd15: number; xpd15: number };
+    averageRank?: string;
+    matchupWinRate?: number;
+    championClass?: string;
+    weightedDeaths?: number;
+}
+
 export class ScoringService {
 
     /**
      * Calculates the Legend Score (0-10) for a participant.
-     * @param p The participant data
-     * @param duration Game duration in minutes
-     * @param championStats Aggregated stats for this champion (Baseline)
-     * @param matchupStats Aggregated stats for this matchup (Specific Baseline)
-     * @param teamStats Team totals
-     * @param laneStats Lane diffs @ 15
-     * @param averageRank Match average rank
-     * @param matchupWinRate Winrate of the matchup
-     * @param championClass Champion class (e.g. "Mage", "Tank")
-     * @param weightedDeaths Deaths weighted by game time
+     * @param params The calculation parameters
      */
-    static calculateScore(
-        p: Participant,
-        duration: number,
-        championStats?: any,
-        matchupStats?: any,
-        teamStats?: { damage: number; gold: number; kills: number },
-        laneStats?: { csd15: number; gd15: number; xpd15: number },
-        averageRank?: string,
-        matchupWinRate?: number,
-        championClass?: string,
-        weightedDeaths?: number
-    ): ScoreResult {
+    static calculateScore(params: ScoreCalculationParams): ScoreResult {
+        const {
+            participant: p,
+            duration,
+            championStats,
+            matchupStats,
+            teamStats,
+            laneStats,
+            averageRank,
+            matchupWinRate,
+            championClass,
+            weightedDeaths
+        } = params;
         const role = p.teamPosition || 'MID';
         let weights = { ...(ROLE_WEIGHTS[role] || DEFAULT_WEIGHTS) };
 

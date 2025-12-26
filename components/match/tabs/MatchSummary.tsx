@@ -74,7 +74,7 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                                 {/* Champion & Summoner & Runes */}
                                 <div className="col-span-3 flex items-center gap-3">
                                     <div className="relative group cursor-pointer" onClick={() => window.open(summonerLink, '_blank')}>
-                                        <Image src={p.champion.imageUrl} width={48} height={48} className="w-12 h-12 rounded-lg border border-gray-700" alt={p.champion.name} />
+                                        <Image src={p.champion.imageUrl} width={48} height={48} className="w-12 h-12 rounded-lg border border-gray-700 object-cover" alt={p.champion.name} />
                                         <div className="absolute -bottom-1 -right-1 bg-black text-[10px] w-5 h-5 flex items-center justify-center rounded border border-gray-700 text-gray-400">{p.level}</div>
                                     </div>
 
@@ -145,11 +145,22 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
 
                                 {/* Items */}
                                 <div className="col-span-3 flex justify-end gap-0.5">
-                                    {(p.items || []).map((it, idx) => (
-                                        <div key={idx} className="w-8 h-8 rounded bg-[#1a1a1a] border border-white/10 overflow-hidden">
-                                            {it.imageUrl && <Image src={it.imageUrl} width={32} height={32} className="w-full h-full object-cover" title={it.name} alt={it.name || 'Item'} />}
-                                        </div>
-                                    ))}
+                                    {(() => {
+                                        const rawItems = Array.isArray(p.items) ? p.items : [];
+                                        const displayItems = [...rawItems];
+                                        while (displayItems.length < 7) {
+                                            displayItems.push({ id: 0, name: '', imageUrl: '' } as any);
+                                        }
+
+                                        // Use first 7 items (0-6)
+                                        return displayItems.slice(0, 7).map((it, idx) => (
+                                            <div key={idx} className={`w-8 h-8 rounded bg-[#1a1a1a] border border-white/10 overflow-hidden ${idx === 6 ? 'rounded-full ml-1' : ''}`}>
+                                                {it && it.id !== 0 && it.imageUrl ? (
+                                                    <Image src={it.imageUrl} width={32} height={32} className="w-full h-full object-cover" title={it.name} alt={it.name || 'Item'} />
+                                                ) : null}
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
                             </div>
                         );

@@ -55,53 +55,9 @@ export class MatchHistoryService {
 
             for (const m of newMatchesData) {
                 if (!m) continue;
-                const info = m.data.info;
-
-                await prisma.match.create({
-                    data: {
-                        id: m.id,
-                        gameCreation: new Date(info.gameStartTimestamp),
-                        gameDuration: info.gameDuration,
-                        gameMode: info.gameMode,
-                        gameVersion: info.gameVersion,
-                        jsonData: m.data,
-                    },
-                });
-
-                for (const p of info.participants) {
-                    if (p.puuid === puuid) {
-                        await prisma.summonerMatch.create({
-                            data: {
-                                summonerPuuid: puuid,
-                                matchId: m.id,
-                                championId: p.championId,
-                                win: p.win,
-                                kills: p.kills,
-                                deaths: p.deaths,
-                                assists: p.assists,
-                                role: p.teamPosition || 'UNKNOWN',
-                                totalDamageDealtToChampions: p.totalDamageDealtToChampions || 0,
-                                totalMinionsKilled: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
-                                goldEarned: p.goldEarned || 0,
-                                visionScore: p.visionScore || 0,
-                                items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
-                            }
-                        });
-                    }
-                }
-
-                // OPTIMIZATION: Process for Tier List immediately
-                try {
-                    const ranks = dbSummoner?.ranks || [];
-                    const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
-                    const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
-                    const tier = solo?.tier || flex?.tier || 'EMERALD';
-
-                    await MatchProcessor.processMatch(m.id, region, tier, m.data);
-                } catch (err) {
-                    console.error(`Background processing failed for ${m.id}`, err);
-                }
+                await this.saveMatchAndStats(m, puuid, region, dbSummoner);
             }
+
 
             await prisma.summoner.update({
                 where: { puuid: puuid },
@@ -132,6 +88,55 @@ export class MatchHistoryService {
         }));
 
         return matches;
+    }
+
+    private static async saveMatchAndStats(m: any, puuid: string, region: string, dbSummoner: any) {
+        const info = m.data.info;
+
+        await prisma.match.create({
+            data: {
+                id: m.id,
+                gameCreation: new Date(info.gameStartTimestamp),
+                gameDuration: info.gameDuration,
+                gameMode: info.gameMode,
+                gameVersion: info.gameVersion,
+                jsonData: m.data,
+            },
+        });
+
+        for (const p of info.participants) {
+            if (p.puuid === puuid) {
+                await prisma.summonerMatch.create({
+                    data: {
+                        summonerPuuid: puuid,
+                        matchId: m.id,
+                        championId: p.championId,
+                        win: p.win,
+                        kills: p.kills,
+                        deaths: p.deaths,
+                        assists: p.assists,
+                        role: p.teamPosition || 'UNKNOWN',
+                        totalDamageDealtToChampions: p.totalDamageDealtToChampions || 0,
+                        totalMinionsKilled: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
+                        goldEarned: p.goldEarned || 0,
+                        visionScore: p.visionScore || 0,
+                        items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
+                    }
+                });
+            }
+        }
+
+        // OPTIMIZATION: Process for Tier List immediately
+        try {
+            const ranks = dbSummoner?.ranks || [];
+            const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
+            const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
+            const tier = solo?.tier || flex?.tier || 'EMERALD';
+
+            await MatchProcessor.processMatch(m.id, region, tier, m.data);
+        } catch (err) {
+            console.error(`Background processing failed for ${m.id}`, err);
+        }
     }
 
     // --- Helper Functions (Moved from route.ts) ---
@@ -374,18 +379,18 @@ export class MatchHistoryService {
             if (cachedScores && cachedScores[p.puuid]) {
                 scoreResult = cachedScores[p.puuid];
             } else {
-                scoreResult = ScoringService.calculateScore(
-                    { ...p, challenges: p.challenges },
-                    (info.gameDuration || 1) / 60,
-                    pChampStats,
-                    pMatchupStats,
-                    teamStats[p.teamId],
-                    laneStats,
-                    undefined,
-                    matchupWinRate,
-                    championClass,
-                    weightedDeaths
-                );
+                scoreResult = ScoringService.calculateScore({
+                    participant: { ...p, challenges: p.challenges },
+                    duration: (info.gameDuration || 1) / 60,
+                    championStats: pChampStats,
+                    matchupStats: pMatchupStats,
+                    teamStats: teamStats[p.teamId],
+                    laneStats: laneStats,
+                    averageRank: undefined,
+                    matchupWinRate: matchupWinRate,
+                    championClass: championClass,
+                    weightedDeaths: weightedDeaths
+                });
             }
 
             // V5: Calculate Role Average Performance (Relative to Champion)

@@ -103,6 +103,56 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
         });
     };
 
+    const handleSecondaryRuneClick = (runeId: number) => {
+        if (!subStyle) return;
+
+        const current = [selectedRunes.selectedPerkIds[4], selectedRunes.selectedPerkIds[5]];
+        let next = [...current];
+
+        // Helper to find row index of a rune
+        const getRuneRow = (rId: number | null) => {
+            if (!rId) return -1;
+            return subStyle.slots.findIndex(s => s.runes.some(r => r.id === rId));
+        };
+
+        const targetRow = getRuneRow(runeId);
+        const isSelected = current.includes(runeId);
+
+        if (isSelected) {
+            // Deselect
+            next = next.map(id => id === runeId ? null : id);
+            // Shift to fill gap
+            if (next[0] === null && next[1] !== null) {
+                next[0] = next[1];
+                next[1] = null;
+            }
+        } else {
+            // Check if we already have a rune from this row
+            const existingIndexInRow = next.findIndex(id => getRuneRow(id) === targetRow);
+
+            if (existingIndexInRow !== -1) {
+                // Replace the rune in the same row
+                next[existingIndexInRow] = runeId;
+            } else {
+                // No rune from this row. Add to first empty, or shift if full.
+                if (next[0] === null) {
+                    next[0] = runeId;
+                } else if (next[1] === null) {
+                    next[1] = runeId;
+                } else {
+                    // Both full, different rows. Shift: Remove first, add new to second.
+                    next[0] = next[1];
+                    next[1] = runeId;
+                }
+            }
+        }
+
+        const newPerks = [...selectedRunes.selectedPerkIds];
+        newPerks[4] = next[0];
+        newPerks[5] = next[1];
+        onChange({ ...selectedRunes, selectedPerkIds: newPerks });
+    };
+
     if (loading) return <div className="text-center text-gray-500 p-4">Loading Runes...</div>;
 
     const primaryStyle = styles.find(s => s.id === selectedRunes.primaryStyleId);
@@ -217,57 +267,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
                                                 key={rune.id}
                                                 rune={rune}
                                                 isSelected={isSelected}
-                                                onClick={() => {
-                                                    const current = [selectedRunes.selectedPerkIds[4], selectedRunes.selectedPerkIds[5]];
-                                                    let next = [...current];
-
-                                                    // Helper to find row index of a rune
-                                                    const getRuneRow = (rId: number | null) => {
-                                                        if (!rId) return -1;
-                                                        return subStyle.slots.findIndex(s => s.runes.some(r => r.id === rId));
-                                                    };
-
-                                                    const clickedRow = slotIdx; // We are inside the map loop, so slotIdx is the row index (relative to subStyle.slots which starts at 1? No, slice(1) means slotIdx is 0, 1, 2 relative to the slice)
-                                                    // Actually, let's use the absolute row index from the data to be safe, or just trust the loop.
-                                                    // The loop is: subStyle.slots.slice(1).map((slot, slotIdx) => ...
-                                                    // So slotIdx is 0 for the first row of secondary (which is actually slot 1 of the style), 1 for next, etc.
-                                                    // Let's use the getRuneRow helper for consistency.
-                                                    const targetRow = getRuneRow(rune.id);
-
-                                                    if (isSelected) {
-                                                        // Deselect
-                                                        next = next.map(id => id === rune.id ? null : id);
-                                                        // Shift to fill gap
-                                                        if (next[0] === null && next[1] !== null) {
-                                                            next[0] = next[1];
-                                                            next[1] = null;
-                                                        }
-                                                    } else {
-                                                        // Check if we already have a rune from this row
-                                                        const existingIndexInRow = next.findIndex(id => getRuneRow(id) === targetRow);
-
-                                                        if (existingIndexInRow !== -1) {
-                                                            // Replace the rune in the same row
-                                                            next[existingIndexInRow] = rune.id;
-                                                        } else {
-                                                            // No rune from this row. Add to first empty, or shift if full.
-                                                            if (next[0] === null) {
-                                                                next[0] = rune.id;
-                                                            } else if (next[1] === null) {
-                                                                next[1] = rune.id;
-                                                            } else {
-                                                                // Both full, different rows. Shift: Remove first, add new to second.
-                                                                next[0] = next[1];
-                                                                next[1] = rune.id;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    const newPerks = [...selectedRunes.selectedPerkIds];
-                                                    newPerks[4] = next[0];
-                                                    newPerks[5] = next[1];
-                                                    onChange({ ...selectedRunes, selectedPerkIds: newPerks });
-                                                }}
+                                                onClick={() => handleSecondaryRuneClick(rune.id)}
                                                 size={40}
                                             />
                                         );
