@@ -321,7 +321,7 @@ export class ScoringService {
                 utility: Number(zScores.utility.toFixed(2)),
                 lane: laneStats ? Number(zScores.lane.toFixed(2)) : undefined
             },
-            comparison: finalScore > 7 ? 'EXCELLENT' : finalScore > 5 ? 'GOOD' : finalScore > 3 ? 'AVERAGE' : 'POOR',
+            comparison: finalScore >= 75 ? 'EXCELLENT' : finalScore >= 60 ? 'GOOD' : finalScore >= 40 ? 'AVERAGE' : 'POOR',
             contribution: Number(contribution.toFixed(3)),
             sampleSize: matchupStats?.matches || 0
         };

@@ -57,26 +57,91 @@ export default function AdminDashboard() {
         while (true) {
             if (!scanningRef.current) throw new Error("Scan stopped");
 
-            const res = await fetch(url, options);
-            if (res.status === 429) {
-                const data = await res.json();
-                const waitMs = data.retryAfter || 5000;
-                const waitSeconds = Math.ceil(waitMs / 1000);
+            try {
+                const res = await fetch(url, options);
 
-                addLog(`⚠️ Rate Limit Hit. Waiting ${waitSeconds}s...`);
+                if (res.status === 429) {
+                    const data = await res.json().catch(() => ({}));
+                    const waitMs = data.retryAfter || 5000;
+                    const waitSeconds = Math.ceil(waitMs / 1000);
 
-                // Countdown
-                for (let i = waitSeconds; i > 0; i--) {
-                    if (!scanningRef.current) throw new Error("Scan stopped");
-                    // setScanStatus(`Rate Limit: Resuming in ${i}s...`);
-                    if (i % 10 === 0) addLog(`Rate Limit: Resuming in ${i}s...`);
-                    await new Promise(r => setTimeout(r, 1000));
+                    addLog(`⚠️ Rate Limit Hit. Waiting ${waitSeconds}s...`);
+
+                    // Countdown
+                    for (let i = waitSeconds; i > 0; i--) {
+                        if (!scanningRef.current) throw new Error("Scan stopped");
+                        if (i % 10 === 0) addLog(`Rate Limit: Resuming in ${i}s...`);
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+
+                    addLog(`▶️ Resuming scan...`);
+                    continue; // Retry request
                 }
 
-                addLog(`▶️ Resuming scan...`);
-                continue; // Retry request
+                return res; // Return successful (or non-429) response
+            } catch (e: any) {
+                if (e.message === "Scan stopped") throw e;
+                addLog(`CRITICAL ERROR: ${e.message}`);
+                // Wait a bit before retrying on network error
+                await new Promise(r => setTimeout(r, 5000));
             }
-            return res;
+        }
+    };
+
+    const processMatch = async (matchId: string) => {
+        if (!scanningRef.current) return 'stop';
+
+        addLog(`Processing ${matchId}...`);
+        const processRes = await fetchWithBackoff('/api/admin/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': secretKey },
+            body: JSON.stringify({ matchId, region: selectedRegion, tier: selectedTier })
+        });
+
+        const result = await processRes.json();
+        if (result.status === 'processed') {
+            if (currentPatch && result.patch && !result.patch.startsWith(currentPatch.split('.').slice(0, 2).join('.'))) {
+                addLog(`⚠️ Match ${matchId} is on patch ${result.patch} (Target: ${currentPatch}). Stopping player scan.`);
+                return 'stop_patch_mismatch';
+            }
+            setStats(s => ({ ...s, matches: s.matches + 1 }));
+            addLog(`✅ Analyzed ${matchId}`);
+        } else if (result.status === 'skipped') {
+            // addLog(`⏭️ Skipped ${matchId}`);
+        } else {
+            setStats(s => ({ ...s, errors: s.errors + 1 }));
+            addLog(`❌ Error ${matchId}: ${result.error}`);
+        }
+        return 'continue';
+    };
+
+    const processPlayer = async (entry: any) => {
+        if (!scanningRef.current) return;
+
+        const id = entry.puuid || entry.summonerId;
+        const type = entry.puuid ? 'puuid' : 'summonerId';
+        const name = entry.summonerName || id.slice(0, 8);
+
+        addLog(`Fetching matches for ${name}...`);
+
+        const matchRes = await fetchWithBackoff(`/api/admin/matches?${type}=${id}&region=${selectedRegion}`, { headers: { 'x-admin-key': secretKey } });
+
+        if (!matchRes.ok) {
+            addLog(`⚠️ Failed to fetch matches for ${name}`);
+            return;
+        }
+
+        const { matchIds } = await matchRes.json();
+
+        // Loop Matches
+        for (const matchId of matchIds) {
+            if (!scanningRef.current) break;
+            const result = await processMatch(matchId);
+            if (result === 'stop_patch_mismatch') break;
+
+            // Rate limit buffer
+            const delay = 1000 / rateLimit;
+            await new Promise(r => setTimeout(r, delay));
         }
     };
 
@@ -106,52 +171,7 @@ export default function AdminDashboard() {
             // 2. Loop Players
             for (const entry of entries) {
                 if (!scanningRef.current) break;
-
-                const id = entry.puuid || entry.summonerId;
-                const type = entry.puuid ? 'puuid' : 'summonerId';
-                const name = entry.summonerName || id.slice(0, 8);
-
-                addLog(`Fetching matches for ${name}...`);
-
-                const matchRes = await fetchWithBackoff(`/api/admin/matches?${type}=${id}&region=${selectedRegion}`, { headers: { 'x-admin-key': secretKey } });
-
-                if (!matchRes.ok) {
-                    addLog(`⚠️ Failed to fetch matches for ${name}`);
-                    continue;
-                }
-
-                const { matchIds } = await matchRes.json();
-
-                // 3. Loop Matches
-                for (const matchId of matchIds) {
-                    if (!scanningRef.current) break;
-
-                    addLog(`Processing ${matchId}...`);
-                    const processRes = await fetchWithBackoff('/api/admin/process', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'x-admin-key': secretKey },
-                        body: JSON.stringify({ matchId, region: selectedRegion, tier: selectedTier })
-                    });
-
-                    const result = await processRes.json();
-                    if (result.status === 'processed') {
-                        if (currentPatch && result.patch && !result.patch.startsWith(currentPatch.split('.').slice(0, 2).join('.'))) {
-                            addLog(`⚠️ Match ${matchId} is on patch ${result.patch} (Target: ${currentPatch}). Stopping player scan.`);
-                            break;
-                        }
-                        setStats(s => ({ ...s, matches: s.matches + 1 }));
-                        addLog(`✅ Analyzed ${matchId}`);
-                    } else if (result.status === 'skipped') {
-                        // addLog(`⏭️ Skipped ${matchId}`);
-                    } else {
-                        setStats(s => ({ ...s, errors: s.errors + 1 }));
-                        addLog(`❌ Error ${matchId}: ${result.error}`);
-                    }
-
-                    // Rate limit buffer
-                    const delay = 1000 / rateLimit;
-                    await new Promise(r => setTimeout(r, delay));
-                }
+                await processPlayer(entry);
             }
 
         } catch (e: any) {
