@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { RuneStyle, SelectedRunes, Rune } from '../../types';
-import { Check, X } from 'lucide-react';
-import { getRuneIconUrl } from '../../utils/ddragon';
+import { RuneStyle, SelectedRunes } from '../../types';
+import { PrimaryPath, SecondaryPath, ShardSelector } from './RuneSelectorComponents';
 
 interface RuneSelectorProps {
     selectedRunes: SelectedRunes;
@@ -36,6 +34,47 @@ const SHARDS = [
         ]
     }
 ];
+
+const getRuneRow = (rId: number | null, subStyle: any) => {
+    if (!rId || !subStyle) return -1;
+    return subStyle.slots.findIndex((s: any) => s.runes.some((r: any) => r.id === rId));
+};
+
+const calculateNewSecondaryPerks = (runeId: number, currentPerks: (number | null)[], subStyle: any) => {
+    let next = [...currentPerks];
+    const targetRow = getRuneRow(runeId, subStyle);
+    const isSelected = currentPerks.includes(runeId);
+
+    if (isSelected) {
+        // Deselect
+        next = next.map(id => id === runeId ? null : id);
+        // Shift to fill gap
+        if (next[0] === null && next[1] !== null) {
+            next[0] = next[1];
+            next[1] = null;
+        }
+    } else {
+        // Check if we already have a rune from this row
+        const existingIndexInRow = next.findIndex(id => getRuneRow(id, subStyle) === targetRow);
+
+        if (existingIndexInRow !== -1) {
+            // Replace the rune in the same row
+            next[existingIndexInRow] = runeId;
+        } else {
+            // No rune from this row. Add to first empty, or shift if full.
+            if (next[0] === null) {
+                next[0] = runeId;
+            } else if (next[1] === null) {
+                next[1] = runeId;
+            } else {
+                // Both full, different rows. Shift: Remove first, add new to second.
+                next[0] = next[1];
+                next[1] = runeId;
+            }
+        }
+    }
+    return next;
+};
 
 export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onChange, lang = 'fr_FR' }) => {
     const [styles, setStyles] = useState<RuneStyle[]>([]);
@@ -107,45 +146,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
         if (!subStyle) return;
 
         const current = [selectedRunes.selectedPerkIds[4], selectedRunes.selectedPerkIds[5]];
-        let next = [...current];
-
-        // Helper to find row index of a rune
-        const getRuneRow = (rId: number | null) => {
-            if (!rId) return -1;
-            return subStyle.slots.findIndex(s => s.runes.some(r => r.id === rId));
-        };
-
-        const targetRow = getRuneRow(runeId);
-        const isSelected = current.includes(runeId);
-
-        if (isSelected) {
-            // Deselect
-            next = next.map(id => id === runeId ? null : id);
-            // Shift to fill gap
-            if (next[0] === null && next[1] !== null) {
-                next[0] = next[1];
-                next[1] = null;
-            }
-        } else {
-            // Check if we already have a rune from this row
-            const existingIndexInRow = next.findIndex(id => getRuneRow(id) === targetRow);
-
-            if (existingIndexInRow !== -1) {
-                // Replace the rune in the same row
-                next[existingIndexInRow] = runeId;
-            } else {
-                // No rune from this row. Add to first empty, or shift if full.
-                if (next[0] === null) {
-                    next[0] = runeId;
-                } else if (next[1] === null) {
-                    next[1] = runeId;
-                } else {
-                    // Both full, different rows. Shift: Remove first, add new to second.
-                    next[0] = next[1];
-                    next[1] = runeId;
-                }
-            }
-        }
+        const next = calculateNewSecondaryPerks(runeId, current, subStyle);
 
         const newPerks = [...selectedRunes.selectedPerkIds];
         newPerks[4] = next[0];
@@ -181,160 +182,8 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
             <ShardSelector
                 selectedRunes={selectedRunes}
                 onPerkSelect={handlePerkSelect}
+                SHARDS={SHARDS}
             />
         </div>
     );
 };
-
-const PrimaryPath = ({ styles, selectedRunes, onStyleChange, onPerkSelect }: any) => {
-    const primaryStyle = styles.find((s: any) => s.id === selectedRunes.primaryStyleId);
-
-    return (
-        <div className="space-y-6">
-            <div className="flex gap-3 mb-6 justify-center flex-wrap">
-                {styles.map((style: any) => (
-                    <StyleButton
-                        key={style.id}
-                        style={style}
-                        isSelected={selectedRunes.primaryStyleId === style.id}
-                        onClick={() => onStyleChange(style.id)}
-                    />
-                ))}
-            </div>
-
-            {primaryStyle && (
-                <div className="space-y-6 animate-fadeIn px-2">
-                    <div className="flex justify-center gap-4">
-                        {primaryStyle.slots[0].runes.map((rune: any) => (
-                            <RuneIcon
-                                key={rune.id}
-                                rune={rune}
-                                isSelected={selectedRunes.selectedPerkIds[0] === rune.id}
-                                onClick={() => onPerkSelect(0, rune.id)}
-                                isKeystone
-                                size={60}
-                            />
-                        ))}
-                    </div>
-                    {[1, 2, 3].map(slotIdx => (
-                        <div key={slotIdx} className={`flex justify-center gap-4 ${slotIdx === 1 ? 'border-t border-white/5 pt-6' : ''}`}>
-                            {primaryStyle.slots[slotIdx].runes.map((rune: any) => (
-                                <RuneIcon
-                                    key={rune.id}
-                                    rune={rune}
-                                    isSelected={selectedRunes.selectedPerkIds[slotIdx] === rune.id}
-                                    onClick={() => onPerkSelect(slotIdx, rune.id)}
-                                    size={48}
-                                />
-                            ))}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
-const SecondaryPath = ({ styles, selectedRunes, onStyleChange, onRuneClick }: any) => {
-    const subStyle = styles.find((s: any) => s.id === selectedRunes.subStyleId);
-
-    return (
-        <div className="space-y-6 border-l border-white/5 pl-4 relative">
-            <div className="flex gap-2 mb-6 justify-center flex-wrap">
-                {styles.filter((s: any) => s.id !== selectedRunes.primaryStyleId).map((style: any) => (
-                    <StyleButton
-                        key={style.id}
-                        style={style}
-                        isSelected={selectedRunes.subStyleId === style.id}
-                        onClick={() => onStyleChange(style.id)}
-                        small
-                    />
-                ))}
-            </div>
-
-            {subStyle && (
-                <div className="space-y-6 animate-fadeIn px-2">
-                    {subStyle.slots.slice(1).map((slot: any, slotIdx: number) => (
-                        <div key={slotIdx} className="flex justify-center gap-4">
-                            {slot.runes.map((rune: any) => {
-                                const isSelected = selectedRunes.selectedPerkIds[4] === rune.id || selectedRunes.selectedPerkIds[5] === rune.id;
-                                return (
-                                    <RuneIcon
-                                        key={rune.id}
-                                        rune={rune}
-                                        isSelected={isSelected}
-                                        onClick={() => onRuneClick(rune.id)}
-                                        size={40}
-                                    />
-                                );
-                            })}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
-const ShardSelector = ({ selectedRunes, onPerkSelect }: any) => (
-    <div className="mt-8 pt-8 border-t border-white/5">
-        <div className="flex flex-col gap-4 items-center">
-            {SHARDS.map((shardRow, rowIdx) => (
-                <div key={rowIdx} className="flex gap-6">
-                    {shardRow.options.map(shard => (
-                        <RuneIcon
-                            key={shard.id}
-                            rune={shard}
-                            isSelected={selectedRunes.selectedPerkIds[6 + rowIdx] === shard.id}
-                            onClick={() => onPerkSelect(6 + rowIdx, shard.id)}
-                            size={32}
-                        />
-                    ))}
-                </div>
-            ))}
-        </div>
-    </div>
-);
-
-const StyleButton = ({ style, isSelected, onClick, small }: any) => (
-    <button
-        onClick={onClick}
-        className={`${small ? 'w-10 h-10' : 'w-12 h-12'} flex-shrink-0 aspect-square rounded-full p-2 border-2 transition-all ${isSelected
-            ? 'border-lol-gold bg-lol-gold/10 scale-110 shadow-[0_0_15px_rgba(200,155,60,0.3)]'
-            : 'border-transparent opacity-40 hover:opacity-100 hover:bg-white/5 grayscale hover:grayscale-0'
-            }`}
-        title={style.name}
-    >
-        <Image src={getRuneIconUrl(style.icon)} alt={style.name} width={small ? 40 : 48} height={small ? 40 : 48} className="w-full h-full object-contain" />
-    </button>
-);
-
-const RuneIcon = ({ rune, isSelected, onClick, isKeystone, size = 48 }: { rune: Rune, isSelected: boolean, onClick: () => void, isKeystone?: boolean, size?: number }) => (
-    <div
-        className="relative group cursor-pointer flex-shrink-0 aspect-square flex items-center justify-center"
-        onClick={onClick}
-        style={{ width: size, height: size }}
-    >
-        <div className={`w-full h-full rounded-full border-2 transition-all duration-300 flex items-center justify-center overflow-hidden ${isSelected
-            ? 'border-lol-gold shadow-[0_0_15px_rgba(200,155,60,0.6)] grayscale-0 scale-110 bg-black/50'
-            : 'border-transparent grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-110'}`}>
-            <Image
-                src={getRuneIconUrl(rune.icon)}
-                width={size}
-                height={size}
-                alt={rune.name}
-                className="object-contain transition-transform"
-                style={{
-                    width: '85%',
-                    height: '85%'
-                }}
-            />
-        </div>
-
-        {/* Tooltip */}
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-lol-gold/30 p-3 rounded-xl shadow-xl z-50 hidden group-hover:block pointer-events-none">
-            <h4 className="text-lol-gold font-bold text-sm mb-1">{rune.name}</h4>
-            <p className="text-[10px] text-gray-400 leading-tight" dangerouslySetInnerHTML={{ __html: rune.shortDesc }}></p>
-        </div>
-    </div>
-);

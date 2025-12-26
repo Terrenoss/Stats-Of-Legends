@@ -189,8 +189,8 @@ export const BuilderGrid: React.FC<BuilderGridProps> = ({
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, idx)}
             className={`aspect-square rounded-[1.5rem] border-2 flex items-center justify-center relative group transition-all duration-300 ${item
-                ? 'border-lol-gold bg-[#080808] shadow-glow-gold'
-                : 'border-white/5 bg-[#080808]/50 border-dashed hover:border-white/20'
+              ? 'border-lol-gold bg-[#080808] shadow-glow-gold'
+              : 'border-white/5 bg-[#080808]/50 border-dashed hover:border-white/20'
               }`}
           >
             {item ? (
@@ -289,7 +289,9 @@ export const BuilderGrid: React.FC<BuilderGridProps> = ({
             <div className="p-2 bg-lol-hextech/20 rounded-xl"><Brain className="w-6 h-6" /></div> Analyse du Coach
           </h3>
           <div className="prose prose-invert prose-sm text-gray-300 font-light leading-relaxed">
-            <div dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\n/g, '<br/>') }} />
+            {aiAnalysis.split('\n').map((line, i) => (
+              <p key={i} className="mb-2">{line}</p>
+            ))}
           </div>
         </div>
       )}
