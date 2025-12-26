@@ -55,53 +55,9 @@ export class MatchHistoryService {
 
             for (const m of newMatchesData) {
                 if (!m) continue;
-                const info = m.data.info;
-
-                await prisma.match.create({
-                    data: {
-                        id: m.id,
-                        gameCreation: new Date(info.gameStartTimestamp),
-                        gameDuration: info.gameDuration,
-                        gameMode: info.gameMode,
-                        gameVersion: info.gameVersion,
-                        jsonData: m.data,
-                    },
-                });
-
-                for (const p of info.participants) {
-                    if (p.puuid === puuid) {
-                        await prisma.summonerMatch.create({
-                            data: {
-                                summonerPuuid: puuid,
-                                matchId: m.id,
-                                championId: p.championId,
-                                win: p.win,
-                                kills: p.kills,
-                                deaths: p.deaths,
-                                assists: p.assists,
-                                role: p.teamPosition || 'UNKNOWN',
-                                totalDamageDealtToChampions: p.totalDamageDealtToChampions || 0,
-                                totalMinionsKilled: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
-                                goldEarned: p.goldEarned || 0,
-                                visionScore: p.visionScore || 0,
-                                items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
-                            }
-                        });
-                    }
-                }
-
-                // OPTIMIZATION: Process for Tier List immediately
-                try {
-                    const ranks = dbSummoner?.ranks || [];
-                    const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
-                    const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
-                    const tier = solo?.tier || flex?.tier || 'EMERALD';
-
-                    await MatchProcessor.processMatch(m.id, region, tier, m.data);
-                } catch (err) {
-                    console.error(`Background processing failed for ${m.id}`, err);
-                }
+                await this.saveMatchAndStats(m, puuid, region, dbSummoner);
             }
+
 
             await prisma.summoner.update({
                 where: { puuid: puuid },
@@ -132,6 +88,55 @@ export class MatchHistoryService {
         }));
 
         return matches;
+    }
+
+    private static async saveMatchAndStats(m: any, puuid: string, region: string, dbSummoner: any) {
+        const info = m.data.info;
+
+        await prisma.match.create({
+            data: {
+                id: m.id,
+                gameCreation: new Date(info.gameStartTimestamp),
+                gameDuration: info.gameDuration,
+                gameMode: info.gameMode,
+                gameVersion: info.gameVersion,
+                jsonData: m.data,
+            },
+        });
+
+        for (const p of info.participants) {
+            if (p.puuid === puuid) {
+                await prisma.summonerMatch.create({
+                    data: {
+                        summonerPuuid: puuid,
+                        matchId: m.id,
+                        championId: p.championId,
+                        win: p.win,
+                        kills: p.kills,
+                        deaths: p.deaths,
+                        assists: p.assists,
+                        role: p.teamPosition || 'UNKNOWN',
+                        totalDamageDealtToChampions: p.totalDamageDealtToChampions || 0,
+                        totalMinionsKilled: (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0),
+                        goldEarned: p.goldEarned || 0,
+                        visionScore: p.visionScore || 0,
+                        items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
+                    }
+                });
+            }
+        }
+
+        // OPTIMIZATION: Process for Tier List immediately
+        try {
+            const ranks = dbSummoner?.ranks || [];
+            const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
+            const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
+            const tier = solo?.tier || flex?.tier || 'EMERALD';
+
+            await MatchProcessor.processMatch(m.id, region, tier, m.data);
+        } catch (err) {
+            console.error(`Background processing failed for ${m.id}`, err);
+        }
     }
 
     // --- Helper Functions (Moved from route.ts) ---
@@ -343,124 +348,7 @@ export class MatchHistoryService {
         }
 
         // Timeline processing
-        let timelineData = null;
-        const itemBuild: any[] = [];
-        let ace = false;
-        const participantLaneStats: Record<number, { csd15: number; gd15: number; xpd15: number }> = {};
-        const participantWeightedDeaths: Record<number, number> = {};
-
-        if (timelineJson) {
-            const frames = timelineJson.info?.frames || [];
-            const events = frames.flatMap((f: any) => f.events || []);
-            const myAce = events.find((e: any) => e.type === 'CHAMPION_KILL' && e.ace === true && e.killerId === me.participantId);
-            if (myAce) ace = true;
-
-            // Weighted Deaths
-            const deathEvents = events.filter((e: any) => e.type === 'CHAMPION_KILL');
-            deathEvents.forEach((e: any) => {
-                const victimId = e.victimId;
-                const timestamp = e.timestamp;
-                const minutes = timestamp / 60000;
-
-                let weight = 1.0;
-                if (minutes < 15) weight = 0.8;
-                else if (minutes < 30) weight = 1.0;
-                else weight = 1.5;
-
-                if (!participantWeightedDeaths[victimId]) participantWeightedDeaths[victimId] = 0;
-                participantWeightedDeaths[victimId] += weight;
-            });
-
-            const frame15 = frames.find((f: any) => f.timestamp >= 900000 && f.timestamp < 960000) || frames[frames.length - 1];
-
-            if (frame15) {
-                participants.forEach((p: any) => {
-                    const opponent = participants.find((opp: any) => opp.teamPosition === p.teamPosition && opp.teamId !== p.teamId);
-                    if (opponent) {
-                        const myFrame = frame15.participantFrames?.[p.participantId];
-                        const oppFrame = frame15.participantFrames?.[opponent.participantId];
-                        if (myFrame && oppFrame) {
-                            participantLaneStats[p.participantId] = {
-                                gd15: (myFrame.totalGold || 0) - (oppFrame.totalGold || 0),
-                                xpd15: (myFrame.xp || 0) - (oppFrame.xp || 0),
-                                csd15: ((myFrame.minionsKilled || 0) + (myFrame.jungleMinionsKilled || 0)) - ((oppFrame.minionsKilled || 0) + (oppFrame.jungleMinionsKilled || 0))
-                            };
-                        }
-                    }
-                });
-            }
-
-            // Graph Points
-            const points: { timestamp: string; blueScore: number; redScore: number }[] = [];
-            for (const frame of frames) {
-                const tsMs = frame.timestamp ?? 0;
-                const minutes = Math.round(tsMs / 60000);
-                let blueGold = 0;
-                let redGold = 0;
-                const participantsFrames = frame.participantFrames || {};
-                for (const key of Object.keys(participantsFrames)) {
-                    const pf = participantsFrames[key];
-                    const teamId = Number(pf.teamId ?? (pf.participantId && pf.participantId <= 5 ? 100 : 200));
-                    const totalGold = Number(pf.totalGold ?? pf.gold ?? 0);
-                    if (teamId === 100) blueGold += totalGold;
-                    else if (teamId === 200) redGold += totalGold;
-                }
-                if (minutes >= 0 && (blueGold > 0 || redGold > 0)) {
-                    points.push({
-                        timestamp: `${minutes}m`,
-                        blueScore: blueGold,
-                        redScore: redGold,
-                    });
-                }
-            }
-            if (points.length) timelineData = points;
-
-            // Item Build
-            const myEvents = events.filter(
-                (e: any) =>
-                    ['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].includes(e.type) &&
-                    e.participantId === me.participantId,
-            );
-            myEvents.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
-
-            const cleanEvents: any[] = [];
-            for (const ev of myEvents) {
-                if (ev.type === 'ITEM_PURCHASED' || ev.type === 'ITEM_SOLD') {
-                    cleanEvents.push(ev);
-                } else if (ev.type === 'ITEM_UNDO') {
-                    const lastIdx = cleanEvents.length - 1;
-                    if (lastIdx >= 0) {
-                        const lastEv = cleanEvents[lastIdx];
-                        if (lastEv.type === 'ITEM_PURCHASED' && lastEv.itemId === ev.beforeId) {
-                            cleanEvents.pop();
-                        } else if (lastEv.type === 'ITEM_SOLD' && lastEv.itemId === ev.afterId) {
-                            cleanEvents.pop();
-                        }
-                    }
-                }
-            }
-
-            for (const ev of cleanEvents) {
-                const itemId = ev.itemId || ev.itemIdPurchased || ev.itemIdSold || ev.itemIdAdded || null;
-                if (!itemId) continue;
-                const ts = Math.floor((ev.timestamp || 0) / 1000);
-                const mm = Math.floor(ts / 60);
-                const ss = ts % 60;
-                const timestamp = `${mm}m ${ss}s`;
-                const action = ev.type || 'ITEM_PURCHASED';
-
-                itemBuild.push({
-                    timestamp,
-                    action,
-                    item: {
-                        id: itemId,
-                        imageUrl: getItemIconUrl(itemId, version),
-                        name: `Item ${itemId}`,
-                        tags: [],
-                    },
-                });
-            }
-        }
+        const { timelineData, itemBuild, ace, participantLaneStats, participantWeightedDeaths } = this.getTimelineStats(timelineJson, me, version, participants);
 
         const t100Kills = participants.filter((p: any) => p.teamId === 100).reduce((a: number, b: any) => a + b.kills, 0);
         const t200Kills = participants.filter((p: any) => p.teamId === 200).reduce((a: number, b: any) => a + b.kills, 0);
@@ -491,18 +379,18 @@ export class MatchHistoryService {
             if (cachedScores && cachedScores[p.puuid]) {
                 scoreResult = cachedScores[p.puuid];
             } else {
-                scoreResult = ScoringService.calculateScore(
-                    { ...p, challenges: p.challenges },
-                    (info.gameDuration || 1) / 60,
-                    pChampStats,
-                    pMatchupStats,
-                    teamStats[p.teamId],
-                    laneStats,
-                    undefined,
-                    matchupWinRate,
-                    championClass,
-                    weightedDeaths
-                );
+                scoreResult = ScoringService.calculateScore({
+                    participant: { ...p, challenges: p.challenges },
+                    duration: (info.gameDuration || 1) / 60,
+                    championStats: pChampStats,
+                    matchupStats: pMatchupStats,
+                    teamStats: teamStats[p.teamId],
+                    laneStats: laneStats,
+                    averageRank: undefined,
+                    matchupWinRate: matchupWinRate,
+                    championClass: championClass,
+                    weightedDeaths: weightedDeaths
+                });
             }
 
             // V5: Calculate Role Average Performance (Relative to Champion)
@@ -659,4 +547,128 @@ export class MatchHistoryService {
             teams,
         };
     }
+
+    private static getTimelineStats(timelineJson: any, me: any, version: string, participants: any[]) {
+        let timelineData = null;
+        const itemBuild: any[] = [];
+        let ace = false;
+        const participantLaneStats: Record<number, { csd15: number; gd15: number; xpd15: number }> = {};
+        const participantWeightedDeaths: Record<number, number> = {};
+
+        if (timelineJson) {
+            const frames = timelineJson.info?.frames || [];
+            const events = frames.flatMap((f: any) => f.events || []);
+            const myAce = events.find((e: any) => e.type === 'CHAMPION_KILL' && e.ace === true && e.killerId === me.participantId);
+            if (myAce) ace = true;
+
+            // Weighted Deaths
+            const deathEvents = events.filter((e: any) => e.type === 'CHAMPION_KILL');
+            deathEvents.forEach((e: any) => {
+                const victimId = e.victimId;
+                const timestamp = e.timestamp;
+                const minutes = timestamp / 60000;
+
+                let weight = 1.0;
+                if (minutes < 15) weight = 0.8;
+                else if (minutes < 30) weight = 1.0;
+                else weight = 1.5;
+
+                if (!participantWeightedDeaths[victimId]) participantWeightedDeaths[victimId] = 0;
+                participantWeightedDeaths[victimId] += weight;
+            });
+
+            const frame15 = frames.find((f: any) => f.timestamp >= 900000 && f.timestamp < 960000) || frames[frames.length - 1];
+
+            if (frame15) {
+                participants.forEach((p: any) => {
+                    const opponent = participants.find((opp: any) => opp.teamPosition === p.teamPosition && opp.teamId !== p.teamId);
+                    if (opponent) {
+                        const myFrame = frame15.participantFrames?.[p.participantId];
+                        const oppFrame = frame15.participantFrames?.[opponent.participantId];
+                        if (myFrame && oppFrame) {
+                            participantLaneStats[p.participantId] = {
+                                gd15: (myFrame.totalGold || 0) - (oppFrame.totalGold || 0),
+                                xpd15: (myFrame.xp || 0) - (oppFrame.xp || 0),
+                                csd15: ((myFrame.minionsKilled || 0) + (myFrame.jungleMinionsKilled || 0)) - ((oppFrame.minionsKilled || 0) + (oppFrame.jungleMinionsKilled || 0))
+                            };
+                        }
+                    }
+                });
+            }
+
+            // Graph Points
+            const points: { timestamp: string; blueScore: number; redScore: number }[] = [];
+            for (const frame of frames) {
+                const tsMs = frame.timestamp ?? 0;
+                const minutes = Math.round(tsMs / 60000);
+                let blueGold = 0;
+                let redGold = 0;
+                const participantsFrames = frame.participantFrames || {};
+                for (const key of Object.keys(participantsFrames)) {
+                    const pf = participantsFrames[key];
+                    const teamId = Number(pf.teamId ?? (pf.participantId && pf.participantId <= 5 ? 100 : 200));
+                    const totalGold = Number(pf.totalGold ?? pf.gold ?? 0);
+                    if (teamId === 100) blueGold += totalGold;
+                    else if (teamId === 200) redGold += totalGold;
+                }
+                if (minutes >= 0 && (blueGold > 0 || redGold > 0)) {
+                    points.push({
+                        timestamp: `${minutes}m`,
+                        blueScore: blueGold,
+                        redScore: redGold,
+                    });
+                }
+            }
+            if (points.length) timelineData = points;
+
+            // Item Build
+            const myEvents = events.filter(
+                (e: any) =>
+                    ['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].includes(e.type) &&
+                    e.participantId === me.participantId,
+            );
+            myEvents.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+
+            const cleanEvents: any[] = [];
+            for (const ev of myEvents) {
+                if (ev.type === 'ITEM_PURCHASED' || ev.type === 'ITEM_SOLD') {
+                    cleanEvents.push(ev);
+                } else if (ev.type === 'ITEM_UNDO') {
+                    const lastIdx = cleanEvents.length - 1;
+                    if (lastIdx >= 0) {
+                        const lastEv = cleanEvents[lastIdx];
+                        if (lastEv.type === 'ITEM_PURCHASED' && lastEv.itemId === ev.beforeId) {
+                            cleanEvents.pop();
+                        } else if (lastEv.type === 'ITEM_SOLD' && lastEv.itemId === ev.afterId) {
+                            cleanEvents.pop();
+                        }
+                    }
+                }
+            }
+
+            for (const ev of cleanEvents) {
+                const itemId = ev.itemId || ev.itemIdPurchased || ev.itemIdSold || ev.itemIdAdded || null;
+                if (!itemId) continue;
+                const ts = Math.floor((ev.timestamp || 0) / 1000);
+                const mm = Math.floor(ts / 60);
+                const ss = ts % 60;
+                const timestamp = `${mm}m ${ss}s`;
+                const action = ev.type || 'ITEM_PURCHASED';
+
+                itemBuild.push({
+                    timestamp,
+                    action,
+                    item: {
+                        id: itemId,
+                        imageUrl: getItemIconUrl(itemId, version),
+                        name: `Item ${itemId}`,
+                        tags: [],
+                    },
+                });
+            }
+        }
+
+        return { timelineData, itemBuild, ace, participantLaneStats, participantWeightedDeaths };
+    }
 }
+

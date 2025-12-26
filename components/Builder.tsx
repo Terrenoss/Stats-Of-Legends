@@ -199,6 +199,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
 
     let computedStats: Stats = {
       hp: base.hp + (growth?.hp || 0) * lvlMod,
+      hpRegen: base.hpRegen + (growth?.hpRegen || 0) * lvlMod,
       mp: base.mp + (growth?.mp || 0) * lvlMod,
       mpRegen: base.mpRegen + (growth?.mpRegen || 0) * lvlMod,
       ad: base.ad + (growth?.ad || 0) * lvlMod,
@@ -222,6 +223,7 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
         if (item.stats.ad) computedStats.ad += item.stats.ad;
         if (item.stats.ap) computedStats.ap += item.stats.ap;
         if (item.stats.hp) computedStats.hp += item.stats.hp;
+        if (item.stats.hpRegen) computedStats.hpRegen += item.stats.hpRegen;
         if (item.stats.mp) computedStats.mp += item.stats.mp;
         if (item.stats.mpRegen) computedStats.mpRegen += item.stats.mpRegen;
         if (item.stats.armor) computedStats.armor += item.stats.armor;
@@ -671,7 +673,11 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
               <div className="p-2 bg-lol-hextech/20 rounded-xl"><Brain className="w-6 h-6" /></div> Analyse du Coach
             </h3>
             <div className="prose prose-invert prose-sm text-gray-300 font-light leading-relaxed">
-              <div dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\n/g, '<br/>') }} />
+              <div className="flex flex-col gap-2">
+                {aiAnalysis.split('\n').map((line, i) => (
+                  <p key={i} className="min-h-[1rem]">{line}</p>
+                ))}
+              </div>
             </div>
           </div>
         )}

@@ -170,7 +170,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
               <div className="col-span-4 lg:col-span-3 flex items-center gap-3 overflow-hidden">
                 <div className="relative">
                   {champImg ? (
-                    <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700" alt={champName} />
+                    <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 object-cover" alt={champName} />
                   ) : (
                     <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
                   )}
@@ -217,18 +217,28 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
 
               {/* Items */}
               <div className="col-span-5 lg:col-span-3 flex justify-end gap-1">
-                {itemsFiltered.map((item, idx) => {
-                  if (!item) return null;
-                  if (item.imageUrl) {
+                {(() => {
+                  // Ensure we display exactly 6 item slots
+                  const displayItems = [...itemsFiltered];
+                  while (displayItems.length < 6) {
+                    displayItems.push(null as any);
+                  }
+
+                  return displayItems.slice(0, 6).map((item, idx) => {
+                    if (!item || item.id === 0 || !item.imageUrl) {
+                      return (<div key={idx} className="w-6 h-6 rounded bg-white/5 border border-white/10" />);
+                    }
+
                     const action = (item as any).action;
                     let title;
                     if (item.name) title = item.name + (action ? ' (' + action + ')' : '');
+
                     return (
                       <Image key={idx} src={item.imageUrl} width={24} height={24} className="w-6 h-6 rounded bg-[#121212] border border-white/10" alt={item.name || 'Item'} title={title} />
                     );
-                  }
-                  return (<div key={idx} className="w-6 h-6 rounded bg-white/5 border border-white/10" />);
-                })}
+                  });
+                })()}
+
                 {/* Ward indicator: show a small icon with ward type if present */}
                 {(Array.isArray(items) && items.find(isWardItem)) ? (() => {
                   const wardItem = items.find(isWardItem);

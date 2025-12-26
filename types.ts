@@ -15,6 +15,7 @@ export type Region = 'EUW' | 'NA' | 'KR' | 'EUNE' | 'BR' | 'LAN';
 
 export interface Stats {
   hp: number;
+  hpRegen: number; // Health Regen
   mp: number; // Mana
   mpRegen: number; // Mana Regen
   ad: number;
@@ -28,10 +29,12 @@ export interface Stats {
   lethality?: number;
   magicPen?: number;
   percentPen?: number;
+  lifesteal?: number;
 }
 
 export interface StatsGrowth {
   hp: number;
+  hpRegen: number;
   mp: number;
   mpRegen: number;
   ad: number;

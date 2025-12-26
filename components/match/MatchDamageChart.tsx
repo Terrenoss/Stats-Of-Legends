@@ -115,7 +115,15 @@ const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKe
   );
 };
 
-const PlayerStatRow = ({ participant, metricKey, maxVal, align, color }: { participant: Participant, metricKey: keyof Participant, maxVal: number, align: 'left' | 'right', color: string }) => {
+interface PlayerStatRowProps {
+  participant: Participant;
+  metricKey: keyof Participant;
+  maxVal: number;
+  align: 'left' | 'right';
+  color: string;
+}
+
+const PlayerStatRow: React.FC<PlayerStatRowProps> = ({ participant, metricKey, maxVal, align, color }) => {
   const val = Number(participant[metricKey]) || 0;
   const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
 

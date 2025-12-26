@@ -207,7 +207,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   );
 };
 
-const NavButton = ({ label, icon, active, href, onClick }: { label: string, icon?: React.ReactNode, active: boolean, href: string, onClick?: (e: React.MouseEvent) => void }) => (
+interface NavButtonProps {
+  label: string;
+  icon?: React.ReactNode;
+  active: boolean;
+  href: string;
+  onClick?: (e: React.MouseEvent) => void;
+}
+
+const NavButton: React.FC<NavButtonProps> = ({ label, icon, active, href, onClick }) => (
   <SafeLink
     href={href}
     onClick={onClick}
