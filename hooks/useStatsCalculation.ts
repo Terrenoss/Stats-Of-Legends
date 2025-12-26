@@ -16,6 +16,7 @@ export function useStatsCalculation(
 
         let computedStats: Stats = {
             hp: base.hp + (growth?.hp || 0) * lvlMod,
+            hpRegen: base.hpRegen + (growth?.hpRegen || 0) * lvlMod,
             mp: base.mp + (growth?.mp || 0) * lvlMod,
             mpRegen: base.mpRegen + (growth?.mpRegen || 0) * lvlMod,
             ad: base.ad + (growth?.ad || 0) * lvlMod,

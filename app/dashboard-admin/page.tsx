@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Shield, Play, Square, Trash2, Activity, Database } from 'lucide-react';
 import { CURRENT_PATCH } from '@/constants';

@@ -1,4 +1,4 @@
-import { SummonerProfile, Teammate, LPPoint, HeatmapDay, RoleStat, DetailedChampionStats, Champion, DummyStats } from '../types';
+import { SummonerProfile, Teammate, LPPoint, HeatmapDay, RoleStat, DetailedChampionStats, Champion, DummyStats, GameMode } from '../types';
 
 export const MOCK_PROFILE: SummonerProfile = {
     name: "Faker",
@@ -203,8 +203,8 @@ export const MOCK_CHAMPIONS: Champion[] = [
         name: "Ahri",
         title: "The Nine-Tailed Fox",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Ahri.png",
-        baseStats: { hp: 590, mp: 418, mpRegen: 8, ad: 53, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.668, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 96, mp: 25, mpRegen: 0.8, ad: 3, armor: 4.7, mr: 1.3, attackSpeed: 2 }, // AS is % growth
+        baseStats: { hp: 590, hpRegen: 5.5, mp: 418, mpRegen: 8, ad: 53, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.668, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 96, hpRegen: 0.6, mp: 25, mpRegen: 0.8, ad: 3, armor: 4.7, mr: 1.3, attackSpeed: 2 }, // AS is % growth
         spells: [
             {
                 id: 'Q',
@@ -261,40 +261,40 @@ export const MOCK_CHAMPIONS: Champion[] = [
         name: "Darius",
         title: "Hand of Noxus",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Darius.png",
-        baseStats: { hp: 652, mp: 263, mpRegen: 6.6, ad: 64, ap: 0, armor: 39, mr: 32, haste: 0, crit: 0, moveSpeed: 340, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 114, mp: 57.5, mpRegen: 0.35, ad: 5, armor: 5.2, mr: 2.05, attackSpeed: 1 }
+        baseStats: { hp: 652, hpRegen: 10, mp: 263, mpRegen: 6.6, ad: 64, ap: 0, armor: 39, mr: 32, haste: 0, crit: 0, moveSpeed: 340, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 114, hpRegen: 0.9, mp: 57.5, mpRegen: 0.35, ad: 5, armor: 5.2, mr: 2.05, attackSpeed: 1 }
     },
     {
         id: 3,
         name: "Jinx",
         title: "The Loose Cannon",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Jinx.png",
-        baseStats: { hp: 630, mp: 260, mpRegen: 6.7, ad: 59, ap: 0, armor: 26, mr: 30, haste: 0, crit: 0, moveSpeed: 325, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 105, mp: 50, mpRegen: 1, ad: 3.15, armor: 4.2, mr: 1.3, attackSpeed: 1 }
+        baseStats: { hp: 630, hpRegen: 3.75, mp: 260, mpRegen: 6.7, ad: 59, ap: 0, armor: 26, mr: 30, haste: 0, crit: 0, moveSpeed: 325, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 105, hpRegen: 0.5, mp: 50, mpRegen: 1, ad: 3.15, armor: 4.2, mr: 1.3, attackSpeed: 1 }
     },
     {
         id: 4,
         name: "Leona",
         title: "The Radiant Dawn",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Leona.png",
-        baseStats: { hp: 646, mp: 302, mpRegen: 6, ad: 60, ap: 0, armor: 47, mr: 32, haste: 0, crit: 0, moveSpeed: 335, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 112, mp: 40, mpRegen: 0.8, ad: 3, armor: 4.8, mr: 2.05, attackSpeed: 2.9 }
+        baseStats: { hp: 646, hpRegen: 8.5, mp: 302, mpRegen: 6, ad: 60, ap: 0, armor: 47, mr: 32, haste: 0, crit: 0, moveSpeed: 335, attackSpeed: 0.625, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 112, hpRegen: 0.85, mp: 40, mpRegen: 0.8, ad: 3, armor: 4.8, mr: 2.05, attackSpeed: 2.9 }
     },
     {
         id: 5,
         name: "Zed",
         title: "The Master of Shadows",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Zed.png",
-        baseStats: { hp: 654, mp: 200, mpRegen: 50, ad: 63, ap: 0, armor: 32, mr: 32, haste: 0, crit: 0, moveSpeed: 345, attackSpeed: 0.651, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 99, mp: 0, mpRegen: 0, ad: 3.4, armor: 4.7, mr: 2.05, attackSpeed: 3.3 }
+        baseStats: { hp: 654, hpRegen: 7, mp: 200, mpRegen: 50, ad: 63, ap: 0, armor: 32, mr: 32, haste: 0, crit: 0, moveSpeed: 345, attackSpeed: 0.651, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 99, hpRegen: 0.65, mp: 0, mpRegen: 0, ad: 3.4, armor: 4.7, mr: 2.05, attackSpeed: 3.3 }
     },
     {
         id: 6,
         name: "Lux",
         title: "The Lady of Luminosity",
         imageUrl: "https://ddragon.leagueoflegends.com/cdn/15.24.1/img/champion/Lux.png",
-        baseStats: { hp: 580, mp: 480, mpRegen: 8, ad: 54, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.669, magicPen: 0, lethality: 0 },
-        statsGrowth: { hp: 99, mp: 25, mpRegen: 0.8, ad: 3.3, armor: 4, mr: 1.3, attackSpeed: 1.36 }
+        baseStats: { hp: 580, hpRegen: 5.5, mp: 480, mpRegen: 8, ad: 54, ap: 0, armor: 21, mr: 30, haste: 0, crit: 0, moveSpeed: 330, attackSpeed: 0.669, magicPen: 0, lethality: 0 },
+        statsGrowth: { hp: 99, hpRegen: 0.55, mp: 25, mpRegen: 0.8, ad: 3.3, armor: 4, mr: 1.3, attackSpeed: 1.36 }
     }
 ];
 
@@ -305,3 +305,62 @@ export const DEFAULT_DUMMY: DummyStats = {
     armor: 70,
     mr: 70
 };
+
+export const MOCK_MATCHES: import('../types').Match[] = [
+    {
+        id: "EUW1_1234567890",
+        gameMode: GameMode.SOLO_DUO,
+        gameCreation: Date.now(),
+        gameDuration: 1800,
+        queueId: 420,
+        participants: [],
+        teams: [],
+        me: {
+            summonerName: "Faker",
+            champion: MOCK_CHAMPION,
+            teamId: 100,
+            kills: 10,
+            deaths: 2,
+            assists: 8,
+            cs: 200,
+            win: true,
+            items: [],
+            spells: [],
+            visionScore: 25,
+            totalDamageDealtToChampions: 25000,
+            physicalDamageDealtToChampions: 5000,
+            magicDamageDealtToChampions: 20000,
+            totalMinionsKilled: 200,
+            champLevel: 18,
+            item0: 1, item1: 2, item2: 3, item3: 4, item4: 5, item5: 6, item6: 7,
+        } as any
+    },
+    {
+        id: "EUW1_1234567891",
+        gameMode: GameMode.SOLO_DUO,
+        gameCreation: Date.now() - 86400000,
+        gameDuration: 2100,
+        queueId: 420,
+        participants: [],
+        teams: [],
+        me: {
+            summonerName: "Faker",
+            champion: MOCK_CHAMPIONS[1],
+            teamId: 100,
+            kills: 5,
+            deaths: 8,
+            assists: 4,
+            cs: 180,
+            win: false,
+            items: [],
+            spells: [],
+            visionScore: 15,
+            totalDamageDealtToChampions: 15000,
+            physicalDamageDealtToChampions: 3000,
+            magicDamageDealtToChampions: 12000,
+            totalMinionsKilled: 180,
+            champLevel: 16,
+            item0: 1, item1: 2, item2: 3, item3: 4, item4: 5, item5: 6, item6: 7,
+        } as any
+    }
+];
