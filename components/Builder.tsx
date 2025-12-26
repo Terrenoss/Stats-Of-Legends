@@ -20,7 +20,8 @@ interface BuilderProps {
 
 import { BuilderItemSlot } from './builder/BuilderItemSlot';
 
-import { transformChampionData, transformItemData, calculateStats } from '../utils/builderUtils';
+import { useBuilderData } from '../hooks/useBuilderData';
+import { calculateStats } from '../utils/builderUtils';
 
 export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   const {
@@ -33,9 +34,8 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     reset: resetHistory,
   } = useHistory<(Item | null)[]>([null, null, null, null, null, null], 20);
 
+  const { champions, items, loading } = useBuilderData();
   const [currentChampion, setCurrentChampion] = useState<Champion | null>(null);
-  const [champions, setChampions] = useState<Champion[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
 
   const [championLevel, setChampionLevel] = useState<number>(18);
   const [spellLevels, setSpellLevels] = useState<{ [key: string]: number }>({ Q: 1, W: 1, E: 1, R: 1 });
@@ -53,31 +53,10 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
   const t = TRANSLATIONS[lang];
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [champRes, itemRes] = await Promise.all([
-          fetch('/api/dd/champions?patch=latest&locale=fr_FR'),
-          fetch('/api/dd/items?patch=latest&locale=fr_FR'),
-        ]);
-        if (champRes.ok) {
-          const champJson = await champRes.json();
-          const champs = transformChampionData(champJson);
-          setChampions(champs);
-          if (!currentChampion && champs.length > 0) {
-            setCurrentChampion(champs[0]);
-          }
-        }
-        if (itemRes.ok) {
-          const itemJson = await itemRes.json();
-          const its = transformItemData(itemJson);
-          setItems(its);
-        }
-      } catch (err) {
-        console.error('Failed to load DD data for builder', err);
-      }
+    if (!currentChampion && champions.length > 0) {
+      setCurrentChampion(champions[0]);
     }
-    loadData();
-  }, []);
+  }, [champions, currentChampion]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

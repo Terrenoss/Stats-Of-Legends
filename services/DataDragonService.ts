@@ -66,7 +66,9 @@ export class DataDragonService {
         }
 
         const rawDamageType = (spell.damageType || '').toLowerCase();
-        const damageType = rawDamageType === 'physical' ? 'physical' : rawDamageType === 'true' ? 'true' : 'magic';
+        let damageType = 'magic';
+        if (rawDamageType === 'physical') damageType = 'physical';
+        else if (rawDamageType === 'true') damageType = 'true';
 
         return {
             id: ['Q', 'W', 'E', 'R'][idx] || String(idx),

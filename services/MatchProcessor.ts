@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { RiotService } from './RiotService';
+import { getDurationBucket } from '../utils/matchUtils';
 
 export class MatchProcessor {
     /**
@@ -41,7 +42,7 @@ export class MatchProcessor {
 
             // V2: Duration Bucket
             const duration = info.gameDuration || 0;
-            const durationBucket = duration < 1200 ? "0-20" : duration < 1800 ? "20-30" : "30+";
+            const durationBucket = getDurationBucket(duration);
 
             // V2: Calculate Team Totals for Shares
             const teamStats: Record<number, { damage: number; gold: number }> = { 100: { damage: 0, gold: 0 }, 200: { damage: 0, gold: 0 } };

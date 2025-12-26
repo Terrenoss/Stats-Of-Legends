@@ -25,7 +25,14 @@ const getShardIcon = (id: number) => {
     return map[id] ? getRuneIconUrl(`perk-images/StatMods/${map[id]}`) : '';
 };
 
-const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: { tree: any, page: any, isPrimary: boolean, getRuneIcon: (id: number) => string }) => {
+interface RuneTreeProps {
+    tree: any;
+    page: any;
+    isPrimary: boolean;
+    getRuneIcon: (id: number) => string;
+}
+
+const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     if (!tree) return null;
     const slots = isPrimary ? tree.slots : tree.slots.slice(1);
     const activeColor = isPrimary ? 'border-lol-gold shadow-[0_0_15px_rgba(200,155,60,0.5)]' : 'border-lol-blue shadow-[0_0_15px_rgba(0,200,255,0.5)]';
@@ -39,69 +46,69 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: { tree: any, page: any
 
             <div className={`space-y-8 ${!isPrimary ? 'mb-10' : ''}`}>
                 {slots.map((slot: any, sIdx: number) => (
-                    <div key={sIdx} className="flex justify-between items-center px-4">
-                        {slot.runes.map((rune: any) => {
-                            const active = page.perks.includes(rune.id);
-                            const activeClass = `${activeColor} opacity-100 scale-110`;
-                            const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
-
-                            return (
-                                <div key={rune.id} className="relative group">
-                                    <Image
-                                        src={getRuneIconUrl(rune.icon)}
-                                        alt={`Rune ${rune.id}`}
-                                        width={isPrimary ? 56 : 48}
-                                        height={isPrimary ? 56 : 48}
-                                        className={`${isPrimary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
+                    <RuneRow key={sIdx} slot={slot} page={page} isPrimary={isPrimary} activeColor={activeColor} />
                 ))}
             </div>
-            {!isPrimary && (
-                <div className="pt-8 border-t border-white/5">
-                    <div className="space-y-4">
-                        {[
-                            [5008, 5005, 5007], // Offense: Adaptive, AS, Haste
-                            [5008, 5010, 5001], // Flex: Adaptive, Move Speed, Health
-                            [5001, 5011, 5013]  // Defense: Health, Tenacity, Slow Resist (New Shards)
-                        ].map((rowIds, rowIdx) => (
-                            <div key={rowIdx} className="flex justify-center gap-8">
-                                {rowIds.map((shardId) => {
-                                    // Positional Check: Shards are the last 3 elements of page.perks
-                                    // Row 0 -> index -3 (Offense)
-                                    // Row 1 -> index -2 (Flex)
-                                    // Row 2 -> index -1 (Defense)
-                                    // Fallback to includes() if perks array is short (old data)
-                                    let active = false;
-                                    if (page.perks.length >= 9) {
-                                        const shardIndex = page.perks.length - 3 + rowIdx;
-                                        active = page.perks[shardIndex] === shardId;
-                                    } else {
-                                        // Fallback for old data (might show duplicates but better than nothing)
-                                        active = page.perks.includes(shardId) || (page.statPerks && Object.values(page.statPerks).includes(shardId));
-                                    }
-
-                                    const iconUrl = getShardIcon(shardId);
-                                    const activeClass = 'border-white opacity-100 scale-110 bg-[#333]';
-                                    const inactiveClass = 'border-transparent opacity-20 grayscale bg-[#222]';
-
-                                    return (
-                                        <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
-                                            {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            {!isPrimary && <ShardSection page={page} />}
         </div>
     );
 };
+
+const RuneRow = ({ slot, page, isPrimary, activeColor }: any) => (
+    <div className="flex justify-between items-center px-4">
+        {slot.runes.map((rune: any) => {
+            const active = page.perks.includes(rune.id);
+            const activeClass = `${activeColor} opacity-100 scale-110`;
+            const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
+
+            return (
+                <div key={rune.id} className="relative group">
+                    <Image
+                        src={getRuneIconUrl(rune.icon)}
+                        alt={`Rune ${rune.id}`}
+                        width={isPrimary ? 56 : 48}
+                        height={isPrimary ? 56 : 48}
+                        className={`${isPrimary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
+                    />
+                </div>
+            );
+        })}
+    </div>
+);
+
+const ShardSection = ({ page }: { page: any }) => (
+    <div className="pt-8 border-t border-white/5">
+        <div className="space-y-4">
+            {[
+                [5008, 5005, 5007], // Offense
+                [5008, 5010, 5001], // Flex
+                [5001, 5011, 5013]  // Defense
+            ].map((rowIds, rowIdx) => (
+                <div key={rowIdx} className="flex justify-center gap-8">
+                    {rowIds.map((shardId) => {
+                        let active = false;
+                        if (page.perks.length >= 9) {
+                            const shardIndex = page.perks.length - 3 + rowIdx;
+                            active = page.perks[shardIndex] === shardId;
+                        } else {
+                            active = page.perks.includes(shardId) || (page.statPerks && Object.values(page.statPerks).includes(shardId));
+                        }
+
+                        const iconUrl = getShardIcon(shardId);
+                        const activeClass = 'border-white opacity-100 scale-110 bg-[#333]';
+                        const inactiveClass = 'border-transparent opacity-20 grayscale bg-[#222]';
+
+                        return (
+                            <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
+                                {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
+                            </div>
+                        );
+                    })}
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role, runePages, allRunes, runeMap }) => {
     const getRuneIcon = (id: number) => {

@@ -41,7 +41,18 @@ export const TeamSummary: React.FC<TeamSummaryProps> = ({ teamId, teamName, isWi
     );
 };
 
-const ParticipantRow = ({ participant: p, maxDamage, maxTaken, ranks, region, gameDurationSeconds, isWin, teamBestRank }: any) => {
+interface ParticipantRowProps {
+    participant: Participant;
+    maxDamage: number;
+    maxTaken: number;
+    ranks: Record<string, any>;
+    region: string;
+    gameDurationSeconds: number;
+    isWin: boolean;
+    teamBestRank: number;
+}
+
+const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDamage, maxTaken, ranks, region, gameDurationSeconds, isWin, teamBestRank }) => {
     const rankData = ranks[p.puuid || ''];
     const isHighElo = rankData?.solo?.tier && ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(rankData.solo.tier);
 

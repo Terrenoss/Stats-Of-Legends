@@ -25,11 +25,20 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSearch, lang, t, onBuilder
     );
 };
 
-const FeatureCard = ({ icon, title, desc, color, onClick }: any) => (
-    <div onClick={onClick} className={`p-6 rounded-[2rem] bg-[#121212] border border-white/5 hover:border-${color === 'gold' ? 'lol-gold' : color + '-500'}/50 transition group cursor-pointer relative overflow-hidden`}>
-        <div className={`absolute top-0 left-0 w-full h-1 bg-${color === 'gold' ? 'lol-gold' : color === 'red' ? 'lol-red' : 'lol-hextech'}`}></div>
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{icon}</div>
-        <h3 className="text-xl font-bold text-white mb-2 font-display uppercase tracking-wide">{title}</h3>
-        <p className="text-gray-400 text-sm">{desc}</p>
-    </div>
-);
+const FeatureCard = ({ icon, title, desc, color, onClick }: any) => {
+    const getColorClass = (c: string) => {
+        if (c === 'gold') return 'lol-gold';
+        if (c === 'red') return 'lol-red';
+        return 'lol-hextech';
+    };
+    const colorClass = getColorClass(color);
+
+    return (
+        <div onClick={onClick} className={`p-6 rounded-[2rem] bg-[#121212] border border-white/5 hover:border-${color === 'gold' ? 'lol-gold' : color + '-500'}/50 transition group cursor-pointer relative overflow-hidden`}>
+            <div className={`absolute top-0 left-0 w-full h-1 bg-${colorClass}`}></div>
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{icon}</div>
+            <h3 className="text-xl font-bold text-white mb-2 font-display uppercase tracking-wide">{title}</h3>
+            <p className="text-gray-400 text-sm">{desc}</p>
+        </div>
+    );
+};

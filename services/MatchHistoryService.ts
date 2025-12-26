@@ -9,6 +9,7 @@ import { MatchProcessor } from './MatchProcessor';
 import { ScoringService } from './ScoringService';
 import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl, getSpellName } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';
+import { getDurationBucket } from '@/utils/matchUtils';
 
 export class MatchHistoryService {
 
@@ -266,7 +267,7 @@ export class MatchHistoryService {
 
         // V2: Fetch Baselines
         const duration = info.gameDuration || 0;
-        const durationBucket = duration < 1200 ? "0-20" : duration < 1800 ? "20-30" : "30+";
+        const durationBucket = getDurationBucket(duration);
         const tier = averageRank ? averageRank.split(' ')[0] : 'EMERALD';
 
         // Bulk fetch champion stats

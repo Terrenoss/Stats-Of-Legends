@@ -9,14 +9,16 @@ interface UseAdminScannerProps {
     currentPatch: string;
 }
 
-export function useAdminScanner({
-    secretKey,
-    selectedRegion,
-    selectedTier,
-    selectedDivision,
-    rateLimit,
-    currentPatch
-}: UseAdminScannerProps) {
+export function useAdminScanner(props: UseAdminScannerProps) {
+    const {
+        secretKey,
+        selectedRegion,
+        selectedTier,
+        selectedDivision,
+        rateLimit,
+        currentPatch
+    } = props;
+
     const [isScanning, setIsScanning] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
     const [stats, setStats] = useState({ matches: 0, champions: 0, errors: 0 });
@@ -24,6 +26,18 @@ export function useAdminScanner({
 
     const addLog = (msg: string) => {
         setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 100));
+    };
+
+    const handleRateLimit = async (retryAfter: number) => {
+        const waitSeconds = Math.ceil(retryAfter / 1000);
+        addLog(`⚠️ Rate Limit Hit. Waiting ${waitSeconds}s...`);
+
+        for (let i = waitSeconds; i > 0; i--) {
+            if (!scanningRef.current) throw new Error("Scan stopped");
+            if (i % 10 === 0) addLog(`Rate Limit: Resuming in ${i}s...`);
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        addLog(`▶️ Resuming scan...`);
     };
 
     const fetchWithBackoff = async (url: string, options?: RequestInit) => {
@@ -35,27 +49,14 @@ export function useAdminScanner({
 
                 if (res.status === 429) {
                     const data = await res.json().catch(() => ({}));
-                    const waitMs = data.retryAfter || 5000;
-                    const waitSeconds = Math.ceil(waitMs / 1000);
-
-                    addLog(`⚠️ Rate Limit Hit. Waiting ${waitSeconds}s...`);
-
-                    // Countdown
-                    for (let i = waitSeconds; i > 0; i--) {
-                        if (!scanningRef.current) throw new Error("Scan stopped");
-                        if (i % 10 === 0) addLog(`Rate Limit: Resuming in ${i}s...`);
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-
-                    addLog(`▶️ Resuming scan...`);
-                    continue; // Retry request
+                    await handleRateLimit(data.retryAfter || 5000);
+                    continue;
                 }
 
-                return res; // Return successful (or non-429) response
+                return res;
             } catch (e: any) {
                 if (e.message === "Scan stopped") throw e;
                 addLog(`CRITICAL ERROR: ${e.message}`);
-                // Wait a bit before retrying on network error
                 await new Promise(r => setTimeout(r, 5000));
             }
         }

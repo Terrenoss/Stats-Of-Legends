@@ -326,9 +326,16 @@ export class ScoringService {
                 utility: Number(zScores.utility.toFixed(2)),
                 lane: laneStats ? Number(zScores.lane.toFixed(2)) : undefined
             },
-            comparison: finalScore >= 75 ? 'EXCELLENT' : finalScore >= 60 ? 'GOOD' : finalScore >= 40 ? 'AVERAGE' : 'POOR',
+            comparison: getScoreLabel(finalScore),
             contribution: Number(contribution.toFixed(3)),
             sampleSize: matchupStats?.matches || 0
         };
     }
+}
+
+function getScoreLabel(score: number): 'EXCELLENT' | 'GOOD' | 'AVERAGE' | 'POOR' {
+    if (score >= 75) return 'EXCELLENT';
+    if (score >= 60) return 'GOOD';
+    if (score >= 40) return 'AVERAGE';
+    return 'POOR';
 }
