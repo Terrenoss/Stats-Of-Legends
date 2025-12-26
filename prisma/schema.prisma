@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ChampionStat {
+  id        Int      @id @default(autoincrement())
+  championId String
+  role      String   // TOP, JUNGLE, MID, ADC, SUPPORT
+  tier      String   // IRON, BRONZE... CHALLENGER
+  patch     String   // 14.24
+  
+  wins      Int      @default(0)
+  matches   Int      @default(0)
+  bans      Int      @default(0)
+  
+  pickRate  Float    @default(0)
+  winRate   Float    @default(0)
+  banRate   Float    @default(0)
+
+  // Performance Accumulators (for Legend Score)
+  totalKills    Int      @default(0)
+  totalDeaths   Int      @default(0)
+  totalAssists  Int      @default(0)
+  totalDamage   Int      @default(0) // To Champions
+  totalGold     Int      @default(0)
+  totalCs       Int      @default(0)
+  totalVision   Int      @default(0)
+  totalDuration Int      @default(0) // In seconds
+
+  // Deep Stats (JSON)
+  // Structure: { "itemId": { "wins": 10, "matches": 20 }, ... }
+  items     Json?    
+  // Structure: { "runeId": { "wins": 10, "matches": 20 }, ... }
+  runes     Json?    
+  // Structure: { "spellId": { "wins": 10, "matches": 20 }, ... }
+  spells    Json?    
+  // Structure: { "Q-W-E-Q...": { "wins": 10, "matches": 20 }, ... }
+  skillOrder Json?
+
+  // V2: Advanced Metrics & Context
+  durationBucket String @default("20-30") // "0-20", "20-30", "30+"
+  totalDamageShare Float @default(0)
+  totalGoldShare Float @default(0)
+  totalVisionScorePerMin Float @default(0)
+
+  totalObjectiveParticipation Float @default(0)
+
+  // V4.5: Variance Tracking (Sum of Squares) for Lane Dominance Normalization
+  totalGd15Sq      Float    @default(0) // Sum of (GD@15)^2
+  totalCsd15Sq     Float    @default(0) // Sum of (CSD@15)^2
+  totalXpd15Sq     Float    @default(0) // Sum of (XPD@15)^2
+  totalDamageShareSq Float  @default(0) // Sum of (Dmg%)^2
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([championId, role, tier, patch, durationBucket])
+  @@index([championId, role, tier, patch])
+}
+
+model ScannedMatch {
+  id        String   @id // Match ID (EUW1_...)
+  patch     String
+  tier      String   @default("CHALLENGER") // Added to track total matches per tier
+  scannedAt DateTime @default(now())
+}
+
+model MatchupStat {
+  id          String   @id @default(cuid())
+  championId  String
+  opponentId  String
+  role        String
+  tier        String
+  patch       String
+  wins        Int      @default(0)
+  matches     Int      @default(0)
+
+  // Performance Accumulators (for Legend Score - Matchup Specific)
+  totalKills    Int      @default(0)
+  totalDeaths   Int      @default(0)
+  totalAssists  Int      @default(0)
+  totalDamage   Int      @default(0)
+  totalGold     Int      @default(0)
+  totalCs       Int      @default(0)
+  totalVision   Int      @default(0)
+  totalDuration Int      @default(0)
+
+  // V2: Advanced Metrics & Context
+  durationBucket String @default("20-30")
+  totalDamageShare Float @default(0)
+  totalGoldShare Float @default(0)
+  totalVisionScorePerMin Float @default(0)
+  totalObjectiveParticipation Float @default(0)
+
+  // V4.5: Variance Tracking
+  totalGd15Sq      Float    @default(0)
+  totalCsd15Sq     Float    @default(0)
+  totalXpd15Sq     Float    @default(0)
+  totalDamageShareSq Float  @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@unique([championId, opponentId, role, tier, patch, durationBucket])
+  @@index([championId, opponentId, role, tier, patch])
+}
+
+model DuoStat {
+  id          String   @id @default(cuid())
+  championId  String
+  partnerId   String
+  role        String
+  partnerRole String
+  tier        String
+  patch       String
+  wins        Int      @default(0)
+  matches     Int      @default(0)
+
+  @@unique([championId, partnerId, role, partnerRole, tier, patch])
+  @@index([championId, role, tier, patch])
+}
+
+// --- Caching Models ---
+
+model Summoner {
+  puuid          String   @id
+  summonerId     String?   // Encrypted Summoner ID
+  accountId      String?
+  gameName       String
+  tagLine        String
+  profileIconId  Int
+  summonerLevel  Int
+  updatedAt      DateTime @updatedAt
+  lastMatchFetch DateTime? // Used for incremental updates
+
+  ranks          SummonerRank[]
+  matches        SummonerMatch[]
+  snapshots      LeagueSnapshot[]
+  
+  @@unique([gameName, tagLine])
+  @@index([gameName, tagLine])
+}
+
+model SummonerRank {
+  id            String   @id @default(cuid())
+  summonerPuuid String
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  queueType     String   // RANKED_SOLO_5x5, RANKED_FLEX_SR
+  tier          String
+  rank          String
+  leaguePoints  Int
+  wins          Int
+  losses        Int
+  updatedAt     DateTime @updatedAt
+
+  @@unique([summonerPuuid, queueType])
+}
+
+model Match {
+  id            String   @id // EUW1_123456
+  gameCreation  DateTime // Start time
+  gameDuration  Int      // Seconds
+  gameMode      String
+  gameVersion   String
+  averageRank   String?  // e.g. "GOLD IV"
+  jsonData      Json     // Full match details from Riot API
+  
+  participants  SummonerMatch[]
+  analysis      MatchAnalysis?
+}
+
+model SummonerMatch {
+  summonerPuuid String
+  matchId       String
+  match         Match    @relation(fields: [matchId], references: [id])
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  
+  championId    Int
+  win           Boolean
+  kills         Int
+  deaths        Int
+  assists       Int
+  role          String   @default("UNKNOWN")
+  
+  // Optimization Columns (V6)
+  totalDamageDealtToChampions Int @default(0)
+  totalMinionsKilled          Int @default(0)
+  goldEarned                  Int @default(0)
+  visionScore                 Int @default(0)
+  items                       Json? // Array of item IDs
+  
+  @@id([summonerPuuid, matchId])
+  @@index([summonerPuuid])
+  @@index([matchId])
+}
+
+model LeagueSnapshot {
+  id            String   @id @default(cuid())
+  summonerPuuid String
+  summoner      Summoner @relation(fields: [summonerPuuid], references: [puuid])
+  timestamp     DateTime @default(now())
+  
+  queueType     String   // RANKED_SOLO_5x5
+  tier          String
+  rank          String
+  leaguePoints  Int
+  wins          Int
+  losses        Int
+  
+  @@index([summonerPuuid, timestamp])
+}
+
+model MatchAnalysis {
+  matchId       String   @id
+  match         Match    @relation(fields: [matchId], references: [id])
+  jsonResult    Json     // The full calculated ScoreResult (cached)
+  version       String   // To invalidate cache if algorithm changes (e.g. "5.0")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

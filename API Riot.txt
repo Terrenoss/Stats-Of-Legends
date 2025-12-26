@@ -1,0 +1,53 @@
+There are three routing values for account-v1; americas, asia, and europe. You can query for any account in any region. We recommend using the nearest cluster.
+account-v1Collapse OperationsExpand Operations
+GET /riot/account/v1/accounts/by-puuid/{puuid}Get account by puuid
+GET /riot/account/v1/accounts/by-puuid/{puuid}Get account by puuid - ESPORTS
+GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}Get account by riot id
+GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}Get account by riot id - ESPORTS
+GET /riot/account/v1/active-shards/by-game/{game}/by-puuid/{puuid}Get active shard for a player
+GET /riot/account/v1/region/by-game/{game}/by-puuid/{puuid}Get active region (lol and tft)
+GET /riot/account/v1/accounts/meGet account by access token
+GET /riot/account/v1/accounts/meGet account by access token - ESPORTS
+
+champion-mastery-v4Collapse OperationsExpand Operations
+GET /lol/champion-mastery/v4/champion-masteries/by-puuid/{encryptedPUUID}Get all champion mastery entries sorted by number of champion points descending.
+GET /lol/champion-mastery/v4/champion-masteries/by-puuid/{encryptedPUUID}/by-champion/{championId}Get a champion mastery by puuid and champion ID.
+GET /lol/champion-mastery/v4/champion-masteries/by-puuid/{encryptedPUUID}/topGet specified number of top champion mastery entries sorted by number of champion points descending.
+GET /lol/champion-mastery/v4/scores/by-puuid/{encryptedPUUID}Get a player's total champion mastery score, which is the sum of individual champion mastery levels
+
+champion-v3Collapse OperationsExpand Operations
+GET /lol/platform/v3/champion-rotationsReturns champion rotations, including free-to-play and low-level free-to-play rotations (REST)
+
+league-exp-v4Collapse OperationsExpand Operations
+GET /lol/league-exp/v4/entries/{queue}/{tier}/{division}
+
+league-v4Collapse OperationsExpand Operations
+GET /lol/league/v4/challengerleagues/by-queue/{queue}Get the challenger league for given queue.
+GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}Get league entries in all queues for a given puuid
+GET /lol/league/v4/entries/{queue}/{tier}/{division}Get all the league entries.
+GET /lol/league/v4/grandmasterleagues/by-queue/{queue}Get the grandmaster league of a specific queue.
+GET /lol/league/v4/leagues/{leagueId}Get league with given ID, including inactive entries.
+GET /lol/league/v4/masterleagues/by-queue/{queue}Get the master league for given queue
+
+lol-challenges-v1Collapse OperationsExpand Operations
+GET /lol/challenges/v1/challenges/configList of all basic challenge configuration information (includes all translations for names and descriptions)
+GET /lol/challenges/v1/challenges/percentilesMap of level to percentile of players who have achieved it - keys: ChallengeId -> Season -> Level -> percentile of players who achieved it
+GET /lol/challenges/v1/challenges/{challengeId}/configGet challenge configuration (REST)
+GET /lol/challenges/v1/challenges/{challengeId}/leaderboards/by-level/{level}Return top players for each level. Level must be MASTER, GRANDMASTER or CHALLENGER.
+GET /lol/challenges/v1/challenges/{challengeId}/percentilesMap of level to percentile of players who have achieved it
+GET /lol/challenges/v1/player-data/{puuid}Returns player information with list of all progressed challenges (REST)
+
+lol-rso-match-v1Collapse OperationsExpand Operations
+GET /lol/rso-match/v1/matches/idsGet a list of match ids by player access token - Includes custom matches
+GET /lol/rso-match/v1/matches/{matchId}Get a match by match id
+GET /lol/rso-match/v1/matches/{matchId}/timelineGet a match timeline by match id
+
+lol-status-v4Collapse OperationsExpand Operations
+GET /lol/status/v4/platform-dataGet League of Legends status for the given platform.
+
+spectator-v5Collapse OperationsExpand Operations
+GET /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}Get current game information for the given puuid
+
+summoner-v4Collapse OperationsExpand Operations
+GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}Get a summoner by PUUID.
+GET /lol/summoner/v4/summoners/meGet a summoner by access token

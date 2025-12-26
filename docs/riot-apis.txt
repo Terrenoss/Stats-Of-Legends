@@ -1,0 +1,289 @@
+# Référentiel des APIs Riot disponibles et idées d’améliorations pour Stats Of Legends
+
+Ce document résume les APIs que tu as listées (League of Legends + Riot Account), ce qu’elles font, comment les appeler, et propose des idées d’utilisation concrètes pour **Stats Of Legends**.
+
+---
+## 1. `account-v1` – Compte Riot global
+
+### 1.1. `GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}`
+
+**À quoi ça sert ?**
+- Récupérer le compte Riot global d’un joueur à partir de son Riot ID (ex: `Hera#ahri`).
+- Retourne un objet avec au moins :
+  - `puuid`: identifiant unique global,
+  - `gameName`: nom affiché,
+  - `tagLine`: tag.
+
+**Comment ça fonctionne ?**
+- Endpoint **regional routing** (europe, americas, asia).
+- Dans ton service (`riotService.ts`) tu fais déjà quelque chose comme :
+  ```ts
+  const url = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
+  ```
+
+**Exemple d’appel (curl)** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/Hera/ahri"
+```
+
+**Utilisation actuelle dans Stats Of Legends**
+- C’est ton **point de départ** pour tout : tu récupères `puuid`, puis tu appelles `summoner-v4` et `match-v5`.
+
+**Idées d’améliorations**
+- Gérer proprement les erreurs de typage (`name`/`tag` mal encodés, accents, espaces) avec des messages clairs.
+- Ajouter un système de **mise en cache légère** (revalidate 30–60s) pour éviter de dépasser les quotas sur les comptes très recherchés.
+
+---
+## 2. `summoner-v4` – Profil joueur LoL (par puuid)
+
+### 2.1. `GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}`
+
+**À quoi ça sert ?**
+- Obtenir le **profil League of Legends** lié à un `puuid` :
+  - `id` (encrypted summoner id, utilisé pour d’anciens endpoints),
+  - `name`,
+  - `profileIconId`,
+  - `summonerLevel`, etc.
+
+**Comment ça fonctionne ?**
+- Endpoint par **plateforme** (euw1, na1, kr, …).
+- Tu l’utilises déjà dans `fetchSummonerByPuuid` pour :
+  - Afficher l’icône,
+  - Afficher le niveau,
+  - Assurer le lien entre Riot Account et Summoner LoL.
+
+**Exemple d’appel (curl)** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/ENCRYPTED_PUUID"
+```
+
+**Utilisation actuelle dans Stats Of Legends**
+- Pour alimenter `profile.name`, `profile.level`, `profile.profileIconId` dans ton `SummonerProfile`.
+
+**Idées d’améliorations**
+- Ajouter un affichage des données de base du compte (niveau, ancienneté approximative si tu la calcules via les dates de match, etc.).
+- Vérifier que les erreurs 403/404 sur cet endpoint sont bien capturées dans `meta` pour pouvoir expliquer au joueur pourquoi son profil ne s’affiche pas.
+
+---
+## 3. `league-v4` – Classements, ligues, entrées de rang
+
+### 3.1. `GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}`
+
+**À quoi ça sert ?**
+- Récupérer l’ensemble des **entrées de ligue** d’un joueur (soloQ, flex, …) à partir de son `puuid`.
+- Chaque `LeagueEntryDTO` contient :
+  - `queueType` (ex: `RANKED_SOLO_5x5`, `RANKED_FLEX_SR`),
+  - `tier` (IRON, BRONZE, …, CHALLENGER),
+  - `rank` (I, II, III, IV),
+  - `leaguePoints` (LP),
+  - `wins`, `losses`,
+  - …
+
+**Exemple d’appel (curl)** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/ENCRYPTED_PUUID"
+```
+
+**Utilisation actuelle dans Stats Of Legends**
+- Tu l’utilises maintenant correctement dans `app/api/summoner/route.ts` :
+  - `soloEntry = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')`,
+  - `flexEntry = entries.find(e => e.queueType === 'RANKED_FLEX_SR')`.
+- Tu en dérives :
+  - `profile.ranks.solo` / `profile.ranks.flex` (tier, rank, LP, wins, losses),
+  - une **approximation d’historique LP** sur 30 jours (en remontant depuis le LP actuel et tes derniers matchs).
+
+**Ce que tu pourrais faire en plus**
+- Calculer un **TierScore** (numérique) permettant de comparer les gens de façon plus fine pour un ladder interne :
+  - Exemple :
+    - Bronze IV → 1, Bronze III → 2, …, Silver IV → 5, etc.
+- Afficher des **badges** (par exemple “Promu récemment”, “En série de victoires”) en utilisant `hotStreak`, `freshBlood`, `veteran`.
+
+### 3.2. `GET /lol/league/v4/entries/{queue}/{tier}/{division}`
+
+**À quoi ça sert ?**
+- Récupérer **toutes les entrées** pour une file donnée (ex: soloQ), un tier (PLATINUM), et une division (IV).
+- Cela sert principalement à :
+  - Naviguer dans le ladder,
+  - Construire un classement par ligue.
+
+**Exemple d’appel** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://euw1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/PLATINUM/IV?page=1"
+```
+
+**Idée pour Stats Of Legends**
+- Construire une **page de leaderboard** plus riche :
+  - Pour un rang spécifique (par ex. `PLATINUM IV`), montrer une liste de joueurs (nom, LP, winrate).
+  - Tu peux croiser ça avec ta propre base de données ultérieurement si tu rajoutes du stockage.
+
+### 3.3. `GET /lol/league/v4/challengerleagues/by-queue/{queue}` / `masterleagues` / `grandmasterleagues`
+
+**À quoi ça sert ?**
+- Récupérer les listes **Challenger**, **GrandMaster**, **Master** pour une file donnée.
+
+**Idées pour Stats Of Legends**
+- Créer une **section Inspiration** sur le site :
+  - “Top builds et champions des Challengers” (en combinant ces joueurs avec le parsing de leurs derniers matchs via `match-v5`).
+- Dans la page d’un invocateur, afficher :
+  - “Tu es à X LP d’atteindre Master (LP moyen calculé depuis ces endpoints)”.
+
+---
+## 4. `match-v5` – Historique de matchs et timelines
+
+### 4.1. `GET /lol/match/v5/matches/by-puuid/{puuid}/ids`
+
+**À quoi ça sert ?**
+- Obtenir la liste des `matchId` récents d’un joueur.
+- Tu l’utilises déjà pour récupérer 10 IDs.
+
+**Exemple** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/ENCRYPTED_PUUID/ids?start=0&count=20"
+```
+
+### 4.2. `GET /lol/match/v5/matches/{matchId}`
+
+**À quoi ça sert ?**
+- Récupérer toutes les infos d’un match :
+  - `info.participants` (stats de chaque joueur),
+  - `queueId` (type de game: soloQ, flex, normal, ARAM, …),
+  - `gameStartTimestamp`, `gameDuration`, etc.
+
+Tu l’utilises déjà pour :
+- Construire tes `Match` internes,
+- Alimenter `MatchCard`, `WinrateSummary`, `ActivityHeatmap`, etc.
+
+### 4.3. `GET /lol/match/v5/matches/{matchId}/timeline`
+
+**À quoi ça sert ?**
+- Avoir la **timeline d’événements** d’une game (achat/vente d’items, kills, objectifs, etc.).
+- Tu en as déjà partiellement tiré un use-case :
+  - Reconstruction du **build d’items dans le temps** pour un match (onglet Build de `MatchCard`).
+
+**Idées avancées pour Stats Of Legends**
+- Construire un **MVP / mini-MVP plus intelligent** :
+  - Calculer un score par joueur en combinant :
+    - Dégâts (dpm, damage share),
+    - Objectifs pris (tours, dragons, herald, baron),
+    - Participation aux kills (KP),
+    - Vision score, wards placées,
+    - Gold progression (courbe de gold vs équipe adverse).
+  - Utiliser la timeline pour :
+    - Détecter qui “carry” le plus : 
+      - Avantage de gold dès mid-game,
+      - Participations critiques aux teamfights (séries de kills, shut-downs).
+- Créer un **Match Graph** plus complet :
+  - Afficher l’évolution de l’écart de gold entre les équipes.
+  - Annoter la courbe avec les objectifs (dragon, baron, etc.).
+
+---
+## 5. `champion-mastery-v4` – Maîtrise des champions
+
+### 5.1. `GET /lol/champion-mastery/v4/champion-masteries/by-puuid/{encryptedPUUID}`
+
+**À quoi ça sert ?**
+- Lister tous les champions joués par un joueur, avec :
+  - `championId`,
+  - `championLevel` (niveau de maîtrise),
+  - `championPoints` (points de maîtrise),
+  - date de dernière fois joué, etc.
+
+**Exemple** :
+```bash
+curl -H "X-Riot-Token: RIOT_API_KEY" \
+  "https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/ENCRYPTED_PUUID"
+```
+
+**Idées pour Stats Of Legends**
+- Ajouter une section **“Maîtrise de champions”** sur la page invocateur :
+  - Top 5 champions par points de maîtrise (icône + niveau de maîtrise + points).
+- Croiser la maîtrise et les stats récentes :
+  - Montrer où le joueur “smurf” (maîtrise faible mais très bons résultats récents).
+  - Montrer au contraire les picks “comfort” (maîtrise élevée + bon winrate récent).
+
+---
+## 6. `champion-v3` – Rotation de champions
+
+### 6.1. `GET /lol/platform/v3/champion-rotations`
+
+**À quoi ça sert ?**
+- Obtenir la **rotation hebdomadaire des champions gratuits**.
+
+**Idées pour Stats Of Legends**
+- Sur la page d’accueil ou dans le builder :
+  - Afficher une section “Champions en rotation gratuite cette semaine”.
+  - Permettre de filtrer le builder uniquement sur ces champions.
+- Sur une page profil :
+  - Indiquer si le joueur a récemment joué des champions en rotation.
+
+---
+## 7. `lol-challenges-v1` – Défis (Challenges)
+
+### 7.1. `GET /lol/challenges/v1/player-data/{puuid}`
+
+**À quoi ça sert ?**
+- Récupérer tous les **challenges** (défis) d’un joueur, avec :
+  - Ses niveaux, ses progressions, etc.
+
+**Idées pour Stats Of Legends**
+- Ajouter un **onglet Challenges** sur la page profil :
+  - Lister les challenges principaux (gold, diamond, etc.).
+  - Mettre en avant ceux où le joueur est proche du prochain palier.
+
+### 7.2. Endpoints globaux (`challenges/config`, `challenges/percentiles`, etc.)
+
+**Utilité possible**
+- Fournir du contexte :
+  - “Tu es dans le top 10% pour le challenge X”.
+- Construire un écran de **comparaison** vs moyenne serveur.
+
+---
+## 8. `spectator-v5` – Partie en direct
+
+### 8.1. `GET /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}`
+
+**À quoi ça sert ?**
+- Vérifier si un joueur est actuellement en **partie en direct**.
+- Retourne les informations de la game en cours (composition des équipes, bans, etc.).
+
+**Idées pour Stats Of Legends**
+- Remplacer la fausse “partie en direct” par la vraie logique :
+  - Appeler cet endpoint avec le `puuid` de ton joueur.
+  - Si 404 → afficher “Ce joueur n’est pas actuellement en partie”.
+  - Si 200 → construire un composant LiveGame affichant :
+    - champion de chaque joueur,
+    - runes / spells,
+    - rangs approximatifs.
+
+---
+## 9. `lol-status-v4` – Statut de la plateforme
+
+### 9.1. `GET /lol/status/v4/platform-data`
+
+**À quoi ça sert ?**
+- Obtenir le **statut des serveurs** pour une région donnée (problèmes, maintenances, etc.).
+
+**Idées pour Stats Of Legends**
+- Ajouter un indicateur dans le header ou le footer :
+  - “EUW: OK”, “NA: Maintenance”, etc.
+- Si tu détectes des erreurs 5xx répétées côté Riot, afficher un message :
+  - “Il semble que les serveurs Riot aient des problèmes, les données peuvent être incomplètes.”
+
+---
+## 10. `clash-v1` – Clash (mode tournoi)
+
+**À quoi ça sert ?**
+- Gérer les équipes et les tournois Clash.
+
+**Idées pour Stats Of Legends**
+- Plus tard, proposer une vue spécifique “Mode Clash” :
+  - Lister les dernières performances en Clash.
+  - Proposer des builds spécialement adaptés.
+
+---
+

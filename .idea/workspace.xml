@@ -5,7 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/analyze/match/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/analyze/match/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/dd/runes/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/dd/runes/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/spectator/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/spectator/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/ChampionDetailsClient.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/ChampionDetailsClient.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Builder.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Builder.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/ChampionsTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ChampionsTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/LiveGame.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LiveGame.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/PerformanceRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/PerformanceRadar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ProfileHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/RecentlyPlayedWith.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/RecentlyPlayedWith.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/BuilderGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/BuilderGrid.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/ItemCatalog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/ItemCatalog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchSummary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchTeamAnalysis.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchTeamAnalysis.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/tierlist/ChampionTierRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/tierlist/ChampionTierRow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,10 +54,17 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/package-lock.json" root0="SKIP_HIGHLIGHTING" />
   </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
   <component name="ProjectId" id="35HR9OnUV7KwySZ9EQKgyeyw1V9" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -41,11 +72,12 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
     &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
@@ -55,7 +87,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\terre\\Documents\\PROJETS GITHUB\\Stats-Of-Legends\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -95,6 +127,22 @@
       <workItem from="1763944360400" duration="82000" />
       <workItem from="1763944552326" duration="65000" />
       <workItem from="1763944673735" duration="12000" />
+      <workItem from="1764001272724" duration="58000" />
+      <workItem from="1764001398837" duration="104000" />
+      <workItem from="1764001519867" duration="1931000" />
+      <workItem from="1764025602930" duration="9305000" />
+      <workItem from="1764039236861" duration="5295000" />
+      <workItem from="1764045496951" duration="716000" />
+      <workItem from="1764070057035" duration="19605000" />
+      <workItem from="1764091039687" duration="147000" />
+      <workItem from="1764091204971" duration="3856000" />
+      <workItem from="1764095782971" duration="1851000" />
+      <workItem from="1764537169257" duration="10951000" />
+      <workItem from="1766408109594" duration="10888000" />
+      <workItem from="1766429787426" duration="14365000" />
+      <workItem from="1766491940855" duration="8155000" />
+      <workItem from="1766504465564" duration="17735000" />
+      <workItem from="1766613755977" duration="22699000" />
     </task>
     <servers />
   </component>
