@@ -43,17 +43,19 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   // compute best gold on winning team (used for MVP gold badge)
   const bestGoldOnWinningTeam = winningTeamParticipants.length ? Math.max(...winningTeamParticipants.map(p => Number(p.goldEarned || 0))) : 0;
 
-  const bestOfWinningTeam: Participant | null = (() => {
-    if (!winningTeamId) return null;
-    const team = participants.filter(p => p.teamId === winningTeamId);
-    return team.length ? team.reduce((best, p) => (p.legendScore ?? 0) > (best.legendScore ?? 0) ? p : best, team[0]) : null;
-  })();
+  const getBestParticipant = (teamId: number | null) => {
+    if (!teamId) return null;
+    const team = participants.filter(p => p.teamId === teamId);
+    if (!team.length) return null;
+    return team.reduce((best, p) => {
+      const pScore = p.legendScore ?? 0;
+      const bestScore = best.legendScore ?? 0;
+      return pScore > bestScore ? p : best;
+    }, team[0]);
+  };
 
-  const bestOfLosingTeam: Participant | null = (() => {
-    if (!losingTeamId) return null;
-    const team = participants.filter(p => p.teamId === losingTeamId);
-    return team.length ? team.reduce((best, p) => (p.legendScore ?? 0) > (best.legendScore ?? 0) ? p : best, team[0]) : null;
-  })();
+  const bestOfWinningTeam = getBestParticipant(winningTeamId);
+  const bestOfLosingTeam = getBestParticipant(losingTeamId);
 
   // Helper: pick best by legendScore (tie-breaker: damage -> kills -> gold)
   const getBestByOp = (arr: Participant[]): Participant | null => {
@@ -134,7 +136,26 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   };
 
   // Helper components defined outside to avoid recreation on render
-  const ParticipantRow = ({ p, maxDamage, isAce, isMvpGold, isMvpGrey, calcCsPerMin, isWardItem, normalizeWardType }: any) => {
+  interface ParticipantRowProps {
+    participant: Participant;
+    context: {
+      maxDamage: number;
+      calcCsPerMin: (p: Participant) => number;
+      isWardItem: (item: any) => boolean;
+      normalizeWardType: (item: any) => string | null;
+    };
+    badges: {
+      isAce: boolean;
+      isMvpGold: boolean;
+      isMvpGrey: boolean;
+    };
+  }
+
+  const ParticipantRow = ({ participant, context, badges }: ParticipantRowProps) => {
+    const { p } = { p: participant }; // Alias for less code change inside
+    const { maxDamage, calcCsPerMin, isWardItem, normalizeWardType } = context;
+    const { isAce, isMvpGold, isMvpGrey } = badges;
+
     const champImg = p.champion?.imageUrl ?? null;
     const champName = p.champion?.name ?? 'Unknown';
     const items = Array.isArray(p.items) ? p.items : [];
@@ -255,14 +276,18 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
           return (
             <ParticipantRow
               key={i}
-              p={p}
-              maxDamage={maxDamage}
-              isAce={isAce}
-              isMvpGold={isMvpGold}
-              isMvpGrey={isMvpGrey}
-              calcCsPerMin={calcCsPerMin}
-              isWardItem={isWardItem}
-              normalizeWardType={normalizeWardType}
+              participant={p}
+              context={{
+                maxDamage,
+                calcCsPerMin,
+                isWardItem,
+                normalizeWardType
+              }}
+              badges={{
+                isAce,
+                isMvpGold,
+                isMvpGrey
+              }}
             />
           );
         })}

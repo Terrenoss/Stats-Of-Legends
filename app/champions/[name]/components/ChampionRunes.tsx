@@ -10,25 +10,103 @@ interface ChampionRunesProps {
     runeMap: Record<number, string>;
 }
 
+const getShardIcon = (id: number) => {
+    const map: Record<number, string> = {
+        5001: 'StatModsHealthPlusIcon.png',
+        5002: 'StatModsArmorIcon.png',
+        5003: 'StatModsMagicResIcon.png',
+        5005: 'StatModsAttackSpeedIcon.png',
+        5008: 'StatModsAdaptiveForceIcon.png',
+        5007: 'StatModsCDRScalingIcon.png',
+        5010: 'StatModsMovementSpeedIcon.png',
+        5011: 'StatModsTenacityIcon.png',
+        5013: 'StatModsHealthScalingIcon.png'
+    };
+    return map[id] ? getRuneIconUrl(`perk-images/StatMods/${map[id]}`) : '';
+};
+
+const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: { tree: any, page: any, isPrimary: boolean, getRuneIcon: (id: number) => string }) => {
+    if (!tree) return null;
+    const slots = isPrimary ? tree.slots : tree.slots.slice(1);
+    const activeColor = isPrimary ? 'border-lol-gold shadow-[0_0_15px_rgba(200,155,60,0.5)]' : 'border-lol-blue shadow-[0_0_15px_rgba(0,200,255,0.5)]';
+
+    return (
+        <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
+            <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
+                <Image src={getRuneIcon(isPrimary ? page.primaryStyle : page.subStyle)} alt={isPrimary ? "Primary Style" : "Sub Style"} width={40} height={40} className="w-10 h-10" />
+                <span className="text-2xl font-bold text-white">{tree.name || (isPrimary ? 'Primary' : 'Secondary')}</span>
+            </div>
+
+            <div className={`space-y-8 ${!isPrimary ? 'mb-10' : ''}`}>
+                {slots.map((slot: any, sIdx: number) => (
+                    <div key={sIdx} className="flex justify-between items-center px-4">
+                        {slot.runes.map((rune: any) => {
+                            const active = page.perks.includes(rune.id);
+                            const activeClass = `${activeColor} opacity-100 scale-110`;
+                            const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
+
+                            return (
+                                <div key={rune.id} className="relative group">
+                                    <Image
+                                        src={getRuneIconUrl(rune.icon)}
+                                        alt={`Rune ${rune.id}`}
+                                        width={isPrimary ? 56 : 48}
+                                        height={isPrimary ? 56 : 48}
+                                        className={`${isPrimary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
+            {!isPrimary && (
+                <div className="pt-8 border-t border-white/5">
+                    <div className="space-y-4">
+                        {[
+                            [5008, 5005, 5007], // Offense: Adaptive, AS, Haste
+                            [5008, 5010, 5001], // Flex: Adaptive, Move Speed, Health
+                            [5001, 5011, 5013]  // Defense: Health, Tenacity, Slow Resist (New Shards)
+                        ].map((rowIds, rowIdx) => (
+                            <div key={rowIdx} className="flex justify-center gap-8">
+                                {rowIds.map((shardId) => {
+                                    // Positional Check: Shards are the last 3 elements of page.perks
+                                    // Row 0 -> index -3 (Offense)
+                                    // Row 1 -> index -2 (Flex)
+                                    // Row 2 -> index -1 (Defense)
+                                    // Fallback to includes() if perks array is short (old data)
+                                    let active = false;
+                                    if (page.perks.length >= 9) {
+                                        const shardIndex = page.perks.length - 3 + rowIdx;
+                                        active = page.perks[shardIndex] === shardId;
+                                    } else {
+                                        // Fallback for old data (might show duplicates but better than nothing)
+                                        active = page.perks.includes(shardId) || (page.statPerks && Object.values(page.statPerks).includes(shardId));
+                                    }
+
+                                    const iconUrl = getShardIcon(shardId);
+                                    const activeClass = 'border-white opacity-100 scale-110 bg-[#333]';
+                                    const inactiveClass = 'border-transparent opacity-20 grayscale bg-[#222]';
+
+                                    return (
+                                        <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
+                                            {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role, runePages, allRunes, runeMap }) => {
     const getRuneIcon = (id: number) => {
         if (!runeMap[id]) return getRuneIconUrl('rune/8000.png'); // Fallback
         return getRuneIconUrl(runeMap[id]);
-    };
-
-    const getShardIcon = (id: number) => {
-        const map: Record<number, string> = {
-            5001: 'StatModsHealthPlusIcon.png',
-            5002: 'StatModsArmorIcon.png',
-            5003: 'StatModsMagicResIcon.png',
-            5005: 'StatModsAttackSpeedIcon.png',
-            5008: 'StatModsAdaptiveForceIcon.png',
-            5007: 'StatModsCDRScalingIcon.png',
-            5010: 'StatModsMovementSpeedIcon.png',
-            5011: 'StatModsTenacityIcon.png',
-            5013: 'StatModsHealthScalingIcon.png'
-        };
-        return map[id] ? getRuneIconUrl(`perk-images/StatMods/${map[id]}`) : '';
     };
 
     if (!runePages || runePages.length === 0) {
@@ -75,108 +153,8 @@ export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Primary Tree */}
-                    <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
-                        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                            <Image src={getRuneIcon(page.primaryStyle)} alt="Primary Style" width={40} height={40} className="w-10 h-10" />
-                            <span className="text-2xl font-bold text-white">{primaryTree?.name || 'Primary'}</span>
-                        </div>
-
-                        <div className="space-y-8">
-                            {primaryTree?.slots.map((slot: any, sIdx: number) => (
-                                <div key={sIdx} className="flex justify-between items-center px-4">
-                                    {slot.runes.map((rune: any) => {
-                                        const active = page.perks.includes(rune.id);
-                                        const activeClass = 'border-lol-gold opacity-100 scale-110 shadow-[0_0_15px_rgba(200,155,60,0.5)]';
-                                        const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
-
-                                        return (
-                                            <div key={rune.id} className="relative group">
-                                                <Image
-                                                    src={getRuneIconUrl(rune.icon)}
-                                                    alt={`Rune ${rune.id}`}
-                                                    width={56}
-                                                    height={56}
-                                                    className={`w-14 h-14 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
-                                                />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Secondary Tree */}
-                    <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
-                        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                            <Image src={getRuneIcon(page.subStyle)} alt="Sub Style" width={40} height={40} className="w-10 h-10" />
-                            <span className="text-2xl font-bold text-white">{subTree?.name || 'Secondary'}</span>
-                        </div>
-
-                        <div className="space-y-8 mb-10">
-                            {subTree?.slots.slice(1).map((slot: any, sIdx: number) => (
-                                <div key={sIdx} className="flex justify-between items-center px-4">
-                                    {slot.runes.map((rune: any) => {
-                                        const active = page.perks.includes(rune.id);
-                                        const activeClass = 'border-lol-blue opacity-100 scale-110 shadow-[0_0_15px_rgba(0,200,255,0.5)]';
-                                        const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
-
-                                        return (
-                                            <div key={rune.id} className="relative group">
-                                                <Image
-                                                    src={getRuneIconUrl(rune.icon)}
-                                                    alt={`Rune ${rune.id}`}
-                                                    width={48}
-                                                    height={48}
-                                                    className={`w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
-                                                />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Shards (Stat Mods) */}
-                        <div className="pt-8 border-t border-white/5">
-                            <div className="space-y-4">
-                                {[
-                                    [5008, 5005, 5007], // Offense: Adaptive, AS, Haste
-                                    [5008, 5010, 5001], // Flex: Adaptive, Move Speed, Health
-                                    [5001, 5011, 5013]  // Defense: Health, Tenacity, Slow Resist (New Shards)
-                                ].map((rowIds, rowIdx) => (
-                                    <div key={rowIdx} className="flex justify-center gap-8">
-                                        {rowIds.map((shardId) => {
-                                            // Positional Check: Shards are the last 3 elements of page.perks
-                                            // Row 0 -> index -3 (Offense)
-                                            // Row 1 -> index -2 (Flex)
-                                            // Row 2 -> index -1 (Defense)
-                                            // Fallback to includes() if perks array is short (old data)
-                                            let active = false;
-                                            if (page.perks.length >= 9) {
-                                                const shardIndex = page.perks.length - 3 + rowIdx;
-                                                active = page.perks[shardIndex] === shardId;
-                                            } else {
-                                                // Fallback for old data (might show duplicates but better than nothing)
-                                                active = page.perks.includes(shardId) || (page.statPerks && Object.values(page.statPerks).includes(shardId));
-                                            }
-
-                                            const iconUrl = getShardIcon(shardId);
-                                            const activeClass = 'border-white opacity-100 scale-110 bg-[#333]';
-                                            const inactiveClass = 'border-transparent opacity-20 grayscale bg-[#222]';
-
-                                            return (
-                                                <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
-                                                    {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    <RuneTree tree={primaryTree} page={page} isPrimary={true} getRuneIcon={getRuneIcon} />
+                    <RuneTree tree={subTree} page={page} isPrimary={false} getRuneIcon={getRuneIcon} />
                 </div>
             </div>
         </div>

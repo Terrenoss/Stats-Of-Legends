@@ -2,14 +2,27 @@ import React from 'react';
 import Image from 'next/image';
 import { getGradeColor } from '@/utils/formatUtils';
 
-export const MatchInfo = ({ isWin, getQueueLabel, getTimeAgo, t, durationMin, durationSec }: any) => (
+interface MatchInfoProps {
+    details: {
+        isWin: boolean;
+        durationMin: number;
+        durationSec: number;
+    };
+    utils: {
+        getQueueLabel: () => string;
+        getTimeAgo: () => string;
+        t: any;
+    };
+}
+
+export const MatchInfo = ({ details, utils }: MatchInfoProps) => (
     <div className="w-full md:w-28 flex flex-col gap-0.5">
-        <span className={`font-bold font-display uppercase tracking-wider text-[9px] ${isWin ? 'text-lol-win' : 'text-gray-600'}`}>
-            {getQueueLabel()}
+        <span className={`font-bold font-display uppercase tracking-wider text-[9px] ${details.isWin ? 'text-lol-win' : 'text-gray-600'}`}>
+            {utils.getQueueLabel()}
         </span>
-        <span className="text-[9px] text-gray-600 font-bold">{getTimeAgo()}</span>
-        <span className={`font-black text-lg tracking-tight ${isWin ? 'text-white drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'text-gray-500'}`}>{isWin ? t.win : t.loss}</span>
-        <span className="text-[10px] text-gray-600 font-mono">{durationMin}m {durationSec}s</span>
+        <span className="text-[9px] text-gray-600 font-bold">{utils.getTimeAgo()}</span>
+        <span className={`font-black text-lg tracking-tight ${details.isWin ? 'text-white drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'text-gray-500'}`}>{details.isWin ? utils.t.win : utils.t.loss}</span>
+        <span className="text-[10px] text-gray-600 font-mono">{details.durationMin}m {details.durationSec}s</span>
     </div>
 );
 
@@ -49,15 +62,29 @@ export const ChampionInfo = ({ isWin, champName, me, spells, getChampionIconUrl 
     </div>
 );
 
-export const KDAInfo = ({ kills, deaths, assists, kda, isWin, match, me }: any) => (
+interface KDAInfoProps {
+    stats: {
+        kills: number;
+        deaths: number;
+        assists: number;
+        kda: string;
+    };
+    context: {
+        isWin: boolean;
+        match: any;
+        me: any;
+    };
+}
+
+export const KDAInfo = ({ stats, context }: KDAInfoProps) => (
     <div className="flex flex-col items-center w-32 relative">
         {/* MVP Badge Logic */}
         {(() => {
-            const myScore = me.legendScore || 0;
-            const maxScore = Math.max(...(match.participants || []).map((p: any) => p.legendScore || 0));
+            const myScore = context.me.legendScore || 0;
+            const maxScore = Math.max(...(context.match.participants || []).map((p: any) => p.legendScore || 0));
             const isMvp = myScore > 0 && myScore === maxScore;
 
-            if (isMvp && isWin) {
+            if (isMvp && context.isWin) {
                 return (
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-t-lg shadow-[0_-2px_10px_rgba(255,215,0,0.5)] z-20 animate-pulse">
                         MVP
@@ -68,12 +95,12 @@ export const KDAInfo = ({ kills, deaths, assists, kda, isWin, match, me }: any) 
         })()}
 
         <div className="text-xl font-display font-black text-white tracking-widest">
-            {kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{deaths}</span> <span className="text-gray-500 text-sm">/</span> {assists}
+            {stats.kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{stats.deaths}</span> <span className="text-gray-500 text-sm">/</span> {stats.assists}
         </div>
-        <div className={`text-xs font-mono mt-0.5 font-bold ${Number(kda) >= 5 ? 'text-orange-500 animate-burn font-black' : Number(kda) >= 4 ? 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : Number(kda) >= 3 ? 'text-blue-400' : 'text-gray-400'}`}>
-            {kda} KDA
+        <div className={`text-xs font-mono mt-0.5 font-bold ${Number(stats.kda) >= 5 ? 'text-orange-500 animate-burn font-black' : Number(stats.kda) >= 4 ? 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : Number(stats.kda) >= 3 ? 'text-blue-400' : 'text-gray-400'}`}>
+            {stats.kda} KDA
         </div>
-        <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((kills + assists) / Math.max(1, (isWin ? match.participants.filter((p: any) => p.win) : match.participants.filter((p: any) => !p.win)).reduce((a: any, b: any) => a + b.kills, 0))) * 100)}%</div>
+        <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((stats.kills + stats.assists) / Math.max(1, (context.isWin ? context.match.participants.filter((p: any) => p.win) : context.match.participants.filter((p: any) => !p.win)).reduce((a: any, b: any) => a + b.kills, 0))) * 100)}%</div>
     </div>
 );
 

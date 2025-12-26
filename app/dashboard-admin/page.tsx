@@ -48,14 +48,34 @@ const DashboardHeader = ({ stats }: any) => (
     </div>
 );
 
-const DashboardControls = ({
-    selectedRegion, setSelectedRegion,
-    selectedTier, setSelectedTier,
-    selectedDivision, setSelectedDivision,
-    rateLimit, setRateLimit,
-    isScanning, startScan, stopScan, handleReset,
-    currentPatch, regions, tiers, divisions
-}: any) => (
+interface DashboardControlsProps {
+    config: {
+        region: string;
+        tier: string;
+        division: string;
+        rateLimit: number;
+        patch: string;
+    };
+    actions: {
+        setRegion: (v: string) => void;
+        setTier: (v: string) => void;
+        setDivision: (v: string) => void;
+        setRateLimit: (v: number) => void;
+        startScan: () => void;
+        stopScan: () => void;
+        reset: () => void;
+    };
+    status: {
+        isScanning: boolean;
+    };
+    options: {
+        regions: string[];
+        tiers: string[];
+        divisions: string[];
+    };
+}
+
+const DashboardControls = ({ config, actions, status, options }: DashboardControlsProps) => (
     <div className="space-y-6">
         <div className="bg-[#121212] p-6 rounded-xl border border-white/10 space-y-4">
             <h2 className="text-xl font-bold text-gray-200">Configuration</h2>
@@ -64,11 +84,11 @@ const DashboardControls = ({
             <div>
                 <label className="text-sm text-gray-400 block mb-2">Region</label>
                 <select
-                    value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
+                    value={config.region}
+                    onChange={(e) => actions.setRegion(e.target.value)}
                     className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
                 >
-                    {regions.map((r: string) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
+                    {options.regions.map((r: string) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
                 </select>
             </div>
 
@@ -76,24 +96,24 @@ const DashboardControls = ({
             <div>
                 <label className="text-sm text-gray-400 block mb-2">Target Tier</label>
                 <select
-                    value={selectedTier}
-                    onChange={(e) => setSelectedTier(e.target.value)}
+                    value={config.tier}
+                    onChange={(e) => actions.setTier(e.target.value)}
                     className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
                 >
-                    {tiers.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                    {options.tiers.map((t: string) => <option key={t} value={t}>{t}</option>)}
                 </select>
             </div>
 
             {/* Division Selector (Hidden for Apex Tiers) */}
-            {!['CHALLENGER', 'GRANDMASTER', 'MASTER'].includes(selectedTier) && (
+            {!['CHALLENGER', 'GRANDMASTER', 'MASTER'].includes(config.tier) && (
                 <div>
                     <label className="text-sm text-gray-400 block mb-2">Division</label>
                     <select
-                        value={selectedDivision}
-                        onChange={(e) => setSelectedDivision(e.target.value)}
+                        value={config.division}
+                        onChange={(e) => actions.setDivision(e.target.value)}
                         className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
                     >
-                        {divisions.map((d: string) => <option key={d} value={d}>{d}</option>)}
+                        {options.divisions.map((d: string) => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </div>
             )}
@@ -103,8 +123,8 @@ const DashboardControls = ({
                 <label className="text-sm text-gray-400 block mb-2">Rate Limit (req/s)</label>
                 <input
                     type="number"
-                    value={rateLimit}
-                    onChange={(e) => setRateLimit(Number(e.target.value))}
+                    value={config.rateLimit}
+                    onChange={(e) => actions.setRateLimit(Number(e.target.value))}
                     className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
                 />
             </div>
@@ -112,16 +132,16 @@ const DashboardControls = ({
             <div className="h-px bg-white/10 my-4" />
 
             <div className="flex gap-4">
-                {!isScanning ? (
+                {!status.isScanning ? (
                     <button
-                        onClick={startScan}
+                        onClick={actions.startScan}
                         className="flex-1 bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
                     >
                         <Play className="w-5 h-5" /> Start Scan
                     </button>
                 ) : (
                     <button
-                        onClick={stopScan}
+                        onClick={actions.stopScan}
                         className="flex-1 bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
                     >
                         <Square className="w-5 h-5" /> Stop
@@ -129,7 +149,7 @@ const DashboardControls = ({
                 )}
             </div>
             <button
-                onClick={handleReset}
+                onClick={actions.reset}
                 className="w-full bg-white/5 hover:bg-white/10 text-gray-400 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-white/5"
             >
                 <Trash2 className="w-4 h-4" /> Reset Database
@@ -139,9 +159,9 @@ const DashboardControls = ({
         <div className="bg-[#121212] p-6 rounded-xl border border-white/10">
             <h2 className="text-xl font-bold text-gray-200 mb-4">Info</h2>
             <div className="space-y-2 text-sm text-gray-400">
-                <div className="flex justify-between"><span>Region</span> <span className="text-white">{selectedRegion.toUpperCase()}</span></div>
-                <div className="flex justify-between"><span>Patch</span> <span className="text-white">{currentPatch || 'Loading...'}</span></div>
-                <div className="flex justify-between"><span>Rate Limit</span> <span className="text-white">{rateLimit}/s</span></div>
+                <div className="flex justify-between"><span>Region</span> <span className="text-white">{config.region.toUpperCase()}</span></div>
+                <div className="flex justify-between"><span>Patch</span> <span className="text-white">{config.patch || 'Loading...'}</span></div>
+                <div className="flex justify-between"><span>Rate Limit</span> <span className="text-white">{config.rateLimit}/s</span></div>
             </div>
         </div>
     </div>
@@ -223,12 +243,24 @@ export default function AdminDashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <DashboardControls
-                        selectedRegion={selectedRegion} setSelectedRegion={setSelectedRegion}
-                        selectedTier={selectedTier} setSelectedTier={setSelectedTier}
-                        selectedDivision={selectedDivision} setSelectedDivision={setSelectedDivision}
-                        rateLimit={rateLimit} setRateLimit={setRateLimit}
-                        isScanning={isScanning} startScan={startScan} stopScan={stopScan} handleReset={handleReset}
-                        currentPatch={currentPatch} regions={regions} tiers={tiers} divisions={divisions}
+                        config={{
+                            region: selectedRegion,
+                            tier: selectedTier,
+                            division: selectedDivision,
+                            rateLimit: rateLimit,
+                            patch: currentPatch
+                        }}
+                        actions={{
+                            setRegion: setSelectedRegion,
+                            setTier: setSelectedTier,
+                            setDivision: setSelectedDivision,
+                            setRateLimit: setRateLimit,
+                            startScan: startScan,
+                            stopScan: stopScan,
+                            reset: handleReset
+                        }}
+                        status={{ isScanning }}
+                        options={{ regions, tiers, divisions }}
                     />
                     <DashboardLogs logs={logs} />
                 </div>

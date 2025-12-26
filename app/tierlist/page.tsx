@@ -8,7 +8,22 @@ import { Search, Filter } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTierListData } from '@/hooks/useTierListData';
 
-const TierListHeader = ({ selectedRank, setSelectedRank, searchQuery, setSearchQuery, TIERS, formatTier }: any) => (
+interface TierListHeaderProps {
+    filters: {
+        rank: string;
+        search: string;
+    };
+    actions: {
+        setRank: (v: string) => void;
+        setSearch: (v: string) => void;
+    };
+    options: {
+        tiers: string[];
+        formatTier: (t: string) => string;
+    };
+}
+
+const TierListHeader = ({ filters, actions, options }: TierListHeaderProps) => (
     <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8" suppressHydrationWarning>
         <div>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-lol-gold to-yellow-600 mb-2">
@@ -24,11 +39,11 @@ const TierListHeader = ({ selectedRank, setSelectedRank, searchQuery, setSearchQ
             <div className="w-40">
                 <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2 block">Rank</label>
                 <select
-                    value={selectedRank}
-                    onChange={(e) => setSelectedRank(e.target.value)}
+                    value={filters.rank}
+                    onChange={(e) => actions.setRank(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-lol-gold/50 transition-colors text-white"
                 >
-                    {TIERS.map((t: string) => <option key={t} value={t} className="bg-[#121212]">{formatTier(t)}</option>)}
+                    {options.tiers.map((t: string) => <option key={t} value={t} className="bg-[#121212]">{options.formatTier(t)}</option>)}
                 </select>
             </div>
 
@@ -38,8 +53,8 @@ const TierListHeader = ({ selectedRank, setSelectedRank, searchQuery, setSearchQ
                 <input
                     type="text"
                     placeholder="Search champion..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={filters.search}
+                    onChange={(e) => actions.setSearch(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-lol-gold/50 transition-colors"
                 />
             </div>
@@ -106,12 +121,18 @@ function TierListContent() {
         <div className="min-h-screen bg-[#0a0a0c] text-white p-8 pb-32" suppressHydrationWarning>
             <div className="max-w-7xl mx-auto space-y-8" suppressHydrationWarning>
                 <TierListHeader
-                    selectedRank={selectedRank}
-                    setSelectedRank={setSelectedRank}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    TIERS={TIERS}
-                    formatTier={formatTier}
+                    filters={{
+                        rank: selectedRank,
+                        search: searchQuery
+                    }}
+                    actions={{
+                        setRank: setSelectedRank,
+                        setSearch: setSearchQuery
+                    }}
+                    options={{
+                        tiers: TIERS,
+                        formatTier: formatTier
+                    }}
                 />
                 <TierListFilters
                     selectedRole={selectedRole}

@@ -126,6 +126,23 @@ export interface SecondaryPathProps {
     onRuneClick: (runeId: number) => void;
 }
 
+const RuneRow = ({ slot, selectedRunes, onRuneClick }: { slot: any, selectedRunes: SelectedRunes, onRuneClick: (id: number) => void }) => (
+    <div className="flex justify-center gap-4">
+        {slot.runes.map((rune: any) => {
+            const isSelected = selectedRunes.selectedPerkIds[4] === rune.id || selectedRunes.selectedPerkIds[5] === rune.id;
+            return (
+                <RuneIcon
+                    key={rune.id}
+                    rune={rune}
+                    isSelected={isSelected}
+                    onClick={() => onRuneClick(rune.id)}
+                    size={40}
+                />
+            );
+        })}
+    </div>
+);
+
 export const SecondaryPath = ({ styles, selectedRunes, onStyleChange, onRuneClick }: SecondaryPathProps) => {
     const subStyle = styles.find((s: any) => s.id === selectedRunes.subStyleId);
 
@@ -146,20 +163,12 @@ export const SecondaryPath = ({ styles, selectedRunes, onStyleChange, onRuneClic
             {subStyle && (
                 <div className="space-y-6 animate-fadeIn px-2">
                     {subStyle.slots.slice(1).map((slot: any, slotIdx: number) => (
-                        <div key={slotIdx} className="flex justify-center gap-4">
-                            {slot.runes.map((rune: any) => {
-                                const isSelected = selectedRunes.selectedPerkIds[4] === rune.id || selectedRunes.selectedPerkIds[5] === rune.id;
-                                return (
-                                    <RuneIcon
-                                        key={rune.id}
-                                        rune={rune}
-                                        isSelected={isSelected}
-                                        onClick={() => onRuneClick(rune.id)}
-                                        size={40}
-                                    />
-                                );
-                            })}
-                        </div>
+                        <RuneRow
+                            key={slotIdx}
+                            slot={slot}
+                            selectedRunes={selectedRunes}
+                            onRuneClick={onRuneClick}
+                        />
                     ))}
                 </div>
             )}

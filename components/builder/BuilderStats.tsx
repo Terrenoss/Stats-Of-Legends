@@ -42,51 +42,61 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
     return stats.ad * physReduction;
   };
 
+  const getEffectiveResist = (isAd: boolean) => {
+    if (isAd) {
+      return Math.max(0, dummy.armor - (stats.lethality || 0));
+    }
+    return dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
+  };
+
+  const getReduction = (effectiveResist: number) => {
+    return 100 / (100 + Math.max(0, effectiveResist));
+  };
+
   const calculateRuneDamage = (runeId: number | null) => {
     if (!runeId || !stats) return 0;
+
+    const baseAd = currentChampion?.baseStats?.ad || 0;
+    const bonusAd = stats.ad - baseAd;
 
     // Manual implementation of popular keystones
     // Electrocute (ID: 8112): 30-180 (+0.4 bonus AD, +0.25 AP)
     if (runeId === 8112) {
       const base = 30 + (150 * (championLevel - 1) / 17);
-      const scaling = (0.4 * (stats.ad - (currentChampion?.baseStats?.ad || 0))) + (0.25 * stats.ap);
+      const scaling = (0.4 * bonusAd) + (0.25 * stats.ap);
       const damage = base + scaling;
       const isAd = stats.ad > stats.ap + 100;
-      const effectiveResist = isAd ? Math.max(0, dummy.armor - (stats.lethality || 0)) : dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-      const reduction = 100 / (100 + Math.max(0, effectiveResist));
-      return damage * reduction;
+      const effectiveResist = getEffectiveResist(isAd);
+      return damage * getReduction(effectiveResist);
     }
 
     // Dark Harvest (ID: 8128)
     if (runeId === 8128) {
       const souls = 10;
       const base = 20 + (40 * (championLevel - 1) / 17) + (5 * souls);
-      const scaling = (0.25 * (stats.ad - (currentChampion?.baseStats?.ad || 0))) + (0.15 * stats.ap);
+      const scaling = (0.25 * bonusAd) + (0.15 * stats.ap);
       const damage = base + scaling;
       const isAd = stats.ad > stats.ap + 100;
-      const effectiveResist = isAd ? Math.max(0, dummy.armor - (stats.lethality || 0)) : dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-      const reduction = 100 / (100 + Math.max(0, effectiveResist));
-      return damage * reduction;
+      const effectiveResist = getEffectiveResist(isAd);
+      return damage * getReduction(effectiveResist);
     }
 
     // Comet (ID: 8229)
     if (runeId === 8229) {
       const base = 30 + (70 * (championLevel - 1) / 17);
-      const scaling = (0.35 * (stats.ad - (currentChampion?.baseStats?.ad || 0))) + (0.20 * stats.ap);
+      const scaling = (0.35 * bonusAd) + (0.20 * stats.ap);
       const damage = base + scaling;
-      const effectiveMr = dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-      const reduction = 100 / (100 + Math.max(0, effectiveMr));
-      return damage * reduction;
+      const effectiveResist = getEffectiveResist(false);
+      return damage * getReduction(effectiveResist);
     }
 
     // Aery (ID: 8214)
     if (runeId === 8214) {
       const base = 10 + (30 * (championLevel - 1) / 17);
-      const scaling = (0.15 * (stats.ad - (currentChampion?.baseStats?.ad || 0))) + (0.10 * stats.ap);
+      const scaling = (0.15 * bonusAd) + (0.10 * stats.ap);
       const damage = base + scaling;
-      const effectiveMr = dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-      const reduction = 100 / (100 + Math.max(0, effectiveMr));
-      return damage * reduction;
+      const effectiveResist = getEffectiveResist(false);
+      return damage * getReduction(effectiveResist);
     }
 
     // Press the Attack (ID: 8005)
@@ -94,9 +104,8 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
       const base = 40 + (140 * (championLevel - 1) / 17);
       const damage = base;
       const isAd = stats.ad > stats.ap;
-      const effectiveResist = isAd ? Math.max(0, dummy.armor - (stats.lethality || 0)) : dummy.mr;
-      const reduction = 100 / (100 + Math.max(0, effectiveResist));
-      return damage * reduction;
+      const effectiveResist = getEffectiveResist(isAd);
+      return damage * getReduction(effectiveResist);
     }
 
     return 0;

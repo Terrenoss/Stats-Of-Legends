@@ -156,9 +156,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         {/* Side Indicator - The main color cue */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-[1rem] ${isWin ? 'bg-lol-win shadow-[0_0_15px_#22c55e]' : 'bg-red-900/50'}`}></div>
 
-        <MatchInfo isWin={isWin} getQueueLabel={getQueueLabel} getTimeAgo={getTimeAgo} t={t} durationMin={durationMin} durationSec={durationSec} />
+        <MatchInfo
+          details={{ isWin, durationMin, durationSec }}
+          utils={{ getQueueLabel, getTimeAgo, t }}
+        />
         <ChampionInfo isWin={isWin} champName={champName} me={me} spells={spells} getChampionIconUrl={getChampionIconUrl} />
-        <KDAInfo kills={kills} deaths={deaths} assists={assists} kda={kda} isWin={isWin} match={match} me={me} />
+        <KDAInfo
+          stats={{ kills, deaths, assists, kda }}
+          context={{ isWin, match, me }}
+        />
 
         {/* Legend Score Badge */}
         <LegendScoreBadge me={me} />
