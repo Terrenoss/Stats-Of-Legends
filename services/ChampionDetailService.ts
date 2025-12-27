@@ -1,12 +1,24 @@
 import { prisma } from '@/lib/prisma';
 import { getTargetTiers } from '@/utils/tierUtils';
+import { Prisma } from '@prisma/client';
+
+interface AggregatedStat {
+    wins: number;
+    matches: number;
+}
+
+interface ItemStat extends AggregatedStat { }
+interface RuneStat extends AggregatedStat { }
+interface SpellStat extends AggregatedStat { }
+interface SkillOrderStat extends AggregatedStat { }
+
 
 export class ChampionDetailService {
     static async getChampionDetails(championName: string, role: string, rank: string) {
         const targetTiers = getTargetTiers(rank);
 
         // Fetch Stats
-        const whereClause: any = {
+        const whereClause: Prisma.ChampionStatWhereInput = {
             championId: championName,
             tier: { in: targetTiers }
         };
@@ -29,10 +41,10 @@ export class ChampionDetailService {
         const aggregated = {
             matches: 0,
             wins: 0,
-            items: {} as Record<string, { wins: number, matches: number }>,
-            runes: {} as Record<string, { wins: number, matches: number }>,
-            spells: {} as Record<string, { wins: number, matches: number }>,
-            skillOrders: {} as Record<string, { wins: number, matches: number }>
+            items: {} as Record<string, ItemStat>,
+            runes: {} as Record<string, RuneStat>,
+            spells: {} as Record<string, SpellStat>,
+            skillOrders: {} as Record<string, SkillOrderStat>
         };
 
         for (const stat of stats) {
@@ -40,32 +52,32 @@ export class ChampionDetailService {
             aggregated.wins += stat.wins;
 
             // Merge Items
-            const items = (stat.items as Record<string, any>) || {};
-            Object.entries(items).forEach(([id, data]: [string, any]) => {
+            const items = (stat.items as unknown as Record<string, ItemStat>) || {};
+            Object.entries(items).forEach(([id, data]) => {
                 if (!aggregated.items[id]) aggregated.items[id] = { wins: 0, matches: 0 };
                 aggregated.items[id].wins += data.wins;
                 aggregated.items[id].matches += data.matches;
             });
 
             // Merge Runes
-            const runes = (stat.runes as Record<string, any>) || {};
-            Object.entries(runes).forEach(([id, data]: [string, any]) => {
+            const runes = (stat.runes as unknown as Record<string, RuneStat>) || {};
+            Object.entries(runes).forEach(([id, data]) => {
                 if (!aggregated.runes[id]) aggregated.runes[id] = { wins: 0, matches: 0 };
                 aggregated.runes[id].wins += data.wins;
                 aggregated.runes[id].matches += data.matches;
             });
 
             // Merge Spells
-            const spells = (stat.spells as Record<string, any>) || {};
-            Object.entries(spells).forEach(([id, data]: [string, any]) => {
+            const spells = (stat.spells as unknown as Record<string, SpellStat>) || {};
+            Object.entries(spells).forEach(([id, data]) => {
                 if (!aggregated.spells[id]) aggregated.spells[id] = { wins: 0, matches: 0 };
                 aggregated.spells[id].wins += data.wins;
                 aggregated.spells[id].matches += data.matches;
             });
 
             // Merge Skill Order
-            const skillOrder = ((stat as any).skillOrder as Record<string, any>) || {};
-            Object.entries(skillOrder).forEach(([id, data]: [string, any]) => {
+            const skillOrder = ((stat.skillOrder as unknown) as Record<string, SkillOrderStat>) || {};
+            Object.entries(skillOrder).forEach(([id, data]) => {
                 if (!aggregated.skillOrders[id]) aggregated.skillOrders[id] = { wins: 0, matches: 0 };
                 aggregated.skillOrders[id].wins += data.wins;
                 aggregated.skillOrders[id].matches += data.matches;

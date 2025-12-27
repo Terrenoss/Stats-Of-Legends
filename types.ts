@@ -204,6 +204,10 @@ export interface Participant {
     utility: number;
     lane?: number;
   };
+  damage?: number;
+  damagePerMin?: number;
+  gold?: number;
+  goldPerMin?: number;
 }
 
 export interface TeamObjective {
@@ -423,4 +427,5 @@ export interface RiotMatch {
     frames?: any[];
     [key: string]: any;
   };
+  timeline?: any;
 }

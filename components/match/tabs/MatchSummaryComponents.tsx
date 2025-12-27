@@ -129,7 +129,7 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
             <div className="col-span-2 flex flex-col items-center">
                 <span className="font-bold text-gray-300">{p.kills}/{p.deaths}/{p.assists}</span>
                 <span className="text-xs text-gray-500">{kda}:1</span>
-                <span className="text-xs text-lol-red font-bold">({Math.round((p.killParticipation || 0) * 100)}%)</span>
+                <span className="text-xs text-lol-red font-bold">({Math.round(p.killParticipation || 0)}%)</span>
             </div>
 
             {/* Damage */}

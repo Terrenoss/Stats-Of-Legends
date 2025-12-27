@@ -5,6 +5,7 @@ import {
     mapWithConcurrency,
     REGION_ROUTING,
 } from './RiotService';
+import { RiotMatch } from '@/types';
 import { MatchProcessor } from './MatchProcessor';
 import { ScoringService } from './ScoringService';
 import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl, getSpellName } from '@/utils/ddragon';
@@ -84,8 +85,8 @@ export class MatchHistoryService {
         const latestVersion = CURRENT_PATCH;
 
         const matches = await Promise.all(summonerMatches.map(async (sm) => {
-            const mj = sm.match.jsonData as any;
-            return this.formatMatchData(mj, puuid, latestVersion, (sm.match as any).averageRank);
+            const mj = sm.match.jsonData as unknown as RiotMatch;
+            return this.formatMatchData(mj, puuid, latestVersion, sm.match.averageRank);
         }));
 
         return matches;
@@ -204,7 +205,7 @@ export class MatchHistoryService {
         return { primary: primaryImg, secondary: secondaryImg };
     }
 
-    private static async formatMatchData(mj: any, puuid: string, version: string, averageRank?: string | null) {
+    private static async formatMatchData(mj: RiotMatch, puuid: string, version: string, averageRank?: string | null) {
         const info = mj.info;
         const participants = info.participants;
         const me = participants.find((p: any) => p.puuid === puuid);
@@ -351,8 +352,7 @@ export class MatchHistoryService {
         // Timeline processing
         const { timelineData, itemBuild, ace, participantLaneStats, participantWeightedDeaths } = this.getTimelineStats(timelineJson, me, version, participants);
 
-        const t100Kills = participants.filter((p: any) => p.teamId === 100).reduce((a: number, b: any) => a + b.kills, 0);
-        const t200Kills = participants.filter((p: any) => p.teamId === 200).reduce((a: number, b: any) => a + b.kills, 0);
+
 
         const mappedParticipants = participants.map((p: any) => {
             const pCs = (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0);
@@ -424,6 +424,10 @@ export class MatchHistoryService {
 
             const legendScore = scoreResult.score;
 
+            const teamKills = teamStats[p.teamId]?.kills || 0;
+            const kp = teamKills > 0 ? ((Number(p.kills) + Number(p.assists)) / teamKills) * 100 : 0;
+            const durationMin = (info.gameDuration || 1) / 60;
+
             return {
                 ...p,
                 champion: {
@@ -450,6 +454,12 @@ export class MatchHistoryService {
                     { id: p.summoner1Id, imageUrl: getSpellIconUrl(getSpellNameSafe(p.summoner1Id), version) },
                     { id: p.summoner2Id, imageUrl: getSpellIconUrl(getSpellNameSafe(p.summoner2Id), version) },
                 ],
+                killParticipation: kp,
+                damagePerMin: (p.totalDamageDealtToChampions || 0) / durationMin,
+                goldPerMin: (p.goldEarned || 0) / durationMin,
+                csPerMin: pCs / durationMin,
+                damage: p.totalDamageDealtToChampions || 0,
+                gold: p.goldEarned || 0,
                 legendScore: legendScore,
                 legendScoreGrade: scoreResult.grade,
                 legendScoreBreakdown: scoreResult.breakdown,

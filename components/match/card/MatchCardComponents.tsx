@@ -79,7 +79,9 @@ interface KDAInfoProps {
 export const KDAInfo = ({ stats, context }: KDAInfoProps) => {
     const teamParticipants = context.match.participants.filter((p: any) => p.win === context.isWin);
     const teamTotalKills = teamParticipants.reduce((a: any, b: any) => a + b.kills, 0);
-    const killParticipation = Math.round(((stats.kills + stats.assists) / Math.max(1, teamTotalKills)) * 100);
+    const killParticipation = context.me.killParticipation !== undefined
+        ? Math.round(context.me.killParticipation)
+        : Math.round(((stats.kills + stats.assists) / Math.max(1, teamTotalKills)) * 100);
 
     return (
         <div className="flex flex-col items-center w-32 relative">

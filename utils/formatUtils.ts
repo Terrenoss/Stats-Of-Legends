@@ -1,4 +1,5 @@
 import { RANK_EMBLEMS } from '../constants';
+import { Match, GameMode } from '../types';
 
 export const getRankColor = (tier: string | null | undefined): string => {
     switch (tier?.toUpperCase()) {
@@ -45,4 +46,34 @@ export const getKdaColorClass = (kda: number | string): string => {
     if (kdaNum >= 4) return 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]';
     if (kdaNum >= 3) return 'text-blue-400';
     return 'text-gray-400';
+};
+
+
+export const getQueueLabel = (match: Match, t: any): string => {
+    if (match.queueId === 420) return t.rankSolo;
+    if (match.queueId === 440) return t.rankFlex;
+    if (match.queueId === 450) return 'ARAM';
+    if (match.queueId === 400 || match.queueId === 430) return t.normal;
+
+    const mode = match.gameMode as string;
+    if (mode === GameMode.SOLO_DUO || mode === 'RANKED_SOLO_5x5') return t.rankSolo;
+    if (mode === GameMode.FLEX || mode === 'RANKED_FLEX_SR') return 'Ranked Flex';
+    if (mode === GameMode.ARAM || mode === 'ARAM') return 'ARAM';
+    if (mode === GameMode.NORMAL || mode === 'NORMAL_5x5') return t.normal;
+    return String(mode || t.normal);
+};
+
+export const getTimeAgo = (gameCreation: number | undefined): string => {
+    const ts = typeof gameCreation === 'number' ? gameCreation : 0;
+    if (!ts) return '';
+    const diffMs = Date.now() - ts;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHours = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSec < 60) return `${diffSec}s ago`;
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
 };
