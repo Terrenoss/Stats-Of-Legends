@@ -23,6 +23,18 @@ export const TierListTable: React.FC<TierListTableProps> = ({ data, sortConfig, 
         { key: 'trend', label: 'Trend', sortable: false },
     ];
 
+    const getHeaderClass = (header: any) => {
+        const classes = ['py-4', 'px-4'];
+        if (header.key === 'rank') classes.push('pl-6');
+        if (header.key === 'trend') classes.push('pr-6');
+        if (header.sortable) classes.push('cursor-pointer hover:text-white transition-colors');
+        return classes.join(' ');
+    };
+
+    const getSortIconClass = (headerKey: string) => {
+        return `w-3 h-3 ${sortConfig?.key === headerKey ? 'text-lol-gold opacity-100' : 'opacity-30'}`;
+    };
+
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -31,13 +43,13 @@ export const TierListTable: React.FC<TierListTableProps> = ({ data, sortConfig, 
                         {headers.map((header) => (
                             <th
                                 key={header.key}
-                                className={`py-4 px-4 ${header.key === 'rank' ? 'pl-6' : ''} ${header.key === 'trend' ? 'pr-6' : ''} ${header.sortable ? 'cursor-pointer hover:text-white transition-colors' : ''}`}
+                                className={getHeaderClass(header)}
                                 onClick={() => header.sortable && onSort(header.key)}
                             >
                                 <div className={`flex items-center gap-2 ${['winRate', 'pickRate', 'banRate', 'tier', 'trend', 'matches'].includes(header.key) ? 'justify-center' : ''}`}>
                                     {header.label}
                                     {header.sortable && (
-                                        <ArrowUpDown className={`w-3 h-3 ${sortConfig?.key === header.key ? 'text-lol-gold opacity-100' : 'opacity-30'}`} />
+                                        <ArrowUpDown className={getSortIconClass(header.key)} />
                                     )}
                                 </div>
                             </th>

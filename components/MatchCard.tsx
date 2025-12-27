@@ -30,7 +30,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const durationSecondsTotal = Number(match.gameDuration ?? 0);
   const durationMin = Math.floor(durationSecondsTotal / 60);
   const durationSec = durationSecondsTotal % 60;
-  const csPerMinHeader = (Number(me.cs ?? 0) && durationSecondsTotal > 0) ? +((Number(me.cs ?? 0) / (durationSecondsTotal / 60))).toFixed(1) : 0;
+  const getCsPerMin = () => {
+    const cs = Number(me.cs ?? 0);
+    if (cs > 0 && durationSecondsTotal > 0) {
+      return +((cs / (durationSecondsTotal / 60))).toFixed(1);
+    }
+    return 0;
+  };
+  const csPerMinHeader = getCsPerMin();
 
   const [activeTab, setActiveTab] = useState<'NONE' | 'SUMMARY' | 'SCORE' | 'TEAM' | 'BUILD' | 'OTHER'>('NONE');
   const [ranks, setRanks] = useState<Record<string, any>>({});

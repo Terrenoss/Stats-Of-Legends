@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RuneStyle, SelectedRunes } from '../../types';
 import { PrimaryPath, SecondaryPath, ShardSelector } from './RuneSelectorComponents';
+import { calculateNewSecondaryPerks, cleanRuneData } from '../../utils/builderUtils';
 
 interface RuneSelectorProps {
     selectedRunes: SelectedRunes;
@@ -35,46 +36,7 @@ const SHARDS = [
     }
 ];
 
-const getRuneRow = (rId: number | null, subStyle: any) => {
-    if (!rId || !subStyle) return -1;
-    return subStyle.slots.findIndex((s: any) => s.runes.some((r: any) => r.id === rId));
-};
 
-const calculateNewSecondaryPerks = (runeId: number, currentPerks: (number | null)[], subStyle: any) => {
-    let next = [...currentPerks];
-    const targetRow = getRuneRow(runeId, subStyle);
-    const isSelected = currentPerks.includes(runeId);
-
-    if (isSelected) {
-        // Deselect
-        next = next.map(id => id === runeId ? null : id);
-        // Shift to fill gap
-        if (next[0] === null && next[1] !== null) {
-            next[0] = next[1];
-            next[1] = null;
-        }
-    } else {
-        // Check if we already have a rune from this row
-        const existingIndexInRow = next.findIndex(id => getRuneRow(id, subStyle) === targetRow);
-
-        if (existingIndexInRow !== -1) {
-            // Replace the rune in the same row
-            next[existingIndexInRow] = runeId;
-        } else {
-            // No rune from this row. Add to first empty, or shift if full.
-            if (next[0] === null) {
-                next[0] = runeId;
-            } else if (next[1] === null) {
-                next[1] = runeId;
-            } else {
-                // Both full, different rows. Shift: Remove first, add new to second.
-                next[0] = next[1];
-                next[1] = runeId;
-            }
-        }
-    }
-    return next;
-};
 
 export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onChange, lang = 'fr_FR' }) => {
     const [styles, setStyles] = useState<RuneStyle[]>([]);
@@ -87,15 +49,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
                 if (res.ok) {
                     const json = await res.json();
 
-                    // Filter out removed runes (Patch 14.10+)
-                    const REMOVED_IDS = [8134, 8124, 8008];
-                    const cleanData = json.data.map((style: any) => ({
-                        ...style,
-                        slots: style.slots.map((slot: any) => ({
-                            ...slot,
-                            runes: slot.runes.filter((rune: any) => !REMOVED_IDS.includes(rune.id))
-                        }))
-                    }));
+                    const cleanData = cleanRuneData(json.data);
 
                     setStyles(cleanData);
                 } else {

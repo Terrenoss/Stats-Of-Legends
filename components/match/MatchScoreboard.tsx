@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { Participant } from '../../types';
 import { TRANSLATIONS } from '../../constants';
 import { SafeLink } from '../ui/SafeLink';
-import { ParticipantRow, ParticipantItems, ParticipantWard } from './MatchScoreboardComponents';
+import { ParticipantRow, ParticipantItems, ParticipantWard, TeamSection } from './MatchScoreboardComponents';
+import { isWardItem, normalizeWardType } from '../../utils/matchUtils';
 
 interface MatchScoreboardProps {
   participants: Participant[];
@@ -100,77 +101,11 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   const bestLosingByOp = getBestByOp(losingTeamParticipants as Participant[]);
   const bestWinningByGold = winningTeamId ? getBestByGold(winningTeamParticipants as Participant[]) : null;
 
-  // robust participant equality: prefer puuid, then participantId, then summonerName
-  const participantEquals = (a?: Participant | null, b?: Participant | null) => {
-    if (!a || !b) return false;
-    if (a.puuid && b.puuid) return a.puuid === b.puuid;
-    if (a.participantId !== undefined && b.participantId !== undefined) return a.participantId === b.participantId;
-    if (a.summonerName && b.summonerName) return a.summonerName === b.summonerName;
-    return false;
-  };
-
-  const teamBestOpScore: Record<number, number> = {};
-  [100, 200].forEach(teamId => {
-    const team = participants.filter(p => p.teamId === teamId);
-    const best = team.reduce((acc, p) => Math.max(acc, (p.legendScore ?? 0)), 0);
-    teamBestOpScore[teamId] = best;
-  });
-
-  const normalizeWardType = (item: any) => {
-    if (!item) return null;
-    const name = (typeof item.name === 'string') ? item.name.toLowerCase() : '';
-    // Control Ward should not be treated as placed ward, Oracle Lens is shown as 'Oracle' (dewarder)
-    if (/control/i.test(name)) return 'Control';
-    if (/oracle|lens/i.test(name)) return 'Oracle';
-    // Farsight is a ward/trinket that places a vision object at range
-    if (/farsight/i.test(name)) return 'Farsight';
-    if (/stealth/i.test(name) || /sight/i.test(name)) return 'Stealth';
-    if (item.tags && Array.isArray(item.tags) && item.tags.includes('Ward')) return 'Sight';
-    if (/ward/i.test(name)) return 'Sight';
-    return null;
-  };
-
-  const isWardItem = (item: any) => {
-    const t = normalizeWardType(item);
-    // Only treat these types as placed wards (not Control)
-    return t === 'Stealth' || t === 'Sight' || t === 'Farsight' || t === 'Oracle';
-  };
-
-
-
-  const TeamSection = ({ teamId, teamName, isWin }: { teamId: number, teamName: string, isWin: boolean }) => {
-    const teamParticipants = participants.filter(p => p.teamId === teamId);
-    return (
-      <div className="flex flex-col gap-1">
-        <div className={`text-xs font-bold px-2 mb-2 flex justify-between items-center ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
-          <span>{isWin ? 'VICTORY' : 'DEFEAT'}</span>
-          <span className="text-gray-600 text-[10px] uppercase">{teamName}</span>
-        </div>
-        {teamParticipants.map((p, i) => {
-          const isAce = !!p.ace || (Number(p.aceCount ?? 0) > 0);
-          const isMvpGold = !!bestWinningByGold && participantEquals(p, bestWinningByGold);
-          const isMvpGrey = !!bestLosingByOp && participantEquals(p, bestLosingByOp);
-
-          return (
-            <ParticipantRow
-              key={i}
-              participant={p}
-              context={{
-                maxDamage,
-                calcCsPerMin,
-                isWardItem,
-                normalizeWardType
-              }}
-              badges={{
-                isAce,
-                isMvpGold,
-                isMvpGrey
-              }}
-            />
-          );
-        })}
-      </div>
-    );
+  const context = {
+    maxDamage,
+    calcCsPerMin,
+    isWardItem,
+    normalizeWardType
   };
 
   return (
@@ -183,9 +118,23 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
         <div className="col-span-5 lg:col-span-3 text-right">Items</div>
       </div>
 
-      <TeamSection teamId={100} teamName={t.teamBlue} isWin={team100Win} />
+      <TeamSection
+        teamName={t.teamBlue}
+        isWin={team100Win}
+        participants={team100}
+        bestWinningByGold={bestWinningByGold}
+        bestLosingByOp={bestLosingByOp}
+        context={context}
+      />
       <div className="h-px bg-white/5"></div>
-      <TeamSection teamId={200} teamName={t.teamRed} isWin={team200Win} />
+      <TeamSection
+        teamName={t.teamRed}
+        isWin={team200Win}
+        participants={team200}
+        bestWinningByGold={bestWinningByGold}
+        bestLosingByOp={bestLosingByOp}
+        context={context}
+      />
     </div>
   );
 };

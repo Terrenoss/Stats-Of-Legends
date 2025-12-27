@@ -118,3 +118,130 @@ export const calculateStats = (currentChampion: Champion | null, championLevel: 
 
     return computedStats;
 };
+
+
+export const getEffectiveResist = (dummy: { armor: number, mr: number }, stats: Stats, isAd: boolean) => {
+    if (isAd) {
+        return Math.max(0, dummy.armor - (stats.lethality || 0));
+    }
+    return dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
+};
+
+export const getReduction = (effectiveResist: number) => {
+    return 100 / (100 + Math.max(0, effectiveResist));
+};
+
+export const calculateRuneDamage = (runeId: number | null, stats: Stats, championLevel: number, dummy: { armor: number, mr: number }, currentChampion: Champion | null) => {
+    if (!runeId || !stats) return 0;
+
+    const baseAd = currentChampion?.baseStats?.ad || 0;
+    const bonusAd = stats.ad - baseAd;
+
+    // Manual implementation of popular keystones
+    // Electrocute (ID: 8112): 30-180 (+0.4 bonus AD, +0.25 AP)
+    if (runeId === 8112) {
+        const base = 30 + (150 * (championLevel - 1) / 17);
+        const scaling = (0.4 * bonusAd) + (0.25 * stats.ap);
+        const damage = base + scaling;
+        const isAd = stats.ad > stats.ap + 100;
+        const effectiveResist = getEffectiveResist(dummy, stats, isAd);
+        return damage * getReduction(effectiveResist);
+    }
+
+    // Dark Harvest (ID: 8128)
+    if (runeId === 8128) {
+        const souls = 10;
+        const base = 20 + (40 * (championLevel - 1) / 17) + (5 * souls);
+        const scaling = (0.25 * bonusAd) + (0.15 * stats.ap);
+        const damage = base + scaling;
+        const isAd = stats.ad > stats.ap + 100;
+        const effectiveResist = getEffectiveResist(dummy, stats, isAd);
+        return damage * getReduction(effectiveResist);
+    }
+
+    // Comet (ID: 8229)
+    if (runeId === 8229) {
+        const base = 30 + (70 * (championLevel - 1) / 17);
+        const scaling = (0.35 * bonusAd) + (0.20 * stats.ap);
+        const damage = base + scaling;
+        const effectiveResist = getEffectiveResist(dummy, stats, false);
+        return damage * getReduction(effectiveResist);
+    }
+
+    // Aery (ID: 8214)
+    if (runeId === 8214) {
+        const base = 10 + (30 * (championLevel - 1) / 17);
+        const scaling = (0.15 * bonusAd) + (0.10 * stats.ap);
+        const damage = base + scaling;
+        const effectiveResist = getEffectiveResist(dummy, stats, false);
+        return damage * getReduction(effectiveResist);
+    }
+
+    // Press the Attack (ID: 8005)
+    if (runeId === 8005) {
+        const base = 40 + (140 * (championLevel - 1) / 17);
+        const damage = base;
+        const isAd = stats.ad > stats.ap;
+        const effectiveResist = getEffectiveResist(dummy, stats, isAd);
+        return damage * getReduction(effectiveResist);
+    }
+
+    return 0;
+};
+
+export const calculateAutoDamage = (stats: Stats, dummy: { armor: number, mr: number }) => {
+    const effectiveArmor = getEffectiveResist(dummy, stats, true);
+    return stats.ad * getReduction(effectiveArmor);
+};
+
+export const getRuneRow = (rId: number | null, subStyle: any) => {
+    if (!rId || !subStyle) return -1;
+    return subStyle.slots.findIndex((s: any) => s.runes.some((r: any) => r.id === rId));
+};
+
+export const calculateNewSecondaryPerks = (runeId: number, currentPerks: (number | null)[], subStyle: any) => {
+    let next = [...currentPerks];
+    const targetRow = getRuneRow(runeId, subStyle);
+    const isSelected = currentPerks.includes(runeId);
+
+    if (isSelected) {
+        // Deselect
+        next = next.map(id => id === runeId ? null : id);
+        // Shift to fill gap
+        if (next[0] === null && next[1] !== null) {
+            next[0] = next[1];
+            next[1] = null;
+        }
+    } else {
+        // Check if we already have a rune from this row
+        const existingIndexInRow = next.findIndex(id => getRuneRow(id, subStyle) === targetRow);
+
+        if (existingIndexInRow !== -1) {
+            // Replace the rune in the same row
+            next[existingIndexInRow] = runeId;
+        } else {
+            // No rune from this row. Add to first empty, or shift if full.
+            if (next[0] === null) {
+                next[0] = runeId;
+            } else if (next[1] === null) {
+                next[1] = runeId;
+            } else {
+                // Both full, different rows. Shift: Remove first, add new to second.
+                next[0] = next[1];
+                next[1] = runeId;
+            }
+        }
+    }
+    return next;
+};
+
+export const cleanRuneData = (data: any[]) => {
+    const REMOVED_IDS = [8134, 8124, 8008];
+    return data.map((style: any) => ({
+        ...style,
+        slots: style.slots.map((slot: any) => ({
+            ...slot,
+            runes: slot.runes.filter((rune: any) => !REMOVED_IDS.includes(rune.id))
+        }))
+    }));
+};

@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { getGradeColor } from '@/utils/formatUtils';
+import { getGradeColor, getKdaColorClass } from '@/utils/formatUtils';
 
 interface MatchInfoProps {
     details: {
@@ -97,7 +97,7 @@ export const KDAInfo = ({ stats, context }: KDAInfoProps) => (
         <div className="text-xl font-display font-black text-white tracking-widest">
             {stats.kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{stats.deaths}</span> <span className="text-gray-500 text-sm">/</span> {stats.assists}
         </div>
-        <div className={`text-xs font-mono mt-0.5 font-bold ${Number(stats.kda) >= 5 ? 'text-orange-500 animate-burn font-black' : Number(stats.kda) >= 4 ? 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : Number(stats.kda) >= 3 ? 'text-blue-400' : 'text-gray-400'}`}>
+        <div className={`text-xs font-mono mt-0.5 font-bold ${getKdaColorClass(stats.kda)}`}>
             {stats.kda} KDA
         </div>
         <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((stats.kills + stats.assists) / Math.max(1, (context.isWin ? context.match.participants.filter((p: any) => p.win) : context.match.participants.filter((p: any) => !p.win)).reduce((a: any, b: any) => a + b.kills, 0))) * 100)}%</div>

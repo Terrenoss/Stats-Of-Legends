@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { RiotService } from '@/services/RiotService';
+import { HTTP_TOO_MANY_REQUESTS } from '@/constants/api';
 
 export async function GET(request: Request) {
     const adminKey = request.headers.get('x-admin-key');
@@ -24,8 +25,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ entries, debug: entries[0] });
     } catch (error: any) {
         console.error("Seed API Error:", error);
-        if (error.status === 429) {
-            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: 429 });
+        if (error.status === HTTP_TOO_MANY_REQUESTS) {
+            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: HTTP_TOO_MANY_REQUESTS });
         }
         return NextResponse.json({ error: `Riot API Error: ${error.message}` }, { status: 500 });
     }

@@ -16,10 +16,16 @@ interface TeamSummaryProps {
 }
 
 export const TeamSummary: React.FC<TeamSummaryProps> = ({ teamId, teamName, isWin, players, maxDamage, maxTaken, ranks, region, gameDurationSeconds }) => {
+    const getWinLabel = (win: boolean, name: string) => (
+        <span className={`text-xs font-bold ${win ? 'text-blue-400' : 'text-red-400'}`}>
+            {win ? 'VICTORY' : 'DEFEAT'} <span className="text-gray-500 text-[10px] ml-1">({name})</span>
+        </span>
+    );
+
     return (
         <div className="flex flex-col gap-1">
             <div className={`flex items-center justify-between px-2 py-2 ${isWin ? 'bg-blue-500/10 border-l-2 border-blue-500' : 'bg-red-500/10 border-l-2 border-red-500'} rounded-t-lg`}>
-                <span className={`text-xs font-bold ${isWin ? 'text-blue-400' : 'text-red-400'}`}>{isWin ? 'VICTORY' : 'DEFEAT'} <span className="text-gray-500 text-[10px] ml-1">({teamName})</span></span>
+                {getWinLabel(isWin, teamName)}
             </div>
 
             <div className="flex flex-col gap-1 bg-[#121212] rounded-b-lg p-1">

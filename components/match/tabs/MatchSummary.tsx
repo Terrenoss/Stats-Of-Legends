@@ -32,6 +32,14 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
     const t100Gold = team100.reduce((a, b) => a + (b.goldEarned || 0), 0);
     const t200Gold = team200.reduce((a, b) => a + (b.goldEarned || 0), 0);
 
+    const getWinStatus = (isWin: boolean) => {
+        return (
+            <span className={`font-bold text-lg ${isWin ? 'text-blue-400' : 'text-red-400'}`}>
+                {isWin ? 'Victory' : 'Defeat'}
+            </span>
+        );
+    };
+
     return (
         <div className="flex flex-col gap-4">
             {/* Header Totals */}
@@ -39,7 +47,7 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                 {/* Blue Team Stats */}
                 <div className="flex items-center gap-6">
                     <div className="flex flex-col">
-                        <span className={`font-bold text-lg ${team100Win ? 'text-blue-400' : 'text-red-400'}`}>{team100Win ? 'Victory' : 'Defeat'}</span>
+                        {getWinStatus(team100Win)}
                         <div className="flex gap-2 text-sm">
                             <span className="text-gray-400">{t100Kills} Kills</span>
                             <span className="text-lol-gold">{t100Gold.toLocaleString()} Gold</span>
@@ -56,7 +64,7 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ participants, maxDam
                     {teams && <TeamObjectives teams={teams} teamId={200} align="right" />}
 
                     <div className="flex flex-col items-end">
-                        <span className={`font-bold text-lg ${team200Win ? 'text-blue-400' : 'text-red-400'}`}>{team200Win ? 'Victory' : 'Defeat'}</span>
+                        {getWinStatus(team200Win)}
                         <div className="flex gap-2 text-sm">
                             <span className="text-lol-gold">{t200Gold.toLocaleString()} Gold</span>
                             <span className="text-gray-400">{t200Kills} Kills</span>

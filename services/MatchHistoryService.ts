@@ -9,7 +9,7 @@ import { MatchProcessor } from './MatchProcessor';
 import { ScoringService } from './ScoringService';
 import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl, getSpellName } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';
-import { getDurationBucket } from '@/utils/matchUtils';
+import { getDurationBucket, calculateWeightedDeaths, calculateLaneStats, generateGraphPoints, processItemBuild } from '@/utils/matchUtils';
 
 export class MatchHistoryService {
 
@@ -395,17 +395,13 @@ export class MatchHistoryService {
             }
 
             // V5: Calculate Role Average Performance (Relative to Champion)
-            // We want to know: How does the "Average Role Player" perform compared to "Average Champion Player"?
-            // If RoleAvg > ChampAvg, it means this champion is generally weaker than the role average.
             let roleAveragePerformance = undefined;
             if (pRoleStats && pChampStats) {
-                // Helper to calculate Z-score of RoleAvg using ChampAvg as baseline
                 const getZ = (roleVal: number, champVal: number, stdDevMult: number = 0.4) => {
                     const stdDev = Math.max(champVal * stdDevMult, 0.1);
                     return (roleVal - champVal) / stdDev;
                 };
 
-                // Champ Baselines
                 const cStats = pChampStats as any;
                 const cDpm = cStats.totalDamage / ((cStats.totalDuration || 1) / 60);
                 const cGpm = cStats.totalGold / ((cStats.totalDuration || 1) / 60);
@@ -508,7 +504,6 @@ export class MatchHistoryService {
             };
         });
 
-        // V5: Save to Cache (Fire and Forget)
         if (!cachedScores) {
             const cacheData: Record<string, any> = {};
             mappedParticipants.forEach((p: any) => {
@@ -551,10 +546,10 @@ export class MatchHistoryService {
 
     private static getTimelineStats(timelineJson: any, me: any, version: string, participants: any[]) {
         let timelineData = null;
-        const itemBuild: any[] = [];
+        let itemBuild: any[] = [];
         let ace = false;
-        const participantLaneStats: Record<number, { csd15: number; gd15: number; xpd15: number }> = {};
-        const participantWeightedDeaths: Record<number, number> = {};
+        let participantLaneStats: Record<number, { csd15: number; gd15: number; xpd15: number }> = {};
+        let participantWeightedDeaths: Record<number, number> = {};
 
         if (timelineJson) {
             const frames = timelineJson.info?.frames || [];
@@ -563,113 +558,19 @@ export class MatchHistoryService {
             if (myAce) ace = true;
 
             // Weighted Deaths
-            const deathEvents = events.filter((e: any) => e.type === 'CHAMPION_KILL');
-            deathEvents.forEach((e: any) => {
-                const victimId = e.victimId;
-                const timestamp = e.timestamp;
-                const minutes = timestamp / 60000;
+            participantWeightedDeaths = calculateWeightedDeaths(events);
 
-                let weight = 1.0;
-                if (minutes < 15) weight = 0.8;
-                else if (minutes < 30) weight = 1.0;
-                else weight = 1.5;
-
-                if (!participantWeightedDeaths[victimId]) participantWeightedDeaths[victimId] = 0;
-                participantWeightedDeaths[victimId] += weight;
-            });
-
-            const frame15 = frames.find((f: any) => f.timestamp >= 900000 && f.timestamp < 960000) || frames[frames.length - 1];
-
-            if (frame15) {
-                participants.forEach((p: any) => {
-                    const opponent = participants.find((opp: any) => opp.teamPosition === p.teamPosition && opp.teamId !== p.teamId);
-                    if (opponent) {
-                        const myFrame = frame15.participantFrames?.[p.participantId];
-                        const oppFrame = frame15.participantFrames?.[opponent.participantId];
-                        if (myFrame && oppFrame) {
-                            participantLaneStats[p.participantId] = {
-                                gd15: (myFrame.totalGold || 0) - (oppFrame.totalGold || 0),
-                                xpd15: (myFrame.xp || 0) - (oppFrame.xp || 0),
-                                csd15: ((myFrame.minionsKilled || 0) + (myFrame.jungleMinionsKilled || 0)) - ((oppFrame.minionsKilled || 0) + (oppFrame.jungleMinionsKilled || 0))
-                            };
-                        }
-                    }
-                });
-            }
+            // Lane Stats
+            participantLaneStats = calculateLaneStats(frames, participants);
 
             // Graph Points
-            const points: { timestamp: string; blueScore: number; redScore: number }[] = [];
-            for (const frame of frames) {
-                const tsMs = frame.timestamp ?? 0;
-                const minutes = Math.round(tsMs / 60000);
-                let blueGold = 0;
-                let redGold = 0;
-                const participantsFrames = frame.participantFrames || {};
-                for (const key of Object.keys(participantsFrames)) {
-                    const pf = participantsFrames[key];
-                    const teamId = Number(pf.teamId ?? (pf.participantId && pf.participantId <= 5 ? 100 : 200));
-                    const totalGold = Number(pf.totalGold ?? pf.gold ?? 0);
-                    if (teamId === 100) blueGold += totalGold;
-                    else if (teamId === 200) redGold += totalGold;
-                }
-                if (minutes >= 0 && (blueGold > 0 || redGold > 0)) {
-                    points.push({
-                        timestamp: `${minutes}m`,
-                        blueScore: blueGold,
-                        redScore: redGold,
-                    });
-                }
-            }
+            const points = generateGraphPoints(frames);
             if (points.length) timelineData = points;
 
             // Item Build
-            const myEvents = events.filter(
-                (e: any) =>
-                    ['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].includes(e.type) &&
-                    e.participantId === me.participantId,
-            );
-            myEvents.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
-
-            const cleanEvents: any[] = [];
-            for (const ev of myEvents) {
-                if (ev.type === 'ITEM_PURCHASED' || ev.type === 'ITEM_SOLD') {
-                    cleanEvents.push(ev);
-                } else if (ev.type === 'ITEM_UNDO') {
-                    const lastIdx = cleanEvents.length - 1;
-                    if (lastIdx >= 0) {
-                        const lastEv = cleanEvents[lastIdx];
-                        if (lastEv.type === 'ITEM_PURCHASED' && lastEv.itemId === ev.beforeId) {
-                            cleanEvents.pop();
-                        } else if (lastEv.type === 'ITEM_SOLD' && lastEv.itemId === ev.afterId) {
-                            cleanEvents.pop();
-                        }
-                    }
-                }
-            }
-
-            for (const ev of cleanEvents) {
-                const itemId = ev.itemId || ev.itemIdPurchased || ev.itemIdSold || ev.itemIdAdded || null;
-                if (!itemId) continue;
-                const ts = Math.floor((ev.timestamp || 0) / 1000);
-                const mm = Math.floor(ts / 60);
-                const ss = ts % 60;
-                const timestamp = `${mm}m ${ss}s`;
-                const action = ev.type || 'ITEM_PURCHASED';
-
-                itemBuild.push({
-                    timestamp,
-                    action,
-                    item: {
-                        id: itemId,
-                        imageUrl: getItemIconUrl(itemId, version),
-                        name: `Item ${itemId}`,
-                        tags: [],
-                    },
-                });
-            }
+            itemBuild = processItemBuild(events, me, version, getItemIconUrl);
         }
 
         return { timelineData, itemBuild, ace, participantLaneStats, participantWeightedDeaths };
     }
 }
-

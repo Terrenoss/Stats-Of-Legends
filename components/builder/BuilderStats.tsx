@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, Swords, Zap, Crosshair, CheckSquare, Square } from 'lucide-react';
+import { Users, Shield, Swords, Zap, Crosshair } from 'lucide-react';
 import { Stats, DummyStats, Champion, Item, SelectedRunes } from '../../types';
 import { RuneSelector } from './RuneSelector';
+import { StatSection, StatRow, DamageRow, DummyInput } from './BuilderStatsComponents';
+import { calculateRuneDamage, calculateAutoDamage } from '../../utils/builderUtils';
 
 interface BuilderStatsProps {
   stats: Stats;
@@ -36,81 +38,6 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
     setComboToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const calculateAutoDamage = () => {
-    const effectiveArmor = Math.max(0, dummy.armor - (stats.lethality || 0));
-    const physReduction = 100 / (100 + effectiveArmor);
-    return stats.ad * physReduction;
-  };
-
-  const getEffectiveResist = (isAd: boolean) => {
-    if (isAd) {
-      return Math.max(0, dummy.armor - (stats.lethality || 0));
-    }
-    return dummy.mr * (1 - ((stats.percentPen || 0) / 100)) - (stats.magicPen || 0);
-  };
-
-  const getReduction = (effectiveResist: number) => {
-    return 100 / (100 + Math.max(0, effectiveResist));
-  };
-
-  const calculateRuneDamage = (runeId: number | null) => {
-    if (!runeId || !stats) return 0;
-
-    const baseAd = currentChampion?.baseStats?.ad || 0;
-    const bonusAd = stats.ad - baseAd;
-
-    // Manual implementation of popular keystones
-    // Electrocute (ID: 8112): 30-180 (+0.4 bonus AD, +0.25 AP)
-    if (runeId === 8112) {
-      const base = 30 + (150 * (championLevel - 1) / 17);
-      const scaling = (0.4 * bonusAd) + (0.25 * stats.ap);
-      const damage = base + scaling;
-      const isAd = stats.ad > stats.ap + 100;
-      const effectiveResist = getEffectiveResist(isAd);
-      return damage * getReduction(effectiveResist);
-    }
-
-    // Dark Harvest (ID: 8128)
-    if (runeId === 8128) {
-      const souls = 10;
-      const base = 20 + (40 * (championLevel - 1) / 17) + (5 * souls);
-      const scaling = (0.25 * bonusAd) + (0.15 * stats.ap);
-      const damage = base + scaling;
-      const isAd = stats.ad > stats.ap + 100;
-      const effectiveResist = getEffectiveResist(isAd);
-      return damage * getReduction(effectiveResist);
-    }
-
-    // Comet (ID: 8229)
-    if (runeId === 8229) {
-      const base = 30 + (70 * (championLevel - 1) / 17);
-      const scaling = (0.35 * bonusAd) + (0.20 * stats.ap);
-      const damage = base + scaling;
-      const effectiveResist = getEffectiveResist(false);
-      return damage * getReduction(effectiveResist);
-    }
-
-    // Aery (ID: 8214)
-    if (runeId === 8214) {
-      const base = 10 + (30 * (championLevel - 1) / 17);
-      const scaling = (0.15 * bonusAd) + (0.10 * stats.ap);
-      const damage = base + scaling;
-      const effectiveResist = getEffectiveResist(false);
-      return damage * getReduction(effectiveResist);
-    }
-
-    // Press the Attack (ID: 8005)
-    if (runeId === 8005) {
-      const base = 40 + (140 * (championLevel - 1) / 17);
-      const damage = base;
-      const isAd = stats.ad > stats.ap;
-      const effectiveResist = getEffectiveResist(isAd);
-      return damage * getReduction(effectiveResist);
-    }
-
-    return 0;
-  };
-
   const calculateSpellDamage = (spell: any) => {
     const lvl = spellLevels[spell.id] || 0;
     if (lvl === 0) return 0;
@@ -135,7 +62,7 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
   const calculateTotalDamage = () => {
     let total = 0;
     if (comboToggles['auto']) {
-      total += calculateAutoDamage() * 3;
+      total += calculateAutoDamage(stats, dummy) * 3;
     }
     if (currentChampion.spells) {
       currentChampion.spells.forEach(spell => {
@@ -146,7 +73,7 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
     }
     // Add Rune Damage (Keystone only for now)
     if (selectedRunes.selectedPerkIds[0]) {
-      total += calculateRuneDamage(selectedRunes.selectedPerkIds[0]);
+      total += calculateRuneDamage(selectedRunes.selectedPerkIds[0], stats, championLevel, dummy, currentChampion);
     }
     return Math.floor(total);
   };
@@ -219,7 +146,7 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
 
             <DamageRow
               label={t.autoAttack}
-              value={Math.floor(calculateAutoDamage())}
+              value={Math.floor(calculateAutoDamage(stats, dummy))}
               checked={comboToggles['auto']}
               onToggle={() => toggleCombo('auto')}
               suffix="(x3)"
@@ -239,7 +166,7 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
             {selectedRunes.selectedPerkIds[0] && (
               <DamageRow
                 label="Keystone Rune"
-                value={Math.floor(calculateRuneDamage(selectedRunes.selectedPerkIds[0]))}
+                value={Math.floor(calculateRuneDamage(selectedRunes.selectedPerkIds[0], stats, championLevel, dummy, currentChampion))}
                 checked={true}
                 onToggle={() => { }}
                 suffix="(Auto)"
@@ -261,46 +188,3 @@ export const BuilderStats: React.FC<BuilderStatsProps> = ({
     </div>
   );
 };
-
-const StatSection = ({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) => (
-  <div>
-    <h4 className="text-[10px] uppercase text-gray-500 font-bold mb-3 flex items-center gap-2 tracking-wider">
-      {icon} {title}
-    </h4>
-    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-      {children}
-    </div>
-  </div>
-);
-
-const StatRow = ({ label, value, suffix = '', color = 'text-gray-300' }: any) => (
-  <div className="flex justify-between items-baseline group">
-    <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors truncate mr-2">{label}</span>
-    <span className={`font-mono text-xs font-bold ${color} whitespace-nowrap`}>{value}{suffix}</span>
-  </div>
-);
-
-const DamageRow = ({ label, value, checked, onToggle, suffix }: any) => (
-  <div
-    className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${checked ? 'bg-white/5 border border-white/5' : 'opacity-40 hover:opacity-70 border border-transparent'}`}
-    onClick={onToggle}
-  >
-    <div className="flex items-center gap-3 overflow-hidden">
-      {checked ? <CheckSquare className="w-4 h-4 text-lol-gold" /> : <Square className="w-4 h-4 text-gray-600" />}
-      <span className="text-xs text-gray-300 truncate font-medium">{label} {suffix && <span className="text-[10px] text-gray-500 ml-1">{suffix}</span>}</span>
-    </div>
-    <span className="font-mono text-sm font-bold text-white whitespace-nowrap">{value}</span>
-  </div>
-);
-
-const DummyInput = ({ label, value, onChange }: { label: string, value: number, onChange: (v: number) => void }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-[10px] text-gray-500 text-center font-bold tracking-wider">{label}</label>
-    <input
-      type="number"
-      className="bg-[#080808] border border-white/10 text-white text-center text-sm py-2 rounded-xl focus:border-lol-gold outline-none transition-colors font-mono"
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-    />
-  </div>
-);

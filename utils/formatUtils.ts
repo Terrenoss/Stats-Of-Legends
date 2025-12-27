@@ -38,3 +38,11 @@ export const getRankIconUrl = (tier: string | null | undefined): string => {
     const t = tier.toUpperCase();
     return RANK_EMBLEMS[t] || RANK_EMBLEMS['UNRANKED'];
 };
+
+export const getKdaColorClass = (kda: number | string): string => {
+    const kdaNum = Number(kda);
+    if (kdaNum >= 5) return 'text-orange-500 animate-burn font-black';
+    if (kdaNum >= 4) return 'text-lol-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]';
+    if (kdaNum >= 3) return 'text-blue-400';
+    return 'text-gray-400';
+};

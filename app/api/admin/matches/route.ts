@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { RiotService } from '@/services/RiotService';
+import { HTTP_TOO_MANY_REQUESTS, BATCH_SIZE_MATCHES } from '@/constants/api';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -31,12 +32,12 @@ export async function GET(request: Request) {
         if (region.startsWith('na') || region.startsWith('br') || region.startsWith('la')) routing = 'americas';
         if (region.startsWith('kr') || region.startsWith('jp')) routing = 'asia';
 
-        const matches = await RiotService.getMatches(routing, targetPuuid!, 20);
+        const matches = await RiotService.getMatches(routing, targetPuuid!, BATCH_SIZE_MATCHES);
 
         return NextResponse.json({ matchIds: matches });
     } catch (error: any) {
-        if (error.status === 429) {
-            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: 429 });
+        if (error.status === HTTP_TOO_MANY_REQUESTS) {
+            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: HTTP_TOO_MANY_REQUESTS });
         }
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

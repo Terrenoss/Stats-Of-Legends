@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { fetchWithBackoff } from '../utils/scannerUtils';
 
 interface UseAdminScannerProps {
     secretKey: string;
@@ -28,39 +29,7 @@ export function useAdminScanner(props: UseAdminScannerProps) {
         setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 100));
     };
 
-    const handleRateLimit = async (retryAfter: number) => {
-        const waitSeconds = Math.ceil(retryAfter / 1000);
-        addLog(`⚠️ Rate Limit Hit. Waiting ${waitSeconds}s...`);
 
-        for (let i = waitSeconds; i > 0; i--) {
-            if (!scanningRef.current) throw new Error("Scan stopped");
-            if (i % 10 === 0) addLog(`Rate Limit: Resuming in ${i}s...`);
-            await new Promise(r => setTimeout(r, 1000));
-        }
-        addLog(`▶️ Resuming scan...`);
-    };
-
-    const fetchWithBackoff = async (url: string, options?: RequestInit) => {
-        while (true) {
-            if (!scanningRef.current) throw new Error("Scan stopped");
-
-            try {
-                const res = await fetch(url, options);
-
-                if (res.status === 429) {
-                    const data = await res.json().catch(() => ({}));
-                    await handleRateLimit(data.retryAfter || 5000);
-                    continue;
-                }
-
-                return res;
-            } catch (e: any) {
-                if (e.message === "Scan stopped") throw e;
-                addLog(`CRITICAL ERROR: ${e.message}`);
-                await new Promise(r => setTimeout(r, 5000));
-            }
-        }
-    };
 
     const processMatch = async (matchId: string) => {
         if (!scanningRef.current) return 'stop';
@@ -70,7 +39,7 @@ export function useAdminScanner(props: UseAdminScannerProps) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-admin-key': secretKey },
             body: JSON.stringify({ matchId, region: selectedRegion, tier: selectedTier })
-        });
+        }, scanningRef, addLog);
 
         const result = await processRes.json();
         if (result.status === 'processed') {
@@ -98,7 +67,7 @@ export function useAdminScanner(props: UseAdminScannerProps) {
 
         addLog(`Fetching matches for ${name}...`);
 
-        const matchRes = await fetchWithBackoff(`/api/admin/matches?${type}=${id}&region=${selectedRegion}`, { headers: { 'x-admin-key': secretKey } });
+        const matchRes = await fetchWithBackoff(`/api/admin/matches?${type}=${id}&region=${selectedRegion}`, { headers: { 'x-admin-key': secretKey } }, scanningRef, addLog);
 
         if (!matchRes.ok) {
             addLog(`⚠️ Failed to fetch matches for ${name}`);
@@ -134,7 +103,7 @@ export function useAdminScanner(props: UseAdminScannerProps) {
                 url += `&tier=${selectedTier}&division=${selectedDivision}`;
             }
 
-            const seedRes = await fetchWithBackoff(url, { headers: { 'x-admin-key': secretKey } });
+            const seedRes = await fetchWithBackoff(url, { headers: { 'x-admin-key': secretKey } }, scanningRef, addLog);
             if (!seedRes.ok) {
                 const errData = await seedRes.json().catch(() => ({}));
                 throw new Error(errData.error || `Failed to fetch seed: ${seedRes.status}`);

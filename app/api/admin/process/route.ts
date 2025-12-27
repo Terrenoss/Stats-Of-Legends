@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { MatchProcessor } from '@/services/MatchProcessor';
+import { HTTP_TOO_MANY_REQUESTS } from '@/constants/api';
 
 export async function POST(request: Request) {
     const adminKey = request.headers.get('x-admin-key');
@@ -10,17 +11,17 @@ export async function POST(request: Request) {
     try {
         const { matchId, region = 'euw1', tier = 'CHALLENGER' } = await request.json();
 
-        const result = await MatchProcessor.processMatch(matchId, region, tier);
+        const processingResult = await MatchProcessor.processMatch(matchId, region, tier);
 
-        if (result.status === 'skipped') {
+        if (processingResult.status === 'skipped') {
             return NextResponse.json({ status: 'skipped' });
         }
 
-        return NextResponse.json(result);
+        return NextResponse.json(processingResult);
 
     } catch (error: any) {
-        if (error.status === 429) {
-            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: 429 });
+        if (error.status === HTTP_TOO_MANY_REQUESTS) {
+            return NextResponse.json({ error: 'Rate Limit Exceeded', retryAfter: error.retryAfter }, { status: HTTP_TOO_MANY_REQUESTS });
         }
         console.error(error);
         return NextResponse.json({ error: error.message }, { status: 500 });

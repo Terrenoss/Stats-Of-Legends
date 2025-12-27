@@ -27,7 +27,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
     const champName = p.champion?.name ?? 'Unknown';
     const items = Array.isArray(p.items) ? p.items : [];
     const itemsFiltered = items.filter((it: any) => !isWardItem(it));
-    const damage = typeof p.totalDamageDealtToChampions === 'number' ? p.totalDamageDealtToChampions : Number(p.totalDamageDealtToChampions ?? 0);
+    const damage = Number(p.totalDamageDealtToChampions ?? 0);
     const kills = p.kills ?? 0;
     const deaths = p.deaths ?? 0;
     const assists = p.assists ?? 0;
@@ -120,9 +120,53 @@ export const ParticipantWard = ({ items, isWardItem, normalizeWardType }: any) =
         return <div className="w-6 h-6 rounded-full bg-yellow-500/10 border border-yellow-500/30 ml-1"></div>;
     }
     const wardType = normalizeWardType(wardItem) || 'Ward';
+    const getWardIcon = () => {
+        if (wardItem?.imageUrl) {
+            return <Image src={wardItem.imageUrl} width={16} height={16} className="w-4 h-4" alt={wardItem?.name || 'Ward'} />;
+        }
+        return <span>W</span>;
+    };
+
     return (
         <div className="w-6 h-6 rounded-full bg-black border border-gray-700 ml-1 flex items-center justify-center text-[10px] font-bold text-gray-200" title={wardItem?.name || wardType}>
-            {wardItem?.imageUrl ? <Image src={wardItem.imageUrl} width={16} height={16} className="w-4 h-4" alt={wardItem?.name || 'Ward'} /> : <span>W</span>}
+            {getWardIcon()}
+        </div>
+    );
+};
+
+const participantEquals = (a?: Participant | null, b?: Participant | null) => {
+    if (!a || !b) return false;
+    if (a.puuid && b.puuid) return a.puuid === b.puuid;
+    if (a.participantId !== undefined && b.participantId !== undefined) return a.participantId === b.participantId;
+    if (a.summonerName && b.summonerName) return a.summonerName === b.summonerName;
+    return false;
+};
+
+export const TeamSection = ({ teamName, isWin, participants, bestWinningByGold, bestLosingByOp, context }: any) => {
+    return (
+        <div className="flex flex-col gap-1">
+            <div className={`text-xs font-bold px-2 mb-2 flex justify-between items-center ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
+                <span>{isWin ? 'VICTORY' : 'DEFEAT'}</span>
+                <span className="text-gray-600 text-[10px] uppercase">{teamName}</span>
+            </div>
+            {participants.map((p: any, i: number) => {
+                const isAce = !!p.ace || (Number(p.aceCount ?? 0) > 0);
+                const isMvpGold = !!bestWinningByGold && participantEquals(p, bestWinningByGold);
+                const isMvpGrey = !!bestLosingByOp && participantEquals(p, bestLosingByOp);
+
+                return (
+                    <ParticipantRow
+                        key={i}
+                        participant={p}
+                        context={context}
+                        badges={{
+                            isAce,
+                            isMvpGold,
+                            isMvpGrey
+                        }}
+                    />
+                );
+            })}
         </div>
     );
 };

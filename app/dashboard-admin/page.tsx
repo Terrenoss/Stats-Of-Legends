@@ -167,21 +167,29 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
     </div>
 );
 
-const DashboardLogs = ({ logs }: any) => (
-    <div className="lg:col-span-2 bg-black/50 rounded-xl border border-white/10 p-4 h-[600px] flex flex-col">
-        <div className="flex items-center gap-2 mb-4 text-gray-400">
-            <Activity className="w-4 h-4" />
-            <span className="font-mono text-sm">Live Logs</span>
+const DashboardLogs = ({ logs }: any) => {
+    const getLogClass = (log: string) => {
+        if (log.includes('ERROR')) return 'bg-red-900/20 text-red-400';
+        if (log.includes('✅')) return 'text-green-400';
+        return 'text-gray-300';
+    };
+
+    return (
+        <div className="lg:col-span-2 bg-black/50 rounded-xl border border-white/10 p-4 h-[600px] flex flex-col">
+            <div className="flex items-center gap-2 mb-4 text-gray-400">
+                <Activity className="w-4 h-4" />
+                <span className="font-mono text-sm">Live Logs</span>
+            </div>
+            <div className="flex-1 overflow-y-auto font-mono text-xs space-y-1 pr-2">
+                {logs.map((log: string, i: number) => (
+                    <div key={i} className={`p-2 rounded ${getLogClass(log)}`}>
+                        {log}
+                    </div>
+                ))}
+            </div>
         </div>
-        <div className="flex-1 overflow-y-auto font-mono text-xs space-y-1 pr-2">
-            {logs.map((log: string, i: number) => (
-                <div key={i} className={`p-2 rounded ${log.includes('ERROR') ? 'bg-red-900/20 text-red-400' : log.includes('✅') ? 'text-green-400' : 'text-gray-300'}`}>
-                    {log}
-                </div>
-            ))}
-        </div>
-    </div>
-);
+    );
+};
 
 export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);

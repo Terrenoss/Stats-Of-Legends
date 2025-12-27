@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Builder } from './components/Builder';
@@ -8,6 +8,7 @@ import { HomeView } from './components/views/HomeView';
 import { LeaderboardView } from './components/views/LeaderboardView';
 import { ProfileView } from './components/views/ProfileView';
 import { MOCK_MATCHES, MOCK_PROFILE, TRANSLATIONS } from './constants';
+import { ANIMATION_DURATION_MS } from './constants/api';
 import { SummonerProfile, Match, Language, Region } from './types';
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
       });
       setMatches(MOCK_MATCHES);
       setIsSearching(false);
-    }, 800);
+    }, ANIMATION_DURATION_MS);
   };
 
   const handleNavigate = (view: string) => {

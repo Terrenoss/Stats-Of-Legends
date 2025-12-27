@@ -54,27 +54,32 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     );
 };
 
-const RuneRow = ({ slot, page, isPrimary, activeColor }: any) => (
-    <div className="flex justify-between items-center px-4">
-        {slot.runes.map((rune: any) => {
-            const active = page.perks.includes(rune.id);
-            const activeClass = `${activeColor} opacity-100 scale-110`;
-            const inactiveClass = 'border-transparent opacity-30 grayscale hover:opacity-60';
+const RuneRow = ({ slot, page, isPrimary, activeColor }: any) => {
+    const getRuneIconClass = (active: boolean) => {
+        const sizeClass = isPrimary ? 'w-14 h-14' : 'w-12 h-12';
+        const stateClass = active ? `${activeColor} opacity-100 scale-110` : 'border-transparent opacity-30 grayscale hover:opacity-60';
+        return `${sizeClass} rounded-full border-2 transition-all ${stateClass}`;
+    };
 
-            return (
-                <div key={rune.id} className="relative group">
-                    <Image
-                        src={getRuneIconUrl(rune.icon)}
-                        alt={`Rune ${rune.id}`}
-                        width={isPrimary ? 56 : 48}
-                        height={isPrimary ? 56 : 48}
-                        className={`${isPrimary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}
-                    />
-                </div>
-            );
-        })}
-    </div>
-);
+    return (
+        <div className="flex justify-between items-center px-4">
+            {slot.runes.map((rune: any) => {
+                const active = page.perks.includes(rune.id);
+                return (
+                    <div key={rune.id} className="relative group">
+                        <Image
+                            src={getRuneIconUrl(rune.icon)}
+                            alt={`Rune ${rune.id}`}
+                            width={isPrimary ? 56 : 48}
+                            height={isPrimary ? 56 : 48}
+                            className={getRuneIconClass(active)}
+                        />
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
 const ShardSection = ({ page }: { page: any }) => (
     <div className="pt-8 border-t border-white/5">

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AIAnalysisService } from '@/services/AIAnalysisService';
+import { HTTP_BAD_GATEWAY } from '@/constants/api';
 
 const getApiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY || '';
 const ANALYSIS_VERSION = "1.0";
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     const { result, error } = await AIAnalysisService.generateMatchAnalysis(match, apiKey);
 
     if (error) {
-      return NextResponse.json({ error }, { status: 502 });
+      return NextResponse.json({ error }, { status: HTTP_BAD_GATEWAY });
     }
 
     const finalResult = { result };
@@ -58,6 +59,6 @@ export async function POST(request: Request) {
     return NextResponse.json(finalResult);
   } catch (error) {
     console.error("Gemini Error:", error);
-    return NextResponse.json({ error: "Erreur IA : impossible de contacter le service externe. Vérifiez votre clé et la configuration." }, { status: 502 });
+    return NextResponse.json({ error: "Erreur IA : impossible de contacter le service externe. Vérifiez votre clé et la configuration." }, { status: HTTP_BAD_GATEWAY });
   }
 }

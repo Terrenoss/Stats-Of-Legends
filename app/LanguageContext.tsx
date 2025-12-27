@@ -49,8 +49,10 @@ export const useLanguage = () => {
 };
 
 export const useI18n = () => {
-  const { lang, setLang } = useLanguage();
-  const t = TRANSLATIONS[lang];
-  return { lang, setLang, t };
+  const { lang } = useLanguage();
+  return { t: TRANSLATIONS[lang], lang };
 };
+
+
+
 
