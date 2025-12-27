@@ -72,7 +72,6 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
 
             <div className="bg-[#0f0f0f] border-b border-white/5 py-4">
                 <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row gap-6 items-center justify-between">
-                    {/* Filters */}
                     <div className="flex gap-4">
                         <div className="relative">
                             <div className="flex items-center bg-[#1a1a1a] border border-white/10 rounded-lg px-2">
@@ -145,7 +144,6 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="space-y-8">
-                        {/* Summoner Spells */}
                         <div className="bg-[#121212] border border-white/5 rounded-2xl p-6">
                             <h3 className="text-lg font-bold text-white mb-4 border-l-4 border-lol-blue pl-3">Summoner Spells</h3>
                             <div className="flex gap-4">

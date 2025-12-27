@@ -159,7 +159,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, la
     setIsFocused(false);
   };
 
-  const info = seasonInfo ?? CURRENT_SEASON_INFO;
+  const info = seasonInfo ? seasonInfo : CURRENT_SEASON_INFO;
 
   return (
     <div className="relative overflow-hidden bg-[#050505] py-24 sm:py-32 border-b border-white/5">

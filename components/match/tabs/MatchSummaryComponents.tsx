@@ -60,7 +60,7 @@ interface ParticipantRowProps {
 
 const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDamage, maxTaken, ranks, region, gameDurationSeconds, isWin, teamBestRank }) => {
     const rankData = ranks[p.puuid || ''];
-    const isHighElo = rankData?.solo?.tier && ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(rankData.solo.tier);
+    const isHighElo = (rankData && rankData.solo && rankData.solo.tier) && ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(rankData.solo.tier);
 
     const rankDisplay = getRankDisplay(p.rank, rankData);
 
@@ -86,7 +86,7 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
 
     const summonerLink = `/summoner/${region}/${encodeURIComponent(`${p.summonerName}-${p.tagLine || region}`)}`;
 
-    const spell1Img = p.spells[0]?.imageUrl;
+    const spell1Img = (p.spells && p.spells[0]) ? p.spells[0].imageUrl : undefined;
     const spell2Img = p.spells[1]?.imageUrl;
     const runePrimary = p.runes?.primary;
     const runeSecondary = p.runes?.secondary;

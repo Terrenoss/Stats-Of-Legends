@@ -26,7 +26,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
 
   const calcCsPerMin = (p: Participant) => {
-    const rawCs = p.cs ?? 0;
+    const rawCs = (p.cs !== null && p.cs !== undefined) ? p.cs : 0;
     const cs = rawCs;
     const duration = (gameDurationSeconds && gameDurationSeconds > 0) ? gameDurationSeconds : DEFAULT_GAME_DURATION;
     const minutes = Math.max(0.1, duration / 60);
@@ -71,7 +71,7 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   const getBestByOp = (arr: Participant[]): Participant | null => {
     if (!arr || arr.length === 0) return null;
     return arr.reduce((best, p) => {
-      const pScore = Number(p.legendScore ?? -Infinity);
+      const pScore = Number((p.legendScore !== null && p.legendScore !== undefined) ? p.legendScore : -Infinity);
       const bScore = Number((best as Participant).legendScore ?? -Infinity);
       if (pScore !== bScore) return pScore > bScore ? p : best;
       const pDmg = Number(p.totalDamageDealtToChampions ?? 0);

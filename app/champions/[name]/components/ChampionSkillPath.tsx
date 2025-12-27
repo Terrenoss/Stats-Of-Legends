@@ -68,7 +68,6 @@ const SkillPathGrid = ({ topSkillPath }: { topSkillPath: string[] }) => {
 
     return (
         <div className="w-full">
-            {/* Header Row (Levels) */}
             <div className="flex mb-2 ml-8">
                 {Array.from({ length: 18 }).map((_, i) => (
                     <div key={i} className="flex-1 text-center text-[10px] text-gray-500 font-mono">{i + 1}</div>
@@ -86,7 +85,6 @@ export const ChampionSkillPath: React.FC<ChampionSkillPathProps> = ({ skillOrder
     return (
         <div className="bg-[#121212] border border-white/5 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row gap-8">
-                {/* Priority */}
                 <div className="w-full md:w-auto md:min-w-[250px] flex-shrink-0">
                     <h3 className="text-lg font-bold text-white mb-4 border-l-4 border-lol-blue pl-3">Skill Priority</h3>
                     <SkillPriority skillOrders={skillOrders} />

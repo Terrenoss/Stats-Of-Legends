@@ -13,7 +13,7 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
 
     // Sort by timestamp
     const getSec = (s: string) => {
-        const m = s.match(/(\d+)m\s*(\d+)?s?/);
+        const m = (s && s.match) ? s.match(/(\d+)m\s*(\d+)?s?/) : null;
         return m ? parseInt(m[1]) * 60 + parseInt(m[2] || '0') : 0;
     };
 
@@ -66,7 +66,7 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
             <div className="bg-[#121212] p-6 rounded-xl border border-white/5">
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Runes</h4>
                 <div className="flex items-center gap-6">
-                    <RuneDisplay rune={runes?.primary} type="KEYSTONE" />
+                    <RuneDisplay rune={(runes && runes.primary) ? runes.primary : undefined} type="KEYSTONE" />
                     <RuneDisplay rune={runes?.secondary} type="SECONDARY" />
                 </div>
             </div>

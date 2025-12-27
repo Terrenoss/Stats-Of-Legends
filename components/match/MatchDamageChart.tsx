@@ -128,7 +128,7 @@ const PlayerStatRow: React.FC<PlayerStatRowProps> = ({ participant, metricKey, m
   const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
 
   // Safe champion access and fallbacks
-  const rawChampImg = participant.champion?.imageUrl;
+  const rawChampImg = (participant.champion && participant.champion.imageUrl) ? participant.champion.imageUrl : undefined;
   const champImg = rawChampImg ?? null;
   const champName = participant.champion?.name ?? 'Unknown';
   const safeVal = typeof val === 'number' && !isNaN(val) ? val : 0;

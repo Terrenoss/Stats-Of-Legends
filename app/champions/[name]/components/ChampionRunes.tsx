@@ -27,22 +27,34 @@ interface ChampionRunesProps {
     runeMap: Record<number, string>;
 }
 
+const RUNE_IDS = {
+    HEALTH_PLUS: 5001,
+    ARMOR: 5002,
+    MAGIC_RES: 5003,
+    ATTACK_SPEED: 5005,
+    ADAPTIVE_FORCE: 5008,
+    CDR_SCALING: 5007,
+    MOVE_SPEED: 5010,
+    TENACITY: 5011,
+    HEALTH_SCALING: 5013
+};
+
 const SHARD_MAP: Record<number, string> = {
-    5001: 'StatModsHealthPlusIcon.png',
-    5002: 'StatModsArmorIcon.png',
-    5003: 'StatModsMagicResIcon.png',
-    5005: 'StatModsAttackSpeedIcon.png',
-    5008: 'StatModsAdaptiveForceIcon.png',
-    5007: 'StatModsCDRScalingIcon.png',
-    5010: 'StatModsMovementSpeedIcon.png',
-    5011: 'StatModsTenacityIcon.png',
-    5013: 'StatModsHealthScalingIcon.png'
+    [RUNE_IDS.HEALTH_PLUS]: 'StatModsHealthPlusIcon.png',
+    [RUNE_IDS.ARMOR]: 'StatModsArmorIcon.png',
+    [RUNE_IDS.MAGIC_RES]: 'StatModsMagicResIcon.png',
+    [RUNE_IDS.ATTACK_SPEED]: 'StatModsAttackSpeedIcon.png',
+    [RUNE_IDS.ADAPTIVE_FORCE]: 'StatModsAdaptiveForceIcon.png',
+    [RUNE_IDS.CDR_SCALING]: 'StatModsCDRScalingIcon.png',
+    [RUNE_IDS.MOVE_SPEED]: 'StatModsMovementSpeedIcon.png',
+    [RUNE_IDS.TENACITY]: 'StatModsTenacityIcon.png',
+    [RUNE_IDS.HEALTH_SCALING]: 'StatModsHealthScalingIcon.png'
 };
 
 const SHARD_ROWS = [
-    [5008, 5005, 5007], // Offense
-    [5008, 5010, 5001], // Flex
-    [5001, 5011, 5013]  // Defense
+    [RUNE_IDS.ADAPTIVE_FORCE, RUNE_IDS.ATTACK_SPEED, RUNE_IDS.CDR_SCALING], // Offense
+    [RUNE_IDS.ADAPTIVE_FORCE, RUNE_IDS.MOVE_SPEED, RUNE_IDS.HEALTH_PLUS], // Flex
+    [RUNE_IDS.HEALTH_PLUS, RUNE_IDS.TENACITY, RUNE_IDS.HEALTH_SCALING]  // Defense
 ];
 
 const getShardIcon = (id: number) => {
@@ -178,7 +190,6 @@ export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role
 
     return (
         <div className="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden">
-            {/* Header Tab */}
             <div className="flex items-center justify-between bg-[#1a1a1a] px-6 py-3 border-b border-white/5">
                 <div className="flex items-center gap-4">
                     <h3 className="text-lg font-bold text-white">Recommended</h3>

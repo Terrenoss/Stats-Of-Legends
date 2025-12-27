@@ -28,7 +28,6 @@ export const ChampionHeader: React.FC<ChampionHeaderProps> = ({
     return (
         <div className="bg-[#111] border-b border-white/5 pt-8 pb-0">
             <div className="max-w-7xl mx-auto px-8">
-                {/* Back Button */}
                 <button
                     onClick={() => router.push('/tierlist?rank=ALL')}
                     className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6 text-sm font-bold"

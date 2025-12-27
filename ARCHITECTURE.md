@@ -137,7 +137,7 @@ Create a `.env` file in the root directory with the following keys:
 
 | Variable | Description | Required |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | PostgreSQL connection string (e.g., `postgresql://user:pass@localhost:5432/db`). | **Yes** |
+| `DATABASE_URL` | PostgreSQL connection string (e.g., `postgresql://user:password@localhost:5432/mydb`) | **Yes** |
 | `RIOT_API_KEY` | Key from [developer.riotgames.com](https://developer.riotgames.com). | **Yes** |
 | `GEMINI_API_KEY` | Google Gemini API Key for AI analysis. | **Yes** |
 | `GEMINI_MODEL` | Model version (default: `gemini-2.5-flash`). | No |

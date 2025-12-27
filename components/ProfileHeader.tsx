@@ -181,7 +181,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
               {formatRank(safeSolo.tier, safeSolo.rank)}
             </div>
             <div className="text-2xl font-bold font-sans tracking-tight mt-0.5" style={{ color: rankColor }}>
-              {safeSolo.lp ?? 0} LP
+              {safeSolo.lp !== undefined && safeSolo.lp !== null ? safeSolo.lp : 0} LP
             </div>
 
             <div className="flex items-center gap-3 mt-3">

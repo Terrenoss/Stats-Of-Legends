@@ -162,7 +162,6 @@ export const ChampionBuildPath: React.FC<ChampionBuildPathProps> = ({ startingIt
             <h3 className="text-lg font-bold text-white mb-6 border-l-4 border-lol-gold pl-3">Item Build Path</h3>
 
             <div className="flex flex-col gap-8">
-                {/* Top Row: Starting & Core */}
                 <div className="flex flex-col xl:flex-row gap-8 border-b border-white/5 pb-8">
                     {/* Starting Items */}
                     <div className="flex-1">
@@ -170,7 +169,6 @@ export const ChampionBuildPath: React.FC<ChampionBuildPathProps> = ({ startingIt
                         <StartingItems items={startingItems} />
                     </div>
 
-                    {/* Core Items */}
                     <div className="flex-[2]">
                         <h4 className="text-sm font-bold text-lol-gold mb-4 border-l-2 border-lol-gold pl-2">Core Items</h4>
                         <CoreItems items={itemPaths} />

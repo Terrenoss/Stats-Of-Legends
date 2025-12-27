@@ -75,7 +75,7 @@ export const ItemCatalog: React.FC<ItemCatalogProps> = ({ items, onItemSelect, t
     virtualTop: (startIndex + index) * ITEM_HEIGHT,
   }));
 
-  const noItemsText = t?.noItemsFound ?? 'Aucun objet ne correspond à votre recherche.';
+  const noItemsText = (t && t.noItemsFound) ? t.noItemsFound : 'Aucun objet ne correspond à votre recherche.';
 
   return (
     <div className="lg:col-span-3 flex flex-col gap-4">

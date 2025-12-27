@@ -29,7 +29,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
 
   const me = match.me || ({} as Participant);
   const isWin = !!me.win;
-  const rawKills = me.kills ?? 0;
+  const rawKills = (me.kills !== null && me.kills !== undefined) ? me.kills : 0;
   const kills = Number(rawKills);
   const deaths = Number(me.deaths ?? 0);
   const assists = Number(me.assists ?? 0);

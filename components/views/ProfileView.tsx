@@ -60,7 +60,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ profile, matches, lang
                                 <div className="h-72 bg-[#121212] border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
                                     <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4 absolute top-6 left-6 z-10">Radar Stats</h3>
                                     {(() => {
-                                        const metrics = profile?.metrics || null;
+                                        const metrics = (profile && profile.metrics) ? profile.metrics : null;
                                         const badge = profile?.consistencyBadge;
                                         return <PerformanceRadar metrics={metrics} consistencyBadge={badge} />;
                                     })()}

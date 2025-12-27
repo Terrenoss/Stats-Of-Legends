@@ -25,9 +25,10 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
     const { maxDamage, calcCsPerMin, isWardItem, normalizeWardType } = context;
     const { isAce, isMvpGold, isMvpGrey } = badges;
 
-    const rawChampImg = p.champion?.imageUrl;
+    const champion = p.champion;
+    const rawChampImg = (champion && champion.imageUrl) ? champion.imageUrl : undefined;
     const champImg = rawChampImg ?? null;
-    const champName = p.champion?.name ?? 'Unknown';
+    const champName = (champion && champion.name) ? champion.name : 'Unknown';
     const items = Array.isArray(p.items) ? p.items : [];
     const itemsFiltered = items.filter((it: Item) => !isWardItem(it));
     const damage = Number(p.totalDamageDealtToChampions ?? 0);
@@ -43,7 +44,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
             <div className="col-span-4 lg:col-span-3 flex items-center gap-3 overflow-hidden">
                 <div className="relative">
                     <ScoreboardChampionIcon champImg={champImg} champName={champName} />
-                    <div className="absolute -bottom-1 -right-1 bg-black text-[8px] w-4 h-4 flex items-center justify-center rounded text-gray-400 border border-gray-800">{p.level ?? '-'}</div>
+                    <div className="absolute -bottom-1 -right-1 bg-black text-[8px] w-4 h-4 flex items-center justify-center rounded text-gray-400 border border-gray-800">{(p.level !== null && p.level !== undefined) ? p.level : '-'}</div>
                 </div>
                 <div className="flex flex-col min-w-0">
                     <SafeLink

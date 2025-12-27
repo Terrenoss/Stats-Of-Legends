@@ -31,10 +31,10 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
         champ.name.toLowerCase().includes(champSearchQuery.toLowerCase())
     );
 
-    const champName = currentChampion?.name;
-    const champTitle = currentChampion?.title;
-    const champImage = currentChampion?.imageUrl;
-    const spells = currentChampion?.spells;
+    const champName = currentChampion ? currentChampion.name : undefined;
+    const champTitle = currentChampion ? currentChampion.title : undefined;
+    const champImage = currentChampion ? currentChampion.imageUrl : undefined;
+    const spells = currentChampion ? currentChampion.spells : undefined;
 
     return (
         <div className="relative z-20">

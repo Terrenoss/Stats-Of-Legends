@@ -48,7 +48,7 @@ export const ChampionInfo = ({ isWin, champName, me, spells, getChampionIconUrl 
             ))}
         </div>
         <div className="flex flex-col gap-1">
-            <RuneIcon rune={me?.runes?.primary} isPrimary={true} />
+            <RuneIcon rune={(me && me.runes && me.runes.primary) ? me.runes.primary : undefined} isPrimary={true} />
             <RuneIcon rune={me?.runes?.secondary} isPrimary={false} />
         </div>
     </div>
@@ -107,7 +107,8 @@ export const KDAInfo = ({ stats, context }: KDAInfoProps) => {
 export const ItemsList = ({ me }: any) => (
     <div className="grid grid-cols-4 gap-1 max-w-[120px]">
         {(() => {
-            const rawItems = Array.isArray(me?.items) ? me.items : [];
+            const items = (me && me.items) ? me.items : [];
+            const rawItems = Array.isArray(items) ? items : [];
             const safeItems = [...rawItems];
             while (safeItems.length < 7) safeItems.push({ id: 0, name: '', imageUrl: '' });
 

@@ -13,7 +13,7 @@ interface MatchScoreProps {
 }
 
 export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineData, me, averageRank }) => {
-    const initialPuuid = me?.puuid || participants[0]?.puuid;
+    const initialPuuid = (me && me.puuid) ? me.puuid : (participants[0] && participants[0].puuid ? participants[0].puuid : undefined);
     const [selectedPuuid, setSelectedPuuid] = useState<string>(initialPuuid);
     const [comparePuuids, setComparePuuids] = useState<string[]>([]);
     const [comparisonMode, setComparisonMode] = useState<'CHAMPION' | 'TIER'>('CHAMPION');
