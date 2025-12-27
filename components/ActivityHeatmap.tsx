@@ -10,10 +10,12 @@ interface ActivityHeatmapProps {
   lang?: Language;
 }
 
+const DAYS_TO_SHOW = 120;
+
 export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, lang }) => {
   const { lang: ctxLang } = useLanguage();
   const translations = lang ? TRANSLATIONS[lang] : TRANSLATIONS[ctxLang];
-  const days = (data || []).slice(-120); // prendre les 120 derniers jours dans l'ordre
+  const days = (data || []).slice(-DAYS_TO_SHOW); // prendre les 120 derniers jours dans l'ordre
 
   const totalGames = days.reduce((acc, d) => acc + (d.games || 0), 0);
 

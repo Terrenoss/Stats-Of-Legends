@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ProfileHeader } from '../../../../components/ProfileHeader';
 import { ChampionsTable } from '../../../../components/ChampionsTable';
 import { LiveGame } from '../../../../components/LiveGame';

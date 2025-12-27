@@ -1,4 +1,4 @@
-import React from 'react';
+
 import Image from 'next/image';
 import { PerformanceRadar } from '../../../../components/PerformanceRadar';
 import { ActivityHeatmap } from '../../../../components/ActivityHeatmap';
@@ -41,7 +41,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {/* Left Column (Sidebar + Heatmap) */}
             <div className="lg:col-span-4 space-y-6">
                 <div className="h-72 bg-[#121212] border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
-                    <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4 absolute top-6 left-6 z-10">Radar Stats</h3>
+                    <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4 absolute top-6 left-6 z-10">
+                        Radar Stats
+                    </h3>
                     <PerformanceRadar metrics={performance} />
                 </div>
 

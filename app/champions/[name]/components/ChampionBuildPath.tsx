@@ -1,4 +1,4 @@
-import React from 'react';
+
 import Image from 'next/image';
 import { getItemIconUrl } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';

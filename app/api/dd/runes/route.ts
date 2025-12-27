@@ -8,13 +8,13 @@ export async function GET(request: Request) {
 
     try {
         const url = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/runesReforged.json`;
-        const response = await fetch(url);
+        const ddResponse = await fetch(url);
 
-        if (!response.ok) {
-            return NextResponse.json({ error: 'Failed to fetch runes' }, { status: response.status });
+        if (!ddResponse.ok) {
+            return NextResponse.json({ error: 'Failed to fetch runes' }, { status: ddResponse.status });
         }
 
-        const runesList = await response.json();
+        const runesList = await ddResponse.json();
         return NextResponse.json(runesList);
     } catch (error) {
         console.error('Error fetching runes:', error);

@@ -1,16 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
 import { RotateCcw, Brain, Undo, Redo } from 'lucide-react';
 import { Item, Champion, Stats, DummyStats, Language } from '../types';
 import { DEFAULT_DUMMY, TRANSLATIONS } from '../constants';
 import { analyzeBuild } from '../services/geminiService';
 import { useHistory } from '../hooks/useHistory';
 import { ItemCatalog } from './builder/ItemCatalog';
-import { RuneSelector } from './builder/RuneSelector';
 import { BuilderStats } from './builder/BuilderStats';
 import { ChampionSelect } from './builder/ChampionSelect';
 import { SelectedRunes } from '../types';
-import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl } from '../utils/ddragon';
 
 interface BuilderProps {
   lang?: Language;

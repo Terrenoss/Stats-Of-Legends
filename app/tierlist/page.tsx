@@ -1,11 +1,8 @@
 'use client';
 
-import React, { Suspense } from 'react';
-import { TierListService } from '@/services/TierListService';
-import { ChampionTier } from '@/types';
+import { Suspense } from 'react';
 import { TierListTable } from '@/components/tierlist/TierListTable';
-import { Search, Filter } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Search } from 'lucide-react';
 import { useTierListData } from '@/hooks/useTierListData';
 
 interface TierListHeaderProps {

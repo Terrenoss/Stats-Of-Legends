@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 import { Shield, FileText, Activity, Mail, ArrowLeft } from 'lucide-react';
 import { SafeLink } from '@/components/ui/SafeLink';
 
@@ -70,9 +70,9 @@ const LEGAL_CONTENT: Record<string, { title: string; icon: React.ReactNode; cont
 export default async function LegalPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
   const slug = params.slug;
-  const data = LEGAL_CONTENT[slug];
+  const legalContent = LEGAL_CONTENT[slug];
 
-  if (!data) {
+  if (!legalContent) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
         <h1 className="text-4xl font-display font-bold text-white mb-4">404</h1>
@@ -93,13 +93,13 @@ export default async function LegalPage(props: { params: Promise<{ slug: string 
 
         <div className="flex flex-col items-center text-center mb-10 relative z-10">
           <div className="w-20 h-20 bg-[#080808] border border-lol-gold/30 rounded-full flex items-center justify-center mb-6 shadow-glow-gold">
-            {data.icon}
+            {legalContent.icon}
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-white uppercase tracking-wide">{data.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-white uppercase tracking-wide">{legalContent.title}</h1>
         </div>
 
         <div className="relative z-10">
-          {data.content}
+          {legalContent.content}
         </div>
       </div>
     </div>

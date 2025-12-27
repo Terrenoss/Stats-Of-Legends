@@ -1,4 +1,4 @@
-import React from 'react';
+
 import Image from 'next/image';
 import { getRuneIconUrl } from '@/utils/ddragon';
 
@@ -78,6 +78,11 @@ interface RuneTreeProps {
     getRuneIcon: (id: number) => string;
 }
 
+const RUNE_ICON_SIZE_PRIMARY = 40;
+const RUNE_ICON_SIZE_SECONDARY = 40;
+const RUNE_ICON_SIZE_LARGE = 56;
+const RUNE_ICON_SIZE_SMALL = 48;
+
 const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     if (!tree) return null;
     const slots = isPrimary ? tree.slots : tree.slots.slice(1);
@@ -86,7 +91,7 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     return (
         <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
             <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                <Image src={getRuneIcon(isPrimary ? page.primaryStyle : page.subStyle)} alt={isPrimary ? 'Primary Style' : 'Sub Style'} width={40} height={40} className="w-10 h-10" />
+                <Image src={getRuneIcon(isPrimary ? page.primaryStyle : page.subStyle)} alt={isPrimary ? 'Primary Style' : 'Sub Style'} width={RUNE_ICON_SIZE_PRIMARY} height={RUNE_ICON_SIZE_PRIMARY} className="w-10 h-10" />
                 <span className="text-2xl font-bold text-white">{tree.name || (isPrimary ? 'Primary' : 'Secondary')}</span>
             </div>
 
@@ -134,8 +139,8 @@ const RuneRow = ({ slot, page, isPrimary, activeColor }: RuneRowProps) => {
                         <Image
                             src={getRuneIconUrl(rune.icon)}
                             alt={`Rune ${rune.id}`}
-                            width={isPrimary ? 56 : 48}
-                            height={isPrimary ? 56 : 48}
+                            width={isPrimary ? RUNE_ICON_SIZE_LARGE : RUNE_ICON_SIZE_SMALL}
+                            height={isPrimary ? RUNE_ICON_SIZE_LARGE : RUNE_ICON_SIZE_SMALL}
                             className={getRuneIconClass(active)}
                         />
                     </div>

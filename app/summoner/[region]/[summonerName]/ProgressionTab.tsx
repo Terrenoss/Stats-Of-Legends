@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -10,6 +10,8 @@ interface ProgressionTabProps {
 const DAYS_HISTORY = 30;
 const Y_AXIS_PADDING = 20;
 const FONT_SIZE = 10;
+
+const ICON_SIZE = 48;
 
 export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankColor }) => {
     return (
@@ -56,10 +58,10 @@ export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankC
                                 cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                                 content={({ active, payload, label }) => {
                                     if (active && payload && payload.length) {
-                                        const data = payload[0].payload;
+                                        const tooltipData = payload[0].payload;
                                         return (
                                             <div className="bg-[#0f0e17] text-white p-3 rounded-xl shadow-2xl border border-white/10 text-xs backdrop-blur-md">
-                                                <div className="font-bold text-lg mb-1" style={{ color: rankColor }}>{data.lp} LP</div>
+                                                <div className="font-bold text-lg mb-1" style={{ color: rankColor }}>{tooltipData.lp} LP</div>
                                                 <div className="text-gray-400">{label}</div>
                                             </div>
                                         );
@@ -79,7 +81,7 @@ export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankC
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                        <TrendingUp size={48} className="mb-4 opacity-20" />
+                        <TrendingUp size={ICON_SIZE} className="mb-4 opacity-20" />
                         <p>Aucune donnée d'historique disponible pour le moment.</p>
                     </div>
                 )}

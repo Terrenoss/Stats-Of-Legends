@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import ChampionDetailsClient from './ChampionDetailsClient';
 
 export default async function ChampionDetailsPage(props: { params: Promise<{ name: string }> }) {

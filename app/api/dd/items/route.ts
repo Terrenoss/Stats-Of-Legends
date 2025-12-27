@@ -25,9 +25,9 @@ export async function GET(req: NextRequest) {
     }
 
     const cdnUrl = `https://ddragon.leagueoflegends.com/cdn/${patch}/data/${locale}/item.json`;
-    const response = await fetch(cdnUrl, { next: { revalidate: 3600 } });
-    if (!response.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
-    const json = await response.json();
+    const ddResponse = await fetch(cdnUrl, { next: { revalidate: 3600 } });
+    if (!ddResponse.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
+    const json = await ddResponse.json();
 
     const itemsMap = mapItemsData(json.data);
     return NextResponse.json({ patch, data: itemsMap });
