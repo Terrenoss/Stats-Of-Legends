@@ -26,16 +26,18 @@ export const PerformanceRadar: React.FC<PerformanceRadarProps> = ({ metrics, con
     ...(metrics || {})
   };
 
-  const data = [
-    { subject: 'Combat', A: safe.combat, fullMark: 100 },
-    { subject: 'Objectives', A: safe.objectives, fullMark: 100 },
-    { subject: 'Vision', A: safe.vision, fullMark: 100 },
-    { subject: 'Farming', A: safe.farming, fullMark: 100 },
-    { subject: 'Survival', A: safe.survival, fullMark: 100 },
+  const FULL_MARK = 100;
+
+  const radarData = [
+    { subject: 'Combat', A: safe.combat, fullMark: FULL_MARK },
+    { subject: 'Objectives', A: safe.objectives, fullMark: FULL_MARK },
+    { subject: 'Vision', A: safe.vision, fullMark: FULL_MARK },
+    { subject: 'Farming', A: safe.farming, fullMark: FULL_MARK },
+    { subject: 'Survival', A: safe.survival, fullMark: FULL_MARK },
   ];
 
   // Calculate average score for center display
-  const averageScore = Math.round(data.reduce((acc, curr) => acc + curr.A, 0) / data.length);
+  const averageScore = Math.round(radarData.reduce((acc, curr) => acc + curr.A, 0) / radarData.length);
 
   // Determine score grade
   const getGrade = (score: number) => {
@@ -56,7 +58,7 @@ export const PerformanceRadar: React.FC<PerformanceRadarProps> = ({ metrics, con
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-center min-h-[200px]">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
           <PolarGrid stroke="#222" />
           <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 10, fontWeight: 'bold' }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />

@@ -41,19 +41,19 @@ export function useAdminScanner(props: UseAdminScannerProps) {
             body: JSON.stringify({ matchId, region: selectedRegion, tier: selectedTier })
         }, scanningRef, addLog);
 
-        const result = await processRes.json();
-        if (result.status === 'processed') {
-            if (currentPatch && result.patch && !result.patch.startsWith(currentPatch.split('.').slice(0, 2).join('.'))) {
-                addLog(`⚠️ Match ${matchId} is on patch ${result.patch} (Target: ${currentPatch}). Stopping player scan.`);
+        const scanResult = await processRes.json();
+        if (scanResult.status === 'processed') {
+            if (currentPatch && scanResult.patch && !scanResult.patch.startsWith(currentPatch.split('.').slice(0, 2).join('.'))) {
+                addLog(`⚠️ Match ${matchId} is on patch ${scanResult.patch} (Target: ${currentPatch}). Stopping player scan.`);
                 return 'stop_patch_mismatch';
             }
             setStats(s => ({ ...s, matches: s.matches + 1 }));
             addLog(`✅ Analyzed ${matchId}`);
-        } else if (result.status === 'skipped') {
+        } else if (scanResult.status === 'skipped') {
             // addLog(`⏭️ Skipped ${matchId}`);
         } else {
             setStats(s => ({ ...s, errors: s.errors + 1 }));
-            addLog(`❌ Error ${matchId}: ${result.error}`);
+            addLog(`❌ Error ${matchId}: ${scanResult.error}`);
         }
         return 'continue';
     };
@@ -79,8 +79,8 @@ export function useAdminScanner(props: UseAdminScannerProps) {
         // Loop Matches
         for (const matchId of matchIds) {
             if (!scanningRef.current) break;
-            const result = await processMatch(matchId);
-            if (result === 'stop_patch_mismatch') break;
+            const processResult = await processMatch(matchId);
+            if (processResult === 'stop_patch_mismatch') break;
 
             // Rate limit buffer
             const delay = 1000 / rateLimit;

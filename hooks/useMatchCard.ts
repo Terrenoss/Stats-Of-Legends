@@ -16,8 +16,8 @@ export const useMatchCard = (match: Match, region: string) => {
                 body: JSON.stringify({ region, puuids, matchId: match.id })
             });
             if (res.ok) {
-                const data = await res.json();
-                setRanks(data);
+                const matchData = await res.json();
+                setRanks(matchData);
                 setRanksLoaded(true);
             }
         } catch (e) {

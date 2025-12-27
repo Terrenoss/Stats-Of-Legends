@@ -34,19 +34,19 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
       try {
         // Add timestamp to prevent caching
         const res = await fetch(`/api/spectator?name=${encodeURIComponent(summonerName)}&tag=${encodeURIComponent(tag)}&region=${region}&t=${Date.now()}`);
-        const data = await res.json();
+        const liveGameData = await res.json();
 
         if (!res.ok) {
-          console.error('[LiveGame] Error:', data);
-          setError(data.error || 'Error fetching live game');
+          console.error('[LiveGame] Error:', liveGameData);
+          setError(liveGameData.error || 'Error fetching live game');
           setGameData(null);
           return;
         }
 
-        if (data.noActiveGame) {
+        if (liveGameData.noActiveGame) {
           setGameData(null);
         } else {
-          setGameData(data);
+          setGameData(liveGameData);
         }
       } catch (e) {
         console.error('[LiveGame] Network Error:', e);

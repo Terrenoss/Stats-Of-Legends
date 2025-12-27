@@ -111,9 +111,9 @@ export const RiotService = {
 
   getChampionIdMap: async (version: string) => {
     const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`);
-    const data = await res.json();
+    const riotData = await res.json();
     const map: Record<number, string> = {};
-    Object.values(data.data).forEach((c: any) => {
+    Object.values(riotData.data).forEach((c: any) => {
       map[parseInt(c.key)] = c.id;
     });
     return map;
@@ -121,8 +121,8 @@ export const RiotService = {
 
   getItemMap: async (version: string) => {
     const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/item.json`);
-    const data = await res.json();
-    return data.data; // Returns map of ID -> ItemData (including 'into' array)
+    const riotData = await res.json();
+    return riotData.data; // Returns map of ID -> ItemData (including 'into' array)
   },
 
   getChallengerLeague: async (platform: string = 'euw1', queue: string = 'RANKED_SOLO_5x5') => {

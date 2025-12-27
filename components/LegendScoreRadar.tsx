@@ -54,7 +54,7 @@ export const LegendScoreRadar: React.FC<LegendScoreRadarProps> = ({ playerStats,
         aggressiveness: 50
     };
 
-    const data = [
+    const radarData = [
         { subject: 'Combat', A: playerStats.combat, B: avg.combat, fullMark: 100 },
         { subject: 'Objectives', A: playerStats.objectives, B: avg.objectives, fullMark: 100 },
         { subject: 'Vision', A: playerStats.vision, B: avg.vision, fullMark: 100 },
@@ -67,19 +67,19 @@ export const LegendScoreRadar: React.FC<LegendScoreRadarProps> = ({ playerStats,
     comparisons.forEach((comp, idx) => {
         const key = `C${idx}`;
         const combatStat = (comp.stats && comp.stats.combat !== undefined) ? comp.stats.combat : 0;
-        data[0][key] = combatStat;
-        data[1][key] = (comp.stats && comp.stats.objectives !== undefined) ? comp.stats.objectives : 0;
-        data[2][key] = (comp.stats && comp.stats.vision !== undefined) ? comp.stats.vision : 0;
-        data[3][key] = (comp.stats && comp.stats.farming !== undefined) ? comp.stats.farming : 0;
-        data[4][key] = (comp.stats && comp.stats.survival !== undefined) ? comp.stats.survival : 0;
-        data[5][key] = (comp.stats && comp.stats.aggressiveness !== undefined) ? comp.stats.aggressiveness : 0;
+        radarData[0][key] = combatStat;
+        radarData[1][key] = (comp.stats && comp.stats.objectives !== undefined) ? comp.stats.objectives : 0;
+        radarData[2][key] = (comp.stats && comp.stats.vision !== undefined) ? comp.stats.vision : 0;
+        radarData[3][key] = (comp.stats && comp.stats.farming !== undefined) ? comp.stats.farming : 0;
+        radarData[4][key] = (comp.stats && comp.stats.survival !== undefined) ? comp.stats.survival : 0;
+        radarData[5][key] = (comp.stats && comp.stats.aggressiveness !== undefined) ? comp.stats.aggressiveness : 0;
     });
 
     return (
         <div className="w-full h-[300px] bg-gray-900/50 rounded-xl border border-gray-800 p-4">
             <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Performance Breakdown</h3>
             <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                     <PolarGrid stroke="#374151" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />

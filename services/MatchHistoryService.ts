@@ -164,8 +164,8 @@ export class MatchHistoryService {
         try {
             const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`, { next: { revalidate: 86400 } });
             if (res.ok) {
-                const data = await res.json();
-                this.spellsCache = data.data; // The 'data' property contains the map
+                const matchData = await res.json();
+                this.spellsCache = matchData.data; // The 'data' property contains the map
                 return this.spellsCache;
             }
         } catch (e) {

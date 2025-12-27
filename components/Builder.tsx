@@ -21,6 +21,9 @@ import { useBuilderData } from '../hooks/useBuilderData';
 import { calculateStats } from '../utils/builderUtils';
 
 export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
+  const HISTORY_LIMIT = 20;
+  const MAX_LEVEL = 18;
+
   const {
     state: selectedItems,
     set: setSelectedItems,
@@ -29,12 +32,12 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     canUndo,
     canRedo,
     reset: resetHistory,
-  } = useHistory<(Item | null)[]>([null, null, null, null, null, null], 20);
+  } = useHistory<(Item | null)[]>([null, null, null, null, null, null], HISTORY_LIMIT);
 
   const { champions, items, loading } = useBuilderData();
   const [currentChampion, setCurrentChampion] = useState<Champion | null>(null);
 
-  const [championLevel, setChampionLevel] = useState<number>(18);
+  const [championLevel, setChampionLevel] = useState<number>(MAX_LEVEL);
   const [spellLevels, setSpellLevels] = useState<{ [key: string]: number }>({ Q: 1, W: 1, E: 1, R: 1 });
 
   const [stats, setStats] = useState<Stats | null>(null);
@@ -99,9 +102,9 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     if (sourceType !== 'slot') return;
     const newItems = [...selectedItems];
     const sourceIndex = parseInt(e.dataTransfer.getData('slotIndex'));
-    const temp = newItems[targetIndex];
+    const swappedItem = newItems[targetIndex];
     newItems[targetIndex] = newItems[sourceIndex];
-    newItems[sourceIndex] = temp;
+    newItems[sourceIndex] = swappedItem;
     setSelectedItems(newItems);
   };
 
@@ -123,8 +126,8 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     const activeItems = selectedItems.filter((i): i is Item => i !== null);
     if (activeItems.length === 0) return;
     setIsAnalyzing(true);
-    const result = await analyzeBuild(currentChampion, activeItems, stats);
-    setAiAnalysis(result);
+    const analysisResult = await analyzeBuild(currentChampion, activeItems, stats);
+    setAiAnalysis(analysisResult);
     setIsAnalyzing(false);
   };
 

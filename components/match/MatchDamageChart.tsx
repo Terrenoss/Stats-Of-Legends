@@ -59,7 +59,7 @@ const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKe
     ...team200.map(p => Number(p[metricKey]) || 0)
   );
 
-  const data = [
+  const chartData = [
     { name: 'Blue', value: t1Total },
     { name: 'Red', value: t2Total },
   ];
@@ -83,7 +83,7 @@ const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKe
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={chartData}
                 innerRadius={35}
                 outerRadius={45}
                 dataKey="value"
@@ -91,7 +91,7 @@ const StatComparisonCard: React.FC<StatComparisonCardProps> = ({ label, metricKe
                 startAngle={90}
                 endAngle={-270}
               >
-                {data.map((entry, index) => (
+                {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index]} />
                 ))}
               </Pie>

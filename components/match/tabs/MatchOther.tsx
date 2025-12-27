@@ -17,7 +17,7 @@ export const MatchOther: React.FC<MatchOtherProps> = ({ me, participants }) => {
     const oppCs = (opponent && ((opponent.totalMinionsKilled || 0) + (opponent.neutralMinionsKilled || 0))) || 0;
     const oppVision = (opponent && opponent.visionScore) ? opponent.visionScore : 0;
 
-    const data = [
+    const chartData = [
         { name: 'Gold', Me: me.goldEarned, Opponent: opponent?.goldEarned || 0 },
         { name: 'Damage', Me: me.totalDamageDealtToChampions, Opponent: opponent?.totalDamageDealtToChampions || 0 },
         { name: 'CS', Me: myCs, Opponent: oppCs },
@@ -29,7 +29,7 @@ export const MatchOther: React.FC<MatchOtherProps> = ({ me, participants }) => {
             <div className="bg-[#121212] p-6 rounded-xl border border-white/5 h-80">
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Comparison vs Opponent ({opponent?.champion.name})</h4>
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} layout="vertical" margin={{ left: 40 }}>
+                    <BarChart data={chartData} layout="vertical" margin={{ left: 40 }}>
                         <XAxis type="number" hide />
                         <YAxis dataKey="name" type="category" stroke="#888" width={60} />
                         <Tooltip

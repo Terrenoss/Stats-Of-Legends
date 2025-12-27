@@ -21,6 +21,9 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
   const QUEUE_FILTERS = ['All Ranked', 'Ranked Solo', 'Ranked Flex', 'Normal'];
   const SEASONS = ['Season 2025', 'Season 2024 Split 2', 'Season 2024 Split 1'];
 
+  const GD_TIME_MINUTES = 15;
+  const CHAMPION_ICON_SIZE = 32;
+
   // Applique les filtres de recherche + file de jeu
   const filteredChamps = champions.filter((c) => {
     if (!c.name || typeof c.name !== 'string') return false;
@@ -28,20 +31,20 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
 
     // Filtre de file : on utilise un champ facultatif queueType si présent
     // Possible valeurs attendues: 'RANKED_SOLO_5x5', 'RANKED_FLEX_SR', 'NORMAL_5x5', 'ARAM', etc.
-    const q = (c as any).queueType as string | undefined;
+    const queueType = (c as any).queueType as string | undefined;
     if (activeQueue === 'All Ranked') {
       // On garde les games classées (solo/flex) si queueType est présent
-      const isRanked = !q || q === 'RANKED_SOLO_5x5' || q === 'RANKED_FLEX_SR';
+      const isRanked = !queueType || queueType === 'RANKED_SOLO_5x5' || queueType === 'RANKED_FLEX_SR';
       return matchesSearch && isRanked;
     }
     if (activeQueue === 'Ranked Solo') {
-      return matchesSearch && (!q || q === 'RANKED_SOLO_5x5');
+      return matchesSearch && (!queueType || queueType === 'RANKED_SOLO_5x5');
     }
     if (activeQueue === 'Ranked Flex') {
-      return matchesSearch && (!q || q === 'RANKED_FLEX_SR');
+      return matchesSearch && (!queueType || queueType === 'RANKED_FLEX_SR');
     }
     if (activeQueue === 'Normal') {
-      return matchesSearch && (!q || q === 'NORMAL_5x5');
+      return matchesSearch && (!queueType || queueType === 'NORMAL_5x5');
     }
 
     return matchesSearch;
@@ -140,7 +143,7 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                 <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('kda')}>KDA <SortIcon column="kda" /></th>
                 <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('dmgPerMinute')}>DMG/M <SortIcon column="dmgPerMinute" /></th>
                 <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('csPerMinute')}>CS/M <SortIcon column="csPerMinute" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('gd15')}>GD@15 <SortIcon column="gd15" /></th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('gd15')}>GD@{GD_TIME_MINUTES} <SortIcon column="gd15" /></th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium text-gray-300 divide-y divide-white/5">
@@ -150,7 +153,7 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       {champ.name ? (
-                        <Image src={getChampionIconUrl(champ.name)} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
+                        <Image src={getChampionIconUrl(champ.name)} width={CHAMPION_ICON_SIZE} height={CHAMPION_ICON_SIZE} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
                       ) : (
                         <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}</div>
                       )}

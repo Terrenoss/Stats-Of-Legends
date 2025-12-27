@@ -13,6 +13,9 @@ const FONT_SIZE = 10;
 
 const ICON_SIZE = 48;
 
+const MARGIN_TOP = 20;
+const MARGIN_RIGHT = 30;
+
 export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankColor }) => {
     return (
         <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-8 shadow-xl animate-fadeIn">
@@ -31,7 +34,7 @@ export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankC
             <div className="h-[400px] w-full">
                 {lpHistory.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={lpHistory} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                        <LineChart data={lpHistory} margin={{ top: MARGIN_TOP, right: MARGIN_RIGHT, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorLpMain" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={rankColor} stopOpacity={0.3} />

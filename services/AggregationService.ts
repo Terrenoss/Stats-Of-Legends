@@ -139,12 +139,12 @@ export class AggregationService {
             const d = new Date(today);
             d.setDate(d.getDate() - i);
             const dateStr = d.toISOString().split('T')[0];
-            const data = heatmapData[dateStr] || { count: 0, wins: 0, losses: 0 };
+            const dayData = heatmapData[dateStr] || { count: 0, wins: 0, losses: 0 };
 
             let intensity = 0;
-            if (data.count > 0) {
-                const wr = data.wins / data.count;
-                if (data.count < 3) {
+            if (dayData.count > 0) {
+                const wr = dayData.wins / dayData.count;
+                if (dayData.count < 3) {
                     intensity = wr >= 0.5 ? 2 : 1;
                 } else {
                     if (wr < 0.4) intensity = 2;
@@ -155,9 +155,9 @@ export class AggregationService {
 
             heatmap.push({
                 date: dateStr,
-                games: data.count,
-                wins: data.wins,
-                losses: data.losses,
+                games: dayData.count,
+                wins: dayData.wins,
+                losses: dayData.losses,
                 intensity
             });
         }

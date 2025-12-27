@@ -21,6 +21,22 @@ interface RecentSearch {
   timestamp: number;
 }
 
+const RegionButton = ({ region, selectedRegion, onSelect }: { region: Region, selectedRegion: Region, onSelect: (r: Region) => void }) => {
+  const isSelected = selectedRegion === region;
+  const btnClass = isSelected
+    ? 'bg-lol-gold text-black shadow-glow-gold'
+    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white';
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(region)}
+      className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${btnClass}`}
+    >
+      {region}
+    </button>
+  );
+};
+
 export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, lang }) => {
   const [input, setInput] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<Region>('EUW');
@@ -100,39 +116,40 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, la
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInput(val);
+    setInput(e.target.value);
+  };
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  const DEBOUNCE_DELAY = 500;
 
-    if (val.length < 3) {
+  useEffect(() => {
+    if (!input || input.length < 3) {
       setSuggestions([]);
       return;
     }
 
-    timeoutRef.current = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setLoadingSuggest(true);
       try {
-        const res = await fetch(`/api/riot/search?query=${encodeURIComponent(val)}&region=${encodeURIComponent(selectedRegion)}`);
+        const res = await fetch(`/api/riot/search?query=${encodeURIComponent(input)}&region=${encodeURIComponent(selectedRegion)}`);
         if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data.suggestions || []);
+          const searchData = await res.json();
+          setSuggestions(searchData.suggestions || []);
         }
       } catch (err) {
         console.error("Search suggestion error", err);
       } finally {
         setLoadingSuggest(false);
       }
-    }, 500);
-  };
+    }, DEBOUNCE_DELAY);
+
+    return () => clearTimeout(timer);
+  }, [input, selectedRegion]);
 
   const handleSuggestionClick = (s: { gameName: string; tagLine: string }) => {
     addToRecent(s.gameName, s.tagLine, selectedRegion);
 
-    const q = `${s.gameName}#${s.tagLine}`;
-    setInput(q);
+    const query = `${s.gameName}#${s.tagLine}`;
+    setInput(query);
     setSuggestions([]);
 
     const fullQuery = `${s.gameName}-${s.tagLine}`;
@@ -281,18 +298,4 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, la
   );
 };
 
-const RegionButton = ({ region, selectedRegion, onSelect }: { region: Region, selectedRegion: Region, onSelect: (r: Region) => void }) => {
-  const isSelected = selectedRegion === region;
-  const btnClass = isSelected
-    ? 'bg-lol-gold text-black shadow-glow-gold'
-    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white';
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(region)}
-      className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${btnClass}`}
-    >
-      {region}
-    </button>
-  );
-};
+

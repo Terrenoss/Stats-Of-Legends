@@ -29,8 +29,8 @@ export const fetchWithBackoff = async (
             const res = await fetch(url, options);
 
             if (res.status === 429) {
-                const data = await res.json().catch(() => ({}));
-                await handleRateLimit(data.retryAfter || 5000, scanningRef, addLog);
+                const retryData = await res.json().catch(() => ({}));
+                await handleRateLimit(retryData.retryAfter || 5000, scanningRef, addLog);
                 continue;
             }
 

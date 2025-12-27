@@ -42,8 +42,8 @@ export function useTierListData() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const result = await TierListService.getTierList(selectedRole, selectedRank);
-            setData(result);
+            const tierListResult = await TierListService.getTierList(selectedRole, selectedRank);
+            setData(tierListResult);
         } catch (error) {
             console.error("Failed to load tier list", error);
         } finally {

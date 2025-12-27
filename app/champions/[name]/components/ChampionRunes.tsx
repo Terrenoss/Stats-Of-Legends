@@ -79,9 +79,10 @@ interface RuneTreeProps {
 }
 
 const RUNE_ICON_SIZE_PRIMARY = 40;
-const RUNE_ICON_SIZE_SECONDARY = 40;
 const RUNE_ICON_SIZE_LARGE = 56;
 const RUNE_ICON_SIZE_SMALL = 48;
+const SHARD_CONTAINER_SIZE = 12;
+const SHARD_IMAGE_SIZE = 48;
 
 const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     if (!tree) return null;
@@ -169,8 +170,8 @@ const ShardSection = ({ page }: { page: RunePage }) => (
                         const inactiveClass = 'border-transparent opacity-20 grayscale bg-[#222]';
 
                         return (
-                            <div key={shardId} className={`relative w-12 h-12 rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
-                                {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={48} height={48} className="w-full h-full p-1" />}
+                            <div key={shardId} className={`relative w-${SHARD_CONTAINER_SIZE} h-${SHARD_CONTAINER_SIZE} rounded-full border-2 transition-all ${active ? activeClass : inactiveClass}`}>
+                                {iconUrl && <Image src={iconUrl} alt={`Shard ${shardId}`} width={SHARD_IMAGE_SIZE} height={SHARD_IMAGE_SIZE} className="w-full h-full p-1" />}
                             </div>
                         );
                     })}
