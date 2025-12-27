@@ -14,8 +14,8 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Failed to fetch runes' }, { status: response.status });
         }
 
-        const data = await response.json();
-        return NextResponse.json({ data, patch });
+        const runesList = await response.json();
+        return NextResponse.json(runesList);
     } catch (error) {
         console.error('Error fetching runes:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

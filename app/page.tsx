@@ -1,11 +1,13 @@
 "use client";
 
 import { SearchHero } from "../components/SearchHero";
-import { useI18n } from "./LanguageContext";
+import { useLanguage } from "./LanguageContext";
+import { TRANSLATIONS } from "../constants";
 import { SafeLink } from "../components/ui/SafeLink";
 
 export default function Home() {
-  const { t } = useI18n();
+  const { lang } = useLanguage();
+  const t = TRANSLATIONS[lang];
 
   return (
     <div className="animate-fadeIn">

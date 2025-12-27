@@ -4,11 +4,11 @@ import { CURRENT_PATCH } from '@/constants';
 const DATA_BASE = process.env.DATA_BASE || '';
 
 export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url);
-    let patch = url.searchParams.get('patch') || 'latest';
-    const locale = url.searchParams.get('locale') || 'en_US';
+  const { searchParams } = new URL(req.url);
+  let patch = searchParams.get('patch') || 'latest';
+  const locale = searchParams.get('locale') || 'en_US';
 
+  try {
     if (patch === 'latest') {
       patch = CURRENT_PATCH;
     }
@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
     if (!response.ok) return NextResponse.json({ error: 'Failed to fetch items from CDN' }, { status: 500 });
     const json = await response.json();
 
-    const data = mapItemsData(json.data);
-    return NextResponse.json({ patch, data });
+    const itemsMap = mapItemsData(json.data);
+    return NextResponse.json({ patch, data: itemsMap });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }

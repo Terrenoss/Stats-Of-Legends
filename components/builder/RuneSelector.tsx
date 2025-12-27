@@ -49,7 +49,7 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
                 if (res.ok) {
                     const json = await res.json();
 
-                    const cleanData = cleanRuneData(json.data);
+                    const cleanData = cleanRuneData(json);
 
                     setStyles(cleanData);
                 } else {

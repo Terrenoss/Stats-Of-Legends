@@ -25,7 +25,7 @@ export class AIAnalysisService {
         }
     }
 
-    private static extractTextFromResponse(response: any): { text: string; truncated: boolean } {
+    public static extractTextFromResponse(response: any): { text: string; truncated: boolean } {
         if (!response) return { text: '', truncated: false };
 
         const extractFromContent = (content: any): string | null => {
@@ -143,5 +143,35 @@ export class AIAnalysisService {
             console.error("Gemini Error:", error);
             return { result: '', error: "Erreur IA : impossible de contacter le service externe." };
         }
+    }
+}
+
+export async function analyzeBuild(champion: any, items: any[], stats: any): Promise<string> {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY || '';
+    if (!apiKey) return "Clé API manquante.";
+
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `
+    You are an expert League of Legends coach.
+    Analyze this build for ${champion.name}:
+    Items: ${items.map(i => i.name).join(', ')}
+    Stats: HP ${stats.hp}, AD ${stats.ad}, AP ${stats.ap}, Armor ${stats.armor}, MR ${stats.mr}
+
+    Is this a good build? What are the strengths and weaknesses?
+    Keep it concise (under 100 words).
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: MODEL,
+            contents: prompt,
+            config: { temperature: 0.2, maxOutputTokens: 500 }
+        });
+
+        const extracted = AIAnalysisService.extractTextFromResponse(response);
+        return extracted.text || "No analysis generated.";
+    } catch (error) {
+        console.error("Build Analysis Error:", error);
+        return "Error generating analysis.";
     }
 }

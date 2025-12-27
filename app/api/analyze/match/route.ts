@@ -4,12 +4,12 @@ import { AIAnalysisService } from '@/services/AIAnalysisService';
 import { HTTP_BAD_GATEWAY } from '@/constants/api';
 
 const getApiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY || '';
-const ANALYSIS_VERSION = "1.0";
+const ANALYSIS_VERSION = '1.0';
 
 export async function POST(request: Request) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    return NextResponse.json({ error: "Clé API manquante. Définissez GEMINI_API_KEY ou GOOGLE_API_KEY." }, { status: 500 });
+    return NextResponse.json({ error: 'Clé API manquante. Définissez GEMINI_API_KEY ou GOOGLE_API_KEY.' }, { status: 500 });
   }
 
   try {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const { match } = body;
 
     if (!match || !match.id) {
-      return NextResponse.json({ error: "Données de match invalides." }, { status: 400 });
+      return NextResponse.json({ error: 'Données de match invalides.' }, { status: 400 });
     }
 
     // 1. Check Cache
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(finalResult);
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return NextResponse.json({ error: "Erreur IA : impossible de contacter le service externe. Vérifiez votre clé et la configuration." }, { status: HTTP_BAD_GATEWAY });
+    console.error('Gemini Error:', error);
+    return NextResponse.json({ error: 'Erreur IA : impossible de contacter le service externe. Vérifiez votre clé et la configuration.' }, { status: HTTP_BAD_GATEWAY });
   }
 }

@@ -14,20 +14,20 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await SpectatorService.getActiveGame(gameName, tagLine, region);
+    const activeGame = await SpectatorService.getActiveGame(gameName, tagLine, region);
 
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: result.status || 500 });
+    if (activeGame.error) {
+      return NextResponse.json({ error: activeGame.error }, { status: activeGame.status || 500 });
     }
 
-    if (result.noActiveGame) {
+    if (!activeGame) {
       return NextResponse.json({ noActiveGame: true });
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(activeGame);
 
-  } catch (e) {
-    console.error('[Spectator API Error]', e);
+  } catch (error) {
+    console.error('[Spectator API Error]', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

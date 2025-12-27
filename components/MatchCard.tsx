@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Match, GameMode, Participant } from '../types';
 import { ChevronDown } from 'lucide-react';
-import { useI18n } from "../app/LanguageContext";
+import { useLanguage } from "../app/LanguageContext";
+import { TRANSLATIONS } from '../constants';
 import { MatchSummary } from './match/tabs/MatchSummary';
 import { MatchScore } from './match/tabs/MatchScore';
 import { MatchTeamAnalysis } from './match/tabs/MatchTeamAnalysis';
@@ -43,7 +44,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const [ranks, setRanks] = useState<Record<string, any>>({});
   const [ranksLoaded, setRanksLoaded] = useState(false);
 
-  const { t, lang } = useI18n();
+  const { lang } = useLanguage();
+  const t = TRANSLATIONS[lang];
 
   const getQueueLabel = () => {
     if (match.queueId === 420) return t.rankSolo;

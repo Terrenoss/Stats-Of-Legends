@@ -3,22 +3,20 @@ import { ChampionDetailService } from '@/services/ChampionDetailService';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request, props: any) {
+export async function GET(request: Request, props: { params: Promise<{ name: string }> }) {
     try {
         const params = await props.params;
         const { searchParams } = new URL(request.url);
-        const role = searchParams.get('role') || 'MID';
-        const rank = searchParams.get('rank') || 'CHALLENGER';
-        const championName = params.name;
+        const role = searchParams.get('role') || 'ALL';
+        const rank = searchParams.get('rank') || 'ALL';
 
-        const data = await ChampionDetailService.getChampionDetails(championName, role, rank);
+        const data = await ChampionDetailService.getChampionDetails(params.name, role, rank);
 
         if (!data) {
-            return NextResponse.json({ error: 'No data found' }, { status: 404 });
+            return NextResponse.json({ error: 'Champion not found' }, { status: 404 });
         }
 
         return NextResponse.json(data);
-
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

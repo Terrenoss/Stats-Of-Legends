@@ -41,9 +41,12 @@ export async function GET(req: NextRequest) {
     const routing = REGION_ROUTING[region];
 
     const accountUrl = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
+    const REVALIDATE_TIME = 30;
+    const BAD_GATEWAY_STATUS = 502;
+
     const resAcc = await fetch(accountUrl, {
       headers: { 'X-Riot-Token': RIOT_KEY },
-      next: { revalidate: 30 },
+      next: { revalidate: REVALIDATE_TIME },
     });
 
     if (resAcc.status === 403) {
@@ -53,7 +56,7 @@ export async function GET(req: NextRequest) {
           reason: 'Riot API returned 403 Forbidden while searching this account. Vérifie ta clé et tes autorisations.',
           suggestions: [],
         },
-        { status: 502 },
+        { status: BAD_GATEWAY_STATUS },
       );
     }
 

@@ -9,9 +9,9 @@ export async function GET(request: Request) {
         const role = searchParams.get('role');
         const rank = searchParams.get('rank') || 'CHALLENGER';
 
-        const data = await TierListGenerationService.getTierList(role, rank);
+        const tierList = await TierListGenerationService.getTierList(role, rank);
 
-        return NextResponse.json(data);
+        return NextResponse.json(tierList);
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

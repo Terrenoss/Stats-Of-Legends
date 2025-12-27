@@ -142,7 +142,16 @@ const participantEquals = (a?: Participant | null, b?: Participant | null) => {
     return false;
 };
 
-export const TeamSection = ({ teamName, isWin, participants, bestWinningByGold, bestLosingByOp, context }: any) => {
+interface TeamSectionProps {
+    teamName: string;
+    isWin: boolean;
+    participants: any[];
+    bestWinningByGold?: any;
+    bestLosingByOp?: any;
+    context: any;
+}
+
+export const TeamSection = ({ teamName, isWin, participants, bestWinningByGold, bestLosingByOp, context }: TeamSectionProps) => {
     return (
         <div className="flex flex-col gap-1">
             <div className={`text-xs font-bold px-2 mb-2 flex justify-between items-center ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>

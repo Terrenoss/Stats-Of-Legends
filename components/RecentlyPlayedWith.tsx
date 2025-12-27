@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Teammate, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getProfileIconUrl } from '../utils/ddragon';
-import { useI18n } from '../app/LanguageContext';
+import { useLanguage } from '../app/LanguageContext';
 import Link from 'next/link';
 
 interface RecentlyPlayedWithProps {
@@ -14,8 +14,8 @@ interface RecentlyPlayedWithProps {
 }
 
 export const RecentlyPlayedWith: React.FC<RecentlyPlayedWithProps> = ({ teammates, lang }) => {
-  const { t } = useI18n();
-  const translations = lang ? (TRANSLATIONS as any)[lang] : t;
+  const { lang: ctxLang } = useLanguage();
+  const translations = lang ? TRANSLATIONS[lang] : TRANSLATIONS[ctxLang];
 
   return (
     <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-5 shadow-xl">

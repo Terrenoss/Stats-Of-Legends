@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PLATFORM_MAP, REGION_ROUTING } from '../../../services/RiotService';
+import { PLATFORM_MAP } from '../../../services/RiotService';
 import { SummonerService } from '../../../services/SummonerService';
 import { MatchHistoryService } from '../../../services/MatchHistoryService';
 import { AggregationService } from '../../../services/AggregationService';
@@ -10,9 +10,11 @@ function isValidRegion(region: string): region is keyof typeof PLATFORM_MAP {
   return Object.prototype.hasOwnProperty.call(PLATFORM_MAP, region);
 }
 
+const MAX_NAME_LENGTH = 16;
+
 function isValidNamePart(value: string): boolean {
   if (!value) return false;
-  if (value.length > 16) return false;
+  if (value.length > MAX_NAME_LENGTH) return false;
   return /^[A-Za-z0-9 _.-]+$/.test(value);
 }
 

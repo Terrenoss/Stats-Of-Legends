@@ -1,20 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Item, Champion, Stats, DummyStats, Language, SelectedRunes } from '../../types';
-import { DEFAULT_DUMMY, TRANSLATIONS } from '../../constants';
-import { analyzeBuild } from '../../services/geminiService';
-import { useHistory } from '../../hooks/useHistory';
-import { ItemCatalog } from '../../components/builder/ItemCatalog';
-import { BuilderGrid } from '../../components/builder/BuilderGrid';
-import { BuilderStats } from '../../components/builder/BuilderStats';
-import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl } from '../../utils/ddragon';
-import { useBuilderData } from '../../hooks/useBuilderData';
-import { useStatsCalculation } from '../../hooks/useStatsCalculation';
+import { useBuilderData } from '@/hooks/useBuilderData';
+import { useStatsCalculation } from '@/hooks/useStatsCalculation';
+import { useHistory } from '@/hooks/useHistory';
+import { useLanguage } from '@/app/LanguageContext';
+import { TRANSLATIONS } from '@/constants';
+import { Item, Champion, DummyStats, SelectedRunes } from '@/types';
+import { ItemCatalog } from '@/components/builder/ItemCatalog';
+import { BuilderGrid } from '@/components/builder/BuilderGrid';
+import { BuilderStats } from '@/components/builder/BuilderStats';
+import { analyzeBuild } from '@/services/AIAnalysisService';
+
+const DEFAULT_DUMMY: DummyStats = {
+  hp: 1000,
+  armor: 0,
+  mr: 0
+};
 
 export default function BuilderPage() {
-  const [currentLang] = useState<Language>('FR');
-  const t = TRANSLATIONS[currentLang];
+  const { lang } = useLanguage();
+  const t = TRANSLATIONS[lang];
 
   const {
     state: selectedItems,

@@ -3,7 +3,8 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Match, Language } from '../types';
-import { useI18n } from '../app/LanguageContext';
+import { useLanguage } from '../app/LanguageContext';
+import { TRANSLATIONS } from '../constants';
 
 interface WinrateSummaryProps {
     matches: Match[];
@@ -12,8 +13,8 @@ interface WinrateSummaryProps {
 }
 
 export const WinrateSummary: React.FC<WinrateSummaryProps> = ({ matches, lang, title }) => {
-    const { t } = useI18n();
-    const translations = lang ? (require('../constants').TRANSLATIONS as any)[lang] : t;
+    const { lang: ctxLang } = useLanguage();
+    const translations = lang ? TRANSLATIONS[lang] : TRANSLATIONS[ctxLang];
 
     const recentMatches = matches;
     const wins = recentMatches.filter(m => m.me.win).length;

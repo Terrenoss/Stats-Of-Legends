@@ -7,8 +7,8 @@ export async function GET(req: NextRequest) {
     const patch = url.searchParams.get('patch') || 'latest';
     const locale = url.searchParams.get('locale') || 'en_US';
 
-    const data = await DataDragonService.getChampions(patch, locale);
-    return NextResponse.json(data);
+    const championsList = await DataDragonService.getChampions(patch, 'fr_FR');
+    return NextResponse.json(championsList);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
   }
