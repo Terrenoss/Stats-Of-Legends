@@ -5,6 +5,8 @@ import { Shield, Play, Square, Trash2, Activity, Database } from 'lucide-react';
 import { CURRENT_PATCH } from '@/constants';
 import { useAdminScanner } from '@/hooks/useAdminScanner';
 
+const DEFAULT_RATE_LIMIT = 20;
+
 const LoginScreen = ({ secretKey, setSecretKey, handleLogin }: any) => (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <div className="bg-[#121212] p-8 rounded-2xl border border-white/10 w-full max-w-md space-y-6">
@@ -199,7 +201,7 @@ export default function AdminDashboard() {
     const [selectedTier, setSelectedTier] = useState('CHALLENGER');
     const [selectedDivision, setSelectedDivision] = useState('I');
     const [selectedRegion, setSelectedRegion] = useState('euw1');
-    const [rateLimit, setRateLimit] = useState(20);
+    const [rateLimit, setRateLimit] = useState(DEFAULT_RATE_LIMIT);
     const [currentPatch, setCurrentPatch] = useState('');
 
     const tiers = ['CHALLENGER', 'GRANDMASTER', 'MASTER', 'DIAMOND', 'EMERALD', 'PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'IRON'];
@@ -224,19 +226,19 @@ export default function AdminDashboard() {
         if (!secretKey) return;
 
         try {
-            const res = await fetch('/api/admin/verify', {
+            const verifyResponse = await fetch('/api/admin/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key: secretKey })
             });
 
-            if (res.ok) {
+            if (verifyResponse.ok) {
                 setIsAuthenticated(true);
             } else {
-                alert("Invalid Admin Key");
+                alert('Invalid Admin Key');
             }
         } catch (e) {
-            alert("Auth Error");
+            alert('Auth Error');
         }
     };
 

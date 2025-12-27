@@ -1,0 +1,9 @@
+{
+    "ignore": [
+      ".idea",
+      "**/*.md"
+    ],
+    "rules": {
+      "disable": ["commented-code", "no-nested-ternary"]
+    }
+  }

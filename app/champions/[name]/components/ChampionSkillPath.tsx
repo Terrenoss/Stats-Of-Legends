@@ -32,11 +32,13 @@ const SkillPriority = ({ skillOrders }: { skillOrders: any[] }) => {
     );
 };
 
+const MAX_LEVEL = 18;
+
 const SkillRow = ({ skill, topSkillPath, getSkillColor }: { skill: string, topSkillPath: string[], getSkillColor: (s: string) => string }) => (
     <div className="flex items-center mb-1 w-full">
         <div className="w-8 font-bold text-gray-400 text-sm flex-shrink-0">{skill}</div>
         <div className="flex flex-1">
-            {Array.from({ length: 18 }).map((_, i) => {
+            {Array.from({ length: MAX_LEVEL }).map((_, i) => {
                 const active = topSkillPath[i] === skill;
                 return (
                     <div key={i} className="flex-1 h-8 flex items-center justify-center border border-white/5 bg-[#1a1a1a]">
@@ -69,7 +71,7 @@ const SkillPathGrid = ({ topSkillPath }: { topSkillPath: string[] }) => {
     return (
         <div className="w-full">
             <div className="flex mb-2 ml-8">
-                {Array.from({ length: 18 }).map((_, i) => (
+                {Array.from({ length: MAX_LEVEL }).map((_, i) => (
                     <div key={i} className="flex-1 text-center text-[10px] text-gray-500 font-mono">{i + 1}</div>
                 ))}
             </div>
