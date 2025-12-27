@@ -94,6 +94,14 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
   const getChampImg = (id: number) =>
     getChampionIconUrl(gameData.championsById?.[id] || 'Aatrox', gameData.version);
 
+  const CHAMPION_ICON_SIZE = 32;
+
+  interface BannedChampion {
+    championId: number;
+    teamId: number;
+    pickTurn: number;
+  }
+
   return (
     <div className="animate-fadeIn">
       <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-6 mb-8 flex items-center justify-between shadow-xl relative overflow-hidden">
@@ -120,16 +128,16 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
             <span className="text-[10px] text-blue-400 uppercase font-bold mb-1">{t.blueTeam} Bans</span>
             <div className="flex gap-1">
               {gameData.bannedChampions
-                .filter((ban: any) => ban.teamId === 100)
-                .map((ban: any, i: number) => (
+                .filter((ban: BannedChampion) => ban.teamId === 100)
+                .map((ban: BannedChampion, i: number) => (
                   <div
                     key={i}
                     className="w-8 h-8 rounded border border-blue-500/30 bg-black/50 grayscale opacity-70"
                   >
                     <Image
                       src={getChampImg(ban.championId)}
-                      width={32}
-                      height={32}
+                      width={CHAMPION_ICON_SIZE}
+                      height={CHAMPION_ICON_SIZE}
                       className="w-full h-full object-cover opacity-60"
                       alt="Ban"
                     />
@@ -141,16 +149,16 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
             <span className="text-[10px] text-red-400 uppercase font-bold mb-1">{t.redTeam} Bans</span>
             <div className="flex gap-1">
               {gameData.bannedChampions
-                .filter((ban: any) => ban.teamId === 200)
-                .map((ban: any, i: number) => (
+                .filter((ban: BannedChampion) => ban.teamId === 200)
+                .map((ban: BannedChampion, i: number) => (
                   <div
                     key={i}
                     className="w-8 h-8 rounded border border-red-500/30 bg-black/50 grayscale opacity-70"
                   >
                     <Image
                       src={getChampImg(ban.championId)}
-                      width={32}
-                      height={32}
+                      width={CHAMPION_ICON_SIZE}
+                      height={CHAMPION_ICON_SIZE}
                       className="w-full h-full object-cover opacity-60"
                       alt="Ban"
                     />

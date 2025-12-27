@@ -54,7 +54,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
   const champName = me.champion?.name || 'Unknown';
   const spells = Array.isArray(me?.spells) ? me.spells : [];
 
-  const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-300 group
+  const ANIMATION_DURATION = 300;
+  const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-${ANIMATION_DURATION} group
     ${isWin
       ? 'border-lol-win/20 bg-[#0a120f] hover:bg-[#0f1a15]'
       : 'border-red-900/20 bg-gradient-to-r from-[#1a0505] to-[#0f0505] hover:to-[#2a0a0a]'
@@ -119,7 +120,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         <div className="flex-grow flex justify-end">
           <button
             onClick={() => toggleTab(activeTab === 'NONE' ? 'SUMMARY' : 'NONE')}
-            className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-300 ${activeTab !== 'NONE' ? 'bg-white/10 rotate-180 border-white/30 text-white' : 'text-gray-500'}`}
+            className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-${ANIMATION_DURATION} ${activeTab !== 'NONE' ? 'bg-white/10 rotate-180 border-white/30 text-white' : 'text-gray-500'}`}
           >
             <ChevronDown className="w-4 h-4" />
           </button>

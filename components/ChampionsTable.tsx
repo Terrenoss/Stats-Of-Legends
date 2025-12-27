@@ -10,7 +10,10 @@ interface ChampionsTableProps {
 }
 
 export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang }) => {
-  const [sortConfig, setSortConfig] = useState<{ key: keyof DetailedChampionStats; direction: 'asc' | 'desc' }>({ key: 'games', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{ key: keyof DetailedChampionStats; direction: 'asc' | 'desc' }>({
+    key: 'games',
+    direction: 'desc'
+  });
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter States

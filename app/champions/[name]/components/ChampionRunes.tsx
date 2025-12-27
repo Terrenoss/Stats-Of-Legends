@@ -127,8 +127,9 @@ interface RuneRowProps {
 
 const RuneRow = ({ slot, page, isPrimary, activeColor }: RuneRowProps) => {
     const getRuneIconClass = (active: boolean) => {
+        const SCALE_ACTIVE = 'scale-110';
         const sizeClass = isPrimary ? 'w-14 h-14' : 'w-12 h-12';
-        const stateClass = active ? `${activeColor} opacity-100 scale-110` : 'border-transparent opacity-30 grayscale hover:opacity-60';
+        const stateClass = active ? `${activeColor} opacity-100 ${SCALE_ACTIVE}` : 'border-transparent opacity-30 grayscale hover:opacity-60';
         return `${sizeClass} rounded-full border-2 transition-all ${stateClass}`;
     };
 

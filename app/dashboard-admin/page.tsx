@@ -19,7 +19,8 @@ const LoginScreen = ({ secretKey, setSecretKey, handleLogin }: any) => (
                 value={secretKey}
                 onChange={(e) => setSecretKey(e.target.value)}
                 placeholder="Enter Admin Key"
-                className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
+                className={`w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 
+                    text-white focus:border-lol-gold outline-none`}
             />
             <button
                 onClick={handleLogin}

@@ -77,14 +77,17 @@ export const LegendScoreRadar: React.FC<LegendScoreRadarProps> = ({ playerStats,
         radarData[5][key] = (comp.stats && comp.stats.aggressiveness !== undefined) ? comp.stats.aggressiveness : 0;
     });
 
+    const FONT_SIZE_TICK = 12;
+    const TICK_PADDING = 30;
+
     return (
         <div className="w-full h-[300px] bg-gray-900/50 rounded-xl border border-gray-800 p-4">
             <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Performance Breakdown</h3>
             <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                     <PolarGrid stroke="#374151" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: FONT_SIZE_TICK }} />
+                    <PolarRadiusAxis angle={TICK_PADDING} domain={[0, 100]} tick={false} axisLine={false} />
 
                     {/* Player (You) */}
                     <Radar
