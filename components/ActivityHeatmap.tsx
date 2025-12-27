@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { HeatmapDay, Language } from '../types';
-import { useLanguage } from "../app/LanguageContext";
-import { TRANSLATIONS } from "../constants";
+import { useLanguage } from '../app/LanguageContext';
+import { TRANSLATIONS } from '../constants';
 
 interface ActivityHeatmapProps {
   data: HeatmapDay[];
