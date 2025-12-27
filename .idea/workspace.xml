@@ -6,24 +6,18 @@
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionSkillPath.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionSkillPath.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/dashboard-admin/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/dashboard-admin/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/OverviewTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/OverviewTab.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/ProgressionTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/ProgressionTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ActivityHeatmap.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ActivityHeatmap.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Builder.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Builder.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/ChampionsTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ChampionsTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Footer.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/LiveGame.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LiveGame.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/PerformanceRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/PerformanceRadar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/SearchHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/SearchHero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/builder/BuilderGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/BuilderGrid.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hooks/useAdminScanner.ts" beforeDir="false" afterPath="$PROJECT_DIR$/hooks/useAdminScanner.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hooks/useMatchCard.ts" beforeDir="false" afterPath="$PROJECT_DIR$/hooks/useMatchCard.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hooks/useTierListData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/hooks/useTierListData.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/AggregationService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/AggregationService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MatchHistoryService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/MatchHistoryService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/scannerUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/utils/scannerUtils.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

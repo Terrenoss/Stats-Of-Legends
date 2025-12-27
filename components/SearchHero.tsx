@@ -7,6 +7,7 @@ import { REGIONS, CURRENT_SEASON_INFO, TRANSLATIONS } from '../constants';
 import { useSafeNavigation } from '../hooks/useSafeNavigation';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useLanguage } from "../app/LanguageContext";
+import { RegionButton } from './search/RegionButton';
 
 interface SearchHeroProps {
   onSearch?: (query: string, region: Region) => void;
@@ -21,21 +22,7 @@ interface RecentSearch {
   timestamp: number;
 }
 
-const RegionButton = ({ region, selectedRegion, onSelect }: { region: Region, selectedRegion: Region, onSelect: (r: Region) => void }) => {
-  const isSelected = selectedRegion === region;
-  const btnClass = isSelected
-    ? 'bg-lol-gold text-black shadow-glow-gold'
-    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white';
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(region)}
-      className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${btnClass}`}
-    >
-      {region}
-    </button>
-  );
-};
+
 
 export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, lang }) => {
   const [input, setInput] = useState('');
@@ -130,9 +117,9 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, la
     const timer = setTimeout(async () => {
       setLoadingSuggest(true);
       try {
-        const res = await fetch(`/api/riot/search?query=${encodeURIComponent(input)}&region=${encodeURIComponent(selectedRegion)}`);
-        if (res.ok) {
-          const searchData = await res.json();
+        const apiResponse = await fetch(`/api/riot/search?query=${encodeURIComponent(input)}&region=${encodeURIComponent(selectedRegion)}`);
+        if (apiResponse.ok) {
+          const searchData = await apiResponse.json();
           setSuggestions(searchData.suggestions || []);
         }
       } catch (err) {

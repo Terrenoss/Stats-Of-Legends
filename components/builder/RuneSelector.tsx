@@ -45,15 +45,15 @@ export const RuneSelector: React.FC<RuneSelectorProps> = ({ selectedRunes, onCha
     useEffect(() => {
         async function loadRunes() {
             try {
-                const res = await fetch(`/api/dd/runes?locale=${lang}`);
-                if (res.ok) {
-                    const json = await res.json();
+                const apiResponse = await fetch(`/api/dd/runes?locale=${lang}`);
+                if (apiResponse.ok) {
+                    const json = await apiResponse.json();
 
                     const cleanData = cleanRuneData(json);
 
                     setStyles(cleanData);
                 } else {
-                    console.error("Failed to fetch runes:", res.status);
+                    console.error("Failed to fetch runes:", apiResponse.status);
                 }
             } catch (e) {
                 console.error("Failed to load runes", e);

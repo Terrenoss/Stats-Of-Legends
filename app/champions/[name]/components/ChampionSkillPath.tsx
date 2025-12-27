@@ -12,7 +12,7 @@ const SkillPriority = ({ skillOrders }: { skillOrders: any[] }) => {
 
     const path = skillOrders[0].path.split('-');
     const counts = { Q: 0, W: 0, E: 0 };
-    path.slice(0, 9).forEach((k: string) => { if (['Q', 'W', 'E'].includes(k)) counts[k as keyof typeof counts]++ });
+    path.slice(0, 9).forEach((k: string) => { if (['Q', 'W', 'E'].includes(k)) counts[k as keyof typeof counts]++; });
     const priority = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(e => e[0]);
 
     return (

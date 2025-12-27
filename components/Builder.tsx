@@ -13,8 +13,6 @@ interface BuilderProps {
   lang?: Language;
 }
 
-
-
 import { BuilderItemSlot } from './builder/BuilderItemSlot';
 
 import { useBuilderData } from '../hooks/useBuilderData';
@@ -138,10 +136,6 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
       return { ...prev, [spellKey]: next };
     });
   };
-
-
-
-
 
   const handleItemClick = (item: Item) => {
     const emptyIdx = selectedItems.findIndex((i) => i === null);
@@ -268,5 +262,3 @@ export const Builder: React.FC<BuilderProps> = ({ lang = 'FR' }) => {
     </div>
   );
 };
-
-

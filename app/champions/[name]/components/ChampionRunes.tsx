@@ -83,6 +83,7 @@ const RUNE_ICON_SIZE_LARGE = 56;
 const RUNE_ICON_SIZE_SMALL = 48;
 const SHARD_CONTAINER_SIZE = 12;
 const SHARD_IMAGE_SIZE = 48;
+const RUNE_ICON_SIZE_TINY = 20;
 
 const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     if (!tree) return null;
@@ -210,8 +211,8 @@ export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role
                 <div className="flex items-center gap-4">
                     <h3 className="text-lg font-bold text-white">Recommended</h3>
                     <div className="flex gap-1">
-                        <Image src={getRuneIcon(page.primaryStyle)} alt="Primary Style" width={20} height={20} className="w-5 h-5" />
-                        <Image src={getRuneIcon(page.subStyle)} alt="Sub Style" width={20} height={20} className="w-5 h-5" />
+                        <Image src={getRuneIcon(page.primaryStyle)} alt="Primary Style" width={RUNE_ICON_SIZE_TINY} height={RUNE_ICON_SIZE_TINY} className="w-5 h-5" />
+                        <Image src={getRuneIcon(page.subStyle)} alt="Sub Style" width={RUNE_ICON_SIZE_TINY} height={RUNE_ICON_SIZE_TINY} className="w-5 h-5" />
                     </div>
                 </div>
             </div>

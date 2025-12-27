@@ -127,7 +127,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 const FilterButton = ({ label, active, onClick }: any) => (
     <button
         onClick={onClick}
-        className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${active ? 'bg-lol-gold text-black border-lol-gold' : 'bg-[#121212] text-gray-500 border-white/10 hover:border-gray-500'
+        className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${active
+                ? 'bg-lol-gold text-black border-lol-gold'
+                : 'bg-[#121212] text-gray-500 border-white/10 hover:border-gray-500'
             }`}
     >
         {label}

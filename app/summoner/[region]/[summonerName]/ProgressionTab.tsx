@@ -25,8 +25,14 @@ export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankC
                     <p className="text-sm text-gray-500">Historique de vos gains et pertes de LP en Ranked Solo/Duo.</p>
                 </div>
                 {lpHistory.length > 1 && (
-                    <div className={`px-4 py-2 rounded-xl border ${lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                        <span className="text-lg font-black">{lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0 ? '+' : ''}{lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp} LP</span>
+                    <div className={`px-4 py-2 rounded-xl border ${lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0
+                            ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                            : 'bg-red-500/10 border-red-500/20 text-red-400'
+                        }`}>
+                        <span className="text-lg font-black">
+                            {lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp >= 0 ? '+' : ''}
+                            {lpHistory[lpHistory.length - 1].lp - lpHistory[0].lp} LP
+                        </span>
                     </div>
                 )}
             </div>

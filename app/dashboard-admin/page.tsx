@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { Shield, Play, Square, Trash2, Activity, Database } from 'lucide-react';
@@ -206,7 +206,10 @@ export default function AdminDashboard() {
 
     const tiers = ['CHALLENGER', 'GRANDMASTER', 'MASTER', 'DIAMOND', 'EMERALD', 'PLATINUM', 'GOLD', 'SILVER', 'BRONZE', 'IRON'];
     const divisions = ['I', 'II', 'III', 'IV'];
-    const regions = ['euw1', 'na1', 'kr', 'eun1', 'br1', 'la1', 'la2', 'oc1', 'ru', 'tr1', 'jp1', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
+    const regions = [
+        'euw1', 'na1', 'kr', 'eun1', 'br1', 'la1', 'la2', 'oc1',
+        'ru', 'tr1', 'jp1', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'
+    ];
 
     useEffect(() => {
         // Use fixed patch version

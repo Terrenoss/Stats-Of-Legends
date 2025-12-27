@@ -137,13 +137,27 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
             <thead>
               <tr className="text-[10px] uppercase text-gray-500 font-bold border-b border-white/5 bg-[#18181b]">
                 <th className="p-4 text-center w-10">#</th>
-                <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('name')}>Champion <SortIcon column="name" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('games')}>Games <SortIcon column="games" /></th>
-                <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('wins')}>Win/Lose (WR) <SortIcon column="wins" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('kda')}>KDA <SortIcon column="kda" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('dmgPerMinute')}>DMG/M <SortIcon column="dmgPerMinute" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('csPerMinute')}>CS/M <SortIcon column="csPerMinute" /></th>
-                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('gd15')}>GD@{GD_TIME_MINUTES} <SortIcon column="gd15" /></th>
+                <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('name')}>
+                  Champion <SortIcon column="name" />
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('games')}>
+                  Games <SortIcon column="games" />
+                </th>
+                <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('wins')}>
+                  Win/Lose (WR) <SortIcon column="wins" />
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('kda')}>
+                  KDA <SortIcon column="kda" />
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('dmgPerMinute')}>
+                  DMG/M <SortIcon column="dmgPerMinute" />
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('csPerMinute')}>
+                  CS/M <SortIcon column="csPerMinute" />
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleSort('gd15')}>
+                  GD@{GD_TIME_MINUTES} <SortIcon column="gd15" />
+                </th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium text-gray-300 divide-y divide-white/5">
@@ -153,9 +167,17 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       {champ.name ? (
-                        <Image src={getChampionIconUrl(champ.name)} width={CHAMPION_ICON_SIZE} height={CHAMPION_ICON_SIZE} className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold" alt={champ.name} />
+                        <Image
+                          src={getChampionIconUrl(champ.name)}
+                          width={CHAMPION_ICON_SIZE}
+                          height={CHAMPION_ICON_SIZE}
+                          className="w-8 h-8 rounded-lg border border-gray-700 group-hover:border-lol-gold"
+                          alt={champ.name}
+                        />
                       ) : (
-                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}</div>
+                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
+                          {(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}
+                        </div>
                       )}
                       <span className="font-bold text-white group-hover:text-lol-gold transition-colors">{champ.name}</span>
                     </div>

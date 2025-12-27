@@ -33,10 +33,10 @@ export const LiveGame: React.FC<LiveGameProps> = ({ summonerName, tag, region })
       setError(null);
       try {
         // Add timestamp to prevent caching
-        const res = await fetch(`/api/spectator?name=${encodeURIComponent(summonerName)}&tag=${encodeURIComponent(tag)}&region=${region}&t=${Date.now()}`);
-        const liveGameData = await res.json();
+        const spectatorResponse = await fetch(`/api/spectator?name=${encodeURIComponent(summonerName)}&tag=${encodeURIComponent(tag)}&region=${region}&t=${Date.now()}`);
+        const liveGameData = await spectatorResponse.json();
 
-        if (!res.ok) {
+        if (!spectatorResponse.ok) {
           console.error('[LiveGame] Error:', liveGameData);
           setError(liveGameData.error || 'Error fetching live game');
           setGameData(null);

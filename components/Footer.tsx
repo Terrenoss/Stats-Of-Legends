@@ -11,10 +11,13 @@ export const Footer = () => {
   const { lang } = useLanguage();
   const t = TRANSLATIONS[lang];
 
+  const TOAST_DURATION = 3000;
+  const ICON_SIZE = 18;
+
   const handlePlaceholderClick = (e: React.MouseEvent, label: string) => {
     e.preventDefault();
     setToastMsg(`${label} ${t.placeholderToast}`);
-    setTimeout(() => setToastMsg(null), 3000);
+    setTimeout(() => setToastMsg(null), TOAST_DURATION);
   };
 
   return (
@@ -35,9 +38,9 @@ export const Footer = () => {
               {t.footerTagline}
             </p>
             <div className="flex gap-4 mt-6">
-              <SocialIcon icon={<Twitter size={18} />} onClick={(e) => handlePlaceholderClick(e, 'Twitter')} />
-              <SocialIcon icon={<Github size={18} />} onClick={(e) => handlePlaceholderClick(e, 'GitHub')} />
-              <SocialIcon icon={<Disc size={18} />} onClick={(e) => handlePlaceholderClick(e, 'Discord')} />
+              <SocialIcon icon={<Twitter size={ICON_SIZE} />} onClick={(e) => handlePlaceholderClick(e, 'Twitter')} />
+              <SocialIcon icon={<Github size={ICON_SIZE} />} onClick={(e) => handlePlaceholderClick(e, 'GitHub')} />
+              <SocialIcon icon={<Disc size={ICON_SIZE} />} onClick={(e) => handlePlaceholderClick(e, 'Discord')} />
             </div>
           </div>
 

@@ -44,14 +44,16 @@ interface LegendScoreRadarProps {
 
 export const LegendScoreRadar: React.FC<LegendScoreRadarProps> = ({ playerStats, averageStats, comparisons = [], averageLabel = 'Tier Avg' }) => {
 
+    const DEFAULT_SCORE = 50;
+
     // Default "Average" if not provided
     const avg = averageStats || {
-        combat: 50,
-        objectives: 50,
-        vision: 50,
-        farming: 50,
-        survival: 50,
-        aggressiveness: 50
+        combat: DEFAULT_SCORE,
+        objectives: DEFAULT_SCORE,
+        vision: DEFAULT_SCORE,
+        farming: DEFAULT_SCORE,
+        survival: DEFAULT_SCORE,
+        aggressiveness: DEFAULT_SCORE
     };
 
     const radarData = [
