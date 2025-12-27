@@ -7,6 +7,8 @@ import { WinrateSummary } from '../../../../components/WinrateSummary';
 import { MatchCard } from '../../../../components/MatchCard';
 import { DetailedChampionStats, Match, Teammate, HeatmapDay, Language } from '../../../../types';
 
+const MATCH_LOAD_INCREMENT = 10;
+
 interface OverviewTabProps {
     performance: any;
     heatmap: HeatmapDay[];
@@ -107,7 +109,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     {visibleMatches < filteredMatches.length && (
                         <div className="flex justify-center pt-4">
                             <button
-                                onClick={() => setVisibleMatches(prev => prev + 10)}
+                                onClick={() => setVisibleMatches(prev => prev + MATCH_LOAD_INCREMENT)}
                                 className="px-6 py-2 bg-[#1a1a1a] hover:bg-[#252525] text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-full border border-white/10 transition-all"
                             >
                                 Load More Matches ({filteredMatches.length - visibleMatches} remaining)
@@ -123,7 +125,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 const FilterButton = ({ label, active, onClick }: any) => (
     <button
         onClick={onClick}
-        className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${active ? 'bg-lol-gold text-black border-lol-gold' : 'bg-[#121212] text-gray-500 border-white/10 hover:border-gray-500'}`}
+        className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${active ? 'bg-lol-gold text-black border-lol-gold' : 'bg-[#121212] text-gray-500 border-white/10 hover:border-gray-500'
+            }`}
     >
         {label}
     </button>

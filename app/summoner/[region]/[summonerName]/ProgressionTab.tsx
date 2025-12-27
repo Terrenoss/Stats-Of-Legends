@@ -7,12 +7,16 @@ interface ProgressionTabProps {
     rankColor: string;
 }
 
+const DAYS_HISTORY = 30;
+const Y_AXIS_PADDING = 20;
+const FONT_SIZE = 10;
+
 export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankColor }) => {
     return (
         <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-8 shadow-xl animate-fadeIn">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-xl font-bold text-white font-display mb-1">Progression LP (30 Jours)</h3>
+                    <h3 className="text-xl font-bold text-white font-display mb-1">Progression LP ({DAYS_HISTORY} Jours)</h3>
                     <p className="text-sm text-gray-500">Historique de vos gains et pertes de LP en Ranked Solo/Duo.</p>
                 </div>
                 {lpHistory.length > 1 && (
@@ -36,17 +40,17 @@ export const ProgressionTab: React.FC<ProgressionTabProps> = ({ lpHistory, rankC
                             <XAxis
                                 dataKey="date"
                                 stroke="#666"
-                                tick={{ fill: '#666', fontSize: 10 }}
+                                tick={{ fill: '#666', fontSize: FONT_SIZE }}
                                 tickLine={false}
                                 axisLine={false}
-                                minTickGap={30}
+                                minTickGap={DAYS_HISTORY}
                             />
                             <YAxis
                                 stroke="#666"
-                                tick={{ fill: '#666', fontSize: 10 }}
+                                tick={{ fill: '#666', fontSize: FONT_SIZE }}
                                 tickLine={false}
                                 axisLine={false}
-                                domain={['dataMin - 20', 'dataMax + 20']}
+                                domain={[`dataMin - ${Y_AXIS_PADDING}`, `dataMax + ${Y_AXIS_PADDING}`]}
                             />
                             <Tooltip
                                 cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}

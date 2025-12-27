@@ -30,7 +30,7 @@ const LEGAL_CONTENT: Record<string, { title: string; icon: React.ReactNode; cont
     icon: <Shield className="w-12 h-12 text-lol-gold" />,
     content: (
       <div className="space-y-4 text-sm text-gray-400 leading-relaxed">
-        <p><strong>Last Updated: February 2025</strong></p>
+        <p><strong>Last Updated: February {new Date().getFullYear()}</strong></p>
         <p>At Stats Of Legends, we take your privacy seriously. This policy describes how we treat your data.</p>
         <h3 className="text-white font-bold mt-4">1. Data Collection</h3>
         <p>We do not store personal data permanently. Summoner profiles are fetched in real-time from Riot Games APIs and cached temporarily for performance.</p>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { ProfileHeader } from '../../../../components/ProfileHeader';
@@ -12,6 +12,9 @@ import { OverviewTab } from './OverviewTab';
 import { ProgressionTab } from './ProgressionTab';
 import { useSummonerData } from '@/hooks/useSummonerData';
 import { SummonerPageSkeleton } from '@/components/skeletons/SummonerPageSkeleton';
+
+const INITIAL_VISIBLE_MATCHES = 10;
+const TAB_ICON_SIZE = 16;
 
 export default function SummonerClientPage({ params }: { params: { region: string, summonerName: string } }) {
   const {
@@ -32,7 +35,7 @@ export default function SummonerClientPage({ params }: { params: { region: strin
   const [profileTab, setProfileTab] = useState<'overview' | 'champions' | 'live' | 'progression'>('overview');
   const [matchFilter, setMatchFilter] = useState<'ALL' | 'SOLO' | 'FLEX'>('ALL');
   const [currentLang] = useState<Language>('FR');
-  const [visibleMatches, setVisibleMatches] = useState(10);
+  const [visibleMatches, setVisibleMatches] = useState(INITIAL_VISIBLE_MATCHES);
 
   const t = TRANSLATIONS[currentLang];
 
@@ -101,10 +104,10 @@ export default function SummonerClientPage({ params }: { params: { region: strin
 
       {/* TABS NAVIGATION */}
       <div className="flex gap-6 border-b border-white/5 mb-8">
-        <TabButton active={profileTab === 'overview'} onClick={() => setProfileTab('overview')} icon={<LayoutDashboard size={16} />} label={t.overview} />
-        <TabButton active={profileTab === 'champions'} onClick={() => setProfileTab('champions')} icon={<Sword size={16} />} label={t.champions} />
-        <TabButton active={profileTab === 'progression'} onClick={() => setProfileTab('progression')} icon={<TrendingUp size={16} />} label="Progression LP" />
-        <TabButton active={profileTab === 'live'} onClick={() => setProfileTab('live')} icon={<Radio size={16} />} label={t.liveGame} />
+        <TabButton active={profileTab === 'overview'} onClick={() => setProfileTab('overview')} icon={<LayoutDashboard size={TAB_ICON_SIZE} />} label={t.overview} />
+        <TabButton active={profileTab === 'champions'} onClick={() => setProfileTab('champions')} icon={<Sword size={TAB_ICON_SIZE} />} label={t.champions} />
+        <TabButton active={profileTab === 'progression'} onClick={() => setProfileTab('progression')} icon={<TrendingUp size={TAB_ICON_SIZE} />} label="Progression LP" />
+        <TabButton active={profileTab === 'live'} onClick={() => setProfileTab('live')} icon={<Radio size={TAB_ICON_SIZE} />} label={t.liveGame} />
       </div>
 
       {/* TAB CONTENT: OVERVIEW */}

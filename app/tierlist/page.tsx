@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { TierListService } from '@/services/TierListService';
 import { ChampionTier } from '@/types';
 import { TierListTable } from '@/components/tierlist/TierListTable';

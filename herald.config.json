@@ -1,9 +1,14 @@
 {
-    "ignore": [
-      ".idea",
-      "**/*.md"
-    ],
-    "rules": {
-      "disable": ["commented-code", "no-nested-ternary"]
-    }
+  "ignore": [
+    ".idea",
+    "**/*.md",
+    ".md",
+    "*.md"
+  ],
+  "rules": {
+    "disable": [
+      "commented-code",
+      "no-nested-ternary"
+    ]
   }
+}
