@@ -12,6 +12,9 @@ const PATCH_URL_BASE = 'https://www.leagueoflegends.com/fr-fr/news/game-updates/
 const DEFAULT_REGION = 'EUW';
 const REGIONS = ['EUW', 'NA1', 'KR', 'EUN1'];
 const LANGUAGES: Language[] = ['FR', 'EN', 'ES', 'KR'];
+const SEARCH_HISTORY_LIMIT = 15;
+const CURRENT_YEAR_SHORT = '25';
+const SEASON_15 = '15';
 
 
 interface NavbarProps {
@@ -46,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Mapping logic: 15.x.y -> patch-25-x-notes (Season 15 -> Year 25)
   const patchParts = currentPatch.split('.');
   let season = patchParts[0];
-  if (season === '15') season = '25'; // Map Season 15 to Year 2025 shortcode
+  if (season === SEASON_15) season = CURRENT_YEAR_SHORT; // Map Season 15 to Year 2025 shortcode
   const patchNumber = patchParts[1];
 
   const patchUrl = patchParts.length >= 2
@@ -58,10 +61,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <SafeLink href="/" onClick={(e) => handleNavClick(e, 'home')} className="flex-shrink-0 cursor-pointer flex items-center gap-3 group">
+            <SafeLink
+              href="/"
+              onClick={(e) => handleNavClick(e, 'home')}
+              className="flex-shrink-0 cursor-pointer flex items-center gap-3 group"
+            >
               <div className="relative w-12 h-12 flex items-center justify-center">
                 <div className="absolute inset-0 bg-lol-gold/20 rounded-full group-hover:bg-lol-red/20 blur-md transition-colors duration-500"></div>
-                <div className="relative z-10 w-full h-full bg-[#121212] border border-lol-gold/30 rounded-2xl flex items-center justify-center group-hover:border-lol-red/50 transition-colors duration-300 shadow-glow-gold group-hover:shadow-glow-red">
+                <div className={`relative z-10 w-full h-full bg-[#121212] border border-lol-gold/30 rounded-2xl 
+                  flex items-center justify-center group-hover:border-lol-red/50 transition-colors duration-300 
+                  shadow-glow-gold group-hover:shadow-glow-red`}>
                   <Gamepad2 className="text-lol-gold w-6 h-6 group-hover:text-lol-red transition-colors" />
                 </div>
               </div>
@@ -69,7 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-bold text-lg tracking-tight text-gray-100 font-display uppercase leading-none">
                   Stats Of
                 </span>
-                <span className="font-bold text-lg tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-lol-gold to-lol-red font-display uppercase leading-none drop-shadow-sm">
+                <span className={`font-bold text-lg tracking-widest text-transparent bg-clip-text 
+                  bg-gradient-to-r from-lol-gold to-lol-red font-display uppercase leading-none drop-shadow-sm`}>
                   Legends
                 </span>
               </div>
@@ -125,13 +135,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                   window.location.href = `/summoner/${region}/${name}-${tag || 'EUW'}`;
                 }
               }}
-              className="relative w-full group flex items-center bg-[#121212] border-2 border-white/10 focus-within:border-lol-gold rounded-lg overflow-hidden transition-all shadow-lg"
+              className={`relative w-full group flex items-center bg-[#121212] border-2 border-white/10 
+                focus-within:border-lol-gold rounded-lg overflow-hidden transition-all shadow-lg`}
             >
               {/* Region Selector */}
               <div className="relative border-r border-white/10 bg-[#1a1a1a] hover:bg-[#252525] transition-colors">
                 <select
                   name="region"
-                  className="appearance-none bg-transparent text-xs font-bold text-gray-300 py-3 pl-4 pr-8 focus:outline-none cursor-pointer uppercase tracking-wider"
+                  className={`appearance-none bg-transparent text-xs font-bold text-gray-300 py-3 pl-4 pr-8 
+                    focus:outline-none cursor-pointer uppercase tracking-wider`}
                   defaultValue={DEFAULT_REGION}
                 >
                   {REGIONS.map(r => (
@@ -152,10 +164,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Search Button */}
               <button
                 type="submit"
-                className="bg-lol-gold hover:bg-lol-gold/90 text-black font-bold uppercase tracking-wider text-xs px-6 py-3 transition-colors flex items-center gap-2"
+                className={`bg-lol-gold hover:bg-lol-gold/90 text-black font-bold uppercase tracking-wider 
+                  text-xs px-6 py-3 transition-colors flex items-center gap-2`}
               >
                 <span className="hidden xl:inline">Search</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
               </button>
             </form>
           </div>
@@ -180,7 +197,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Language Switcher */}
             <div className="relative">
               <div
-                className="hidden md:flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-full border border-white/5 hover:border-lol-gold/30 hover:bg-white/5 transition group"
+                className={`hidden md:flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-full 
+                  border border-white/5 hover:border-lol-gold/30 hover:bg-white/5 transition group`}
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
               >
                 <Globe className="w-4 h-4 text-gray-400 group-hover:text-lol-gold transition-colors" />
@@ -189,11 +207,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
 
               {isLangMenuOpen && (
-                <div className="absolute right-0 top-full mt-3 w-32 bg-[#121212] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn overflow-hidden">
+                <div className={`absolute right-0 top-full mt-3 w-32 bg-[#121212] border border-white/10 
+                  rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn overflow-hidden`}>
                   {LANGUAGES.map(lang => (
                     <div
                       key={lang}
-                      className={`px-4 py-2 text-xs font-bold hover:bg-white/5 cursor-pointer flex items-center justify-between group ${currentLang === lang ? 'text-lol-gold' : 'text-gray-400'}`}
+                      className={`px-4 py-2 text-xs font-bold hover:bg-white/5 cursor-pointer flex items-center 
+                        justify-between group ${currentLang === lang ? 'text-lol-gold' : 'text-gray-400'}`}
                       onClick={() => { setCurrentLang(lang); setIsLangMenuOpen(false); }}
                     >
                       {lang}
@@ -223,7 +243,8 @@ const NavButton: React.FC<NavButtonProps> = ({ label, icon, active, href, onClic
     href={href}
     onClick={onClick}
     className={`
-      relative px-3 lg:px-4 xl:px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-full group flex items-center gap-2 whitespace-nowrap
+      relative px-3 lg:px-4 xl:px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all 
+      duration-300 rounded-full group flex items-center gap-2 whitespace-nowrap
       ${active
         ? 'text-[#050505] bg-lol-gold shadow-[0_0_15px_rgba(200,170,110,0.3)]'
         : 'text-gray-400 hover:text-white hover:bg-white/5'}

@@ -81,7 +81,8 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
         {/* Season Selector */}
         <div className="bg-[#121212] border border-white/5 rounded-[1.5rem] p-4 relative z-20">
           <div
-            className="text-xs font-bold text-lol-gold uppercase tracking-widest mb-3 px-2 flex items-center justify-between cursor-pointer hover:text-white transition-colors"
+            className={`text-xs font-bold text-lol-gold uppercase tracking-widest mb-3 px-2 
+              flex items-center justify-between cursor-pointer hover:text-white transition-colors`}
             onClick={() => setIsSeasonMenuOpen(!isSeasonMenuOpen)}
           >
             {activeSeason}
@@ -89,11 +90,13 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
           </div>
 
           {isSeasonMenuOpen && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden animate-fadeIn z-50">
+            <div className={`absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 
+              rounded-xl shadow-xl overflow-hidden animate-fadeIn z-50`}>
               {SEASONS.map(season => (
                 <div
                   key={season}
-                  className={`px-4 py-3 text-xs font-bold cursor-pointer hover:bg-white/5 ${activeSeason === season ? 'text-lol-gold bg-white/5' : 'text-gray-400'}`}
+                  className={`px-4 py-3 text-xs font-bold cursor-pointer hover:bg-white/5 
+                    ${activeSeason === season ? 'text-lol-gold bg-white/5' : 'text-gray-400'}`}
                   onClick={() => { setActiveSeason(season); setIsSeasonMenuOpen(false); }}
                 >
                   {season}
@@ -107,9 +110,10 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
               <button
                 key={filter}
                 onClick={() => setActiveQueue(filter)}
-                className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 ${activeQueue === filter
-                  ? 'bg-lol-gold text-black shadow-glow-gold'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold cursor-pointer 
+                  transition-all duration-200 ${activeQueue === filter
+                    ? 'bg-lol-gold text-black shadow-glow-gold'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`}
               >
                 {filter}
@@ -125,7 +129,8 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
             <input
               type="text"
               placeholder="Search champion..."
-              className="w-full bg-[#080808] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-gray-200 focus:border-lol-gold outline-none"
+              className={`w-full bg-[#080808] border border-white/10 rounded-xl py-2 pl-10 pr-4 
+                text-sm text-gray-200 focus:border-lol-gold outline-none`}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -178,7 +183,8 @@ export const ChampionsTable: React.FC<ChampionsTableProps> = ({ champions, lang 
                           alt={champ.name}
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
+                        <div className={`w-8 h-8 rounded-lg border border-gray-700 bg-white/5 
+                          flex items-center justify-center text-xs font-bold text-gray-300`}>
                           {(champ.name && typeof champ.name === 'string') ? champ.name.charAt(0) : '?'}
                         </div>
                       )}

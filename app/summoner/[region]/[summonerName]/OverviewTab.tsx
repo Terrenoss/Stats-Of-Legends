@@ -113,7 +113,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         <div className="flex justify-center pt-4">
                             <button
                                 onClick={() => setVisibleMatches(prev => prev + MATCH_LOAD_INCREMENT)}
-                                className="px-6 py-2 bg-[#1a1a1a] hover:bg-[#252525] text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-full border border-white/10 transition-all"
+                                className={`px-6 py-2 bg-[#1a1a1a] hover:bg-[#252525] text-gray-300 hover:text-white 
+                                    text-xs font-bold uppercase tracking-wider rounded-full border border-white/10 transition-all`}
                             >
                                 Load More Matches ({filteredMatches.length - visibleMatches} remaining)
                             </button>

@@ -5,19 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionSkillPath.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionSkillPath.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/dashboard-admin/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/dashboard-admin/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/OverviewTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/OverviewTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/ProgressionTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/ProgressionTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Builder.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Builder.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/ChampionsTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ChampionsTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Footer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/LiveGame.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LiveGame.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/SearchHero.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/SearchHero.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/RuneSelector.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Navbar.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

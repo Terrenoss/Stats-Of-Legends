@@ -6,6 +6,7 @@ import { CURRENT_PATCH } from '@/constants';
 import { useAdminScanner } from '@/hooks/useAdminScanner';
 
 const DEFAULT_RATE_LIMIT = 20;
+const MAX_LOGS = 50;
 
 const LoginScreen = ({ secretKey, setSecretKey, handleLogin }: any) => (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -89,7 +90,8 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
                 <select
                     value={config.region}
                     onChange={(e) => actions.setRegion(e.target.value)}
-                    className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
+                    className={`w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 
+                        text-white focus:border-lol-gold outline-none`}
                 >
                     {options.regions.map((r: string) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
                 </select>
@@ -101,7 +103,8 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
                 <select
                     value={config.tier}
                     onChange={(e) => actions.setTier(e.target.value)}
-                    className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
+                    className={`w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 
+                        text-white focus:border-lol-gold outline-none`}
                 >
                     {options.tiers.map((t: string) => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -114,7 +117,8 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
                     <select
                         value={config.division}
                         onChange={(e) => actions.setDivision(e.target.value)}
-                        className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
+                        className={`w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 
+                            text-white focus:border-lol-gold outline-none`}
                     >
                         {options.divisions.map((d: string) => <option key={d} value={d}>{d}</option>)}
                     </select>
@@ -128,7 +132,8 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
                     type="number"
                     value={config.rateLimit}
                     onChange={(e) => actions.setRateLimit(Number(e.target.value))}
-                    className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-lol-gold outline-none"
+                    className={`w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 
+                        text-white focus:border-lol-gold outline-none`}
                 />
             </div>
 
@@ -138,14 +143,16 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
                 {!status.isScanning ? (
                     <button
                         onClick={actions.startScan}
-                        className="flex-1 bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
+                        className={`flex-1 bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl 
+                            font-bold flex items-center justify-center gap-2 transition`}
                     >
                         <Play className="w-5 h-5" /> Start Scan
                     </button>
                 ) : (
                     <button
                         onClick={actions.stopScan}
-                        className="flex-1 bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
+                        className={`flex-1 bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl 
+                            font-bold flex items-center justify-center gap-2 transition`}
                     >
                         <Square className="w-5 h-5" /> Stop
                     </button>
@@ -153,7 +160,8 @@ const DashboardControls = ({ config, actions, status, options }: DashboardContro
             </div>
             <button
                 onClick={actions.reset}
-                className="w-full bg-white/5 hover:bg-white/10 text-gray-400 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-white/5"
+                className={`w-full bg-white/5 hover:bg-white/10 text-gray-400 py-3 rounded-xl 
+                    font-bold flex items-center justify-center gap-2 transition border border-white/5`}
             >
                 <Trash2 className="w-4 h-4" /> Reset Database
             </button>
@@ -184,7 +192,7 @@ const DashboardLogs = ({ logs }: any) => {
                 <span className="font-mono text-sm">Live Logs</span>
             </div>
             <div className="flex-1 overflow-y-auto font-mono text-xs space-y-1 pr-2">
-                {logs.map((log: string, i: number) => (
+                {logs.slice(0, MAX_LOGS).map((log: string, i: number) => (
                     <div key={i} className={`p-2 rounded ${getLogClass(log)}`}>
                         {log}
                     </div>

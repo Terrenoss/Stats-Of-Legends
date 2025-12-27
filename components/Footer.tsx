@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { Github, Twitter, Disc, Info } from 'lucide-react';
-import { SafeLink } from "./ui/SafeLink";
+import { SafeLink } from './ui/SafeLink';
 import { useLanguage } from '../app/LanguageContext';
 import { TRANSLATIONS } from '../constants';
 

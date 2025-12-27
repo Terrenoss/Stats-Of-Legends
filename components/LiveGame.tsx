@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Radio, Shield, Swords, Timer } from 'lucide-react';
-import { useLanguage } from "../app/LanguageContext";
+import { useLanguage } from '../app/LanguageContext';
 import { TRANSLATIONS } from '../constants';
 import { getChampionIconUrl } from '../utils/ddragon';
 import { TeamColumn } from './livegame/TeamColumn';
