@@ -13,11 +13,15 @@ export const MatchOther: React.FC<MatchOtherProps> = ({ me, participants }) => {
     // Riot API provides teamPosition.
     const opponent = participants.find(p => p.teamId !== me.teamId && p.teamPosition === me.teamPosition) || participants.find(p => p.teamId !== me.teamId);
 
+    const myCs = (me.totalMinionsKilled || 0) + (me.neutralMinionsKilled || 0);
+    const oppCs = (opponent?.totalMinionsKilled || 0) + (opponent?.neutralMinionsKilled || 0);
+    const oppVision = opponent?.visionScore || 0;
+
     const data = [
         { name: 'Gold', Me: me.goldEarned, Opponent: opponent?.goldEarned || 0 },
         { name: 'Damage', Me: me.totalDamageDealtToChampions, Opponent: opponent?.totalDamageDealtToChampions || 0 },
-        { name: 'CS', Me: (me.totalMinionsKilled || 0) + (me.neutralMinionsKilled || 0), Opponent: (opponent?.totalMinionsKilled || 0) + (opponent?.neutralMinionsKilled || 0) },
-        { name: 'Vision', Me: me.visionScore, Opponent: opponent?.visionScore || 0 },
+        { name: 'CS', Me: myCs, Opponent: oppCs },
+        { name: 'Vision', Me: me.visionScore, Opponent: oppVision },
     ];
 
     return (

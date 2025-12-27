@@ -128,7 +128,8 @@ const PlayerStatRow: React.FC<PlayerStatRowProps> = ({ participant, metricKey, m
   const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
 
   // Safe champion access and fallbacks
-  const champImg = participant.champion?.imageUrl ?? null;
+  const rawChampImg = participant.champion?.imageUrl;
+  const champImg = rawChampImg ?? null;
   const champName = participant.champion?.name ?? 'Unknown';
   const safeVal = typeof val === 'number' && !isNaN(val) ? val : 0;
   const safeWidth = maxVal > 0 ? Math.min(100, (safeVal / maxVal) * 100) : 0;
@@ -161,9 +162,11 @@ const ChampionIcon = ({ participant, champImg, champName }: { participant: Parti
     );
   }
 
+  const initial = typeof champName === 'string' ? champName.charAt(0) : '?';
+
   return (
     <div className={`w-5 h-5 rounded border ${borderColor} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>
-      {typeof champName === 'string' ? champName.charAt(0) : '?'}
+      {initial}
     </div>
   );
 };

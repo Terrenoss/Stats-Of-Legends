@@ -25,7 +25,8 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
     const { maxDamage, calcCsPerMin, isWardItem, normalizeWardType } = context;
     const { isAce, isMvpGold, isMvpGrey } = badges;
 
-    const champImg = p.champion?.imageUrl ?? null;
+    const rawChampImg = p.champion?.imageUrl;
+    const champImg = rawChampImg ?? null;
     const champName = p.champion?.name ?? 'Unknown';
     const items = Array.isArray(p.items) ? p.items : [];
     const itemsFiltered = items.filter((it: Item) => !isWardItem(it));
@@ -183,9 +184,10 @@ const ScoreboardChampionIcon = ({ champImg, champName }: { champImg: string | nu
     if (champImg) {
         return <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 object-cover" alt={champName} />;
     }
+    const initial = typeof champName === 'string' ? champName.charAt(0) : '?';
     return (
         <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
-            {typeof champName === 'string' ? champName.charAt(0) : '?'}
+            {initial}
         </div>
     );
 };

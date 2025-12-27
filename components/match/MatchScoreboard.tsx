@@ -26,7 +26,8 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, 
   const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
 
   const calcCsPerMin = (p: Participant) => {
-    const cs = (p.cs ?? 0);
+    const rawCs = p.cs ?? 0;
+    const cs = rawCs;
     const duration = (gameDurationSeconds && gameDurationSeconds > 0) ? gameDurationSeconds : DEFAULT_GAME_DURATION;
     const minutes = Math.max(0.1, duration / 60);
     return +(cs / minutes).toFixed(1);

@@ -18,6 +18,8 @@ interface ChampionHeaderProps {
 const TABS = ['Build', 'Counters', 'Pro Builds'];
 
 
+const SPELL_ICON_SIZE = 32;
+
 export const ChampionHeader: React.FC<ChampionHeaderProps> = ({
     championName, role, rank, tier, patch, topSpells, formatTier, getSpellName
 }) => {
@@ -59,8 +61,8 @@ export const ChampionHeader: React.FC<ChampionHeaderProps> = ({
                                     key={spell.id}
                                     src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
                                     alt={`Spell ${spell.id}`}
-                                    width={32}
-                                    height={32}
+                                    width={SPELL_ICON_SIZE}
+                                    height={SPELL_ICON_SIZE}
                                     className="w-8 h-8 rounded border border-white/20"
                                 />
                             ))}

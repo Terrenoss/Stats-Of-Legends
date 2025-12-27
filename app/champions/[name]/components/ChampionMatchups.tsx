@@ -8,6 +8,8 @@ interface ChampionMatchupsProps {
     matchups: any[];
 }
 
+const MATCHUP_ICON_SIZE = 48;
+
 export const ChampionMatchups: React.FC<ChampionMatchupsProps> = ({ championName, matchups }) => {
     return (
         <div className="bg-[#121212] border border-white/5 rounded-2xl p-6">
@@ -20,8 +22,8 @@ export const ChampionMatchups: React.FC<ChampionMatchupsProps> = ({ championName
                         <Image
                             src={getChampionIconUrl(m.opponentId, CURRENT_PATCH)}
                             alt={m.opponentId}
-                            width={48}
-                            height={48}
+                            width={MATCHUP_ICON_SIZE}
+                            height={MATCHUP_ICON_SIZE}
                             className="w-12 h-12 rounded-full mx-auto mb-2 border border-white/10"
                         />
                         <div className="font-bold text-sm truncate">{m.opponentId}</div>

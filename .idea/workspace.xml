@@ -5,13 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionDuos.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionDuos.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionMatchups.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionMatchups.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/champions/[name]/components/ChampionRunes.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/summoner/[region]/[summonerName]/SummonerClientPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/LegendScoreRadar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/card/MatchCardComponents.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/card/MatchCardComponents.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/ChampionDetailService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/ChampionDetailService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MatchHistoryService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/MatchHistoryService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/formatUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/utils/formatUtils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/ChampionSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/ChampionSelect.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/builder/ItemCatalog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/builder/ItemCatalog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchDamageChart.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchScoreboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/MatchScoreboardComponents.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/MatchScoreboardComponents.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchScore.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchSummaryComponents.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchSummaryComponents.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/tierlist/TierListTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/tierlist/TierListTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/views/ProfileView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/views/ProfileView.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -31,6 +31,11 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
         champ.name.toLowerCase().includes(champSearchQuery.toLowerCase())
     );
 
+    const champName = currentChampion?.name;
+    const champTitle = currentChampion?.title;
+    const champImage = currentChampion?.imageUrl;
+    const spells = currentChampion?.spells;
+
     return (
         <div className="relative z-20">
             <div className="bg-[#121212] border border-white/5 rounded-[2rem] p-8 relative shadow-2xl">
@@ -41,8 +46,8 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
                 <div className="flex items-center gap-8 relative z-10">
                     <div className="relative cursor-pointer group" onClick={() => setIsChampSelectOpen(!isChampSelectOpen)}>
                         <div className="absolute -inset-2 bg-lol-gold rounded-full opacity-0 group-hover:opacity-20 blur-xl transition-opacity"></div>
-                        {currentChampion?.imageUrl && (
-                            <Image src={currentChampion.imageUrl} width={112} height={112} alt={currentChampion.name} className="relative w-28 h-28 rounded-full border-4 border-[#121212] ring-2 ring-lol-gold shadow-2xl transition-transform group-hover:scale-105 object-cover" />
+                        {champImage && (
+                            <Image src={champImage} width={112} height={112} alt={champName || ''} className="relative w-28 h-28 rounded-full border-4 border-[#121212] ring-2 ring-lol-gold shadow-2xl transition-transform group-hover:scale-105 object-cover" />
                         )}
                         <div className="absolute bottom-0 right-0 bg-[#091428] border border-lol-gold rounded-full p-1.5 z-20">
                             <ChevronDown className="w-4 h-4 text-lol-gold" />
@@ -51,10 +56,10 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
 
                     <div className="flex-1">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-4xl font-display font-black text-white tracking-wide uppercase drop-shadow-md">{currentChampion?.name}</h2>
+                            <h2 className="text-4xl font-display font-black text-white tracking-wide uppercase drop-shadow-md">{champName}</h2>
                             <button onClick={() => setIsChampSelectOpen(!isChampSelectOpen)} className="text-xs border border-white/10 px-4 py-2 rounded-full hover:border-lol-gold hover:text-lol-gold hover:bg-lol-gold/10 transition uppercase font-bold tracking-wider">{t.change}</button>
                         </div>
-                        <p className="text-lol-gold text-sm italic font-medium mt-1">{currentChampion?.title}</p>
+                        <p className="text-lol-gold text-sm italic font-medium mt-1">{champTitle}</p>
 
                         <div className="mt-5 flex items-center gap-4 bg-[#080808] p-3 rounded-2xl border border-white/5">
                             <span className="text-xs font-bold text-gray-400 uppercase w-16 text-right">{t.level} {championLevel}</span>
@@ -72,7 +77,7 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
 
                 {/* Spells UI */}
                 <div className="mt-8 grid grid-cols-4 gap-4 border-t border-white/5 pt-8 relative z-10">
-                    {currentChampion?.spells?.map(spell => (
+                    {spells?.map(spell => (
                         <div key={spell.id} className="relative group/spell flex flex-col items-center">
                             <div className="flex flex-col items-center gap-3">
                                 <div className="relative w-14 h-14">

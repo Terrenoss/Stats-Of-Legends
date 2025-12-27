@@ -3,9 +3,19 @@ import Image from 'next/image';
 import { getChampionIconUrl } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';
 
-interface ChampionDuosProps {
-    duos: any[];
+interface Duo {
+    partnerId: string;
+    partnerRole: string;
+    winRate: number;
+    matches: number;
 }
+
+interface ChampionDuosProps {
+    duos: Duo[];
+}
+
+const DUO_ICON_SIZE = 40;
+const WINRATE_THRESHOLD = 50;
 
 export const ChampionDuos: React.FC<ChampionDuosProps> = ({ duos }) => {
     return (
@@ -14,18 +24,18 @@ export const ChampionDuos: React.FC<ChampionDuosProps> = ({ duos }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(() => {
                     // Filter unique duos
-                    const uniqueDuos = duos?.filter((d: any, index: number, self: any[]) =>
+                    const uniqueDuos = duos?.filter((d: Duo, index: number, self: Duo[]) =>
                         index === self.findIndex((t) => t.partnerId === d.partnerId)
                     ).slice(0, 4);
 
-                    return uniqueDuos?.map((d: any) => (
+                    return uniqueDuos?.map((d: Duo) => (
                         <div key={d.partnerId} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
                             <div className="flex items-center gap-3">
                                 <Image
                                     src={getChampionIconUrl(d.partnerId, CURRENT_PATCH)}
                                     alt={d.partnerId}
-                                    width={40}
-                                    height={40}
+                                    width={DUO_ICON_SIZE}
+                                    height={DUO_ICON_SIZE}
                                     className="w-10 h-10 rounded-lg border border-white/10"
                                 />
                                 <div>
@@ -34,7 +44,7 @@ export const ChampionDuos: React.FC<ChampionDuosProps> = ({ duos }) => {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className={`font-bold ${d.winRate > 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                <div className={`font-bold ${d.winRate > WINRATE_THRESHOLD ? 'text-green-400' : 'text-red-400'}`}>
                                     {d.winRate.toFixed(1)}% WR
                                 </div>
                                 <div className="text-xs text-gray-500">{d.matches} Matches</div>

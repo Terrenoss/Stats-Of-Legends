@@ -77,6 +77,7 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
 const RuneDisplay = ({ rune, type }: { rune?: string, type: 'KEYSTONE' | 'SECONDARY' }) => {
     if (!rune) return null;
     const isKeystone = type === 'KEYSTONE';
+    const label = isKeystone ? 'Keystone' : 'Secondary';
     return (
         <div className="flex flex-col items-center gap-2">
             <Image
@@ -84,10 +85,10 @@ const RuneDisplay = ({ rune, type }: { rune?: string, type: 'KEYSTONE' | 'SECOND
                 width={isKeystone ? 64 : 48}
                 height={isKeystone ? 64 : 48}
                 className={`rounded-full bg-black ${isKeystone ? 'w-16 h-16 border border-lol-gold/50' : 'w-12 h-12 border border-gray-600 p-2'}`}
-                alt={isKeystone ? "Keystone" : "Secondary"}
+                alt={label}
             />
             <span className={`text-xs font-bold ${isKeystone ? 'text-lol-gold' : 'text-gray-400'}`}>
-                {isKeystone ? 'Keystone' : 'Secondary'}
+                {label}
             </span>
         </div>
     );

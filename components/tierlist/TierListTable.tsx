@@ -32,7 +32,8 @@ export const TierListTable: React.FC<TierListTableProps> = ({ data, sortConfig, 
     };
 
     const getSortIconClass = (headerKey: string) => {
-        return `w-3 h-3 ${sortConfig?.key === headerKey ? 'text-lol-gold opacity-100' : 'opacity-30'}`;
+        const isSorted = sortConfig?.key === headerKey;
+        return `w-3 h-3 ${isSorted ? 'text-lol-gold opacity-100' : 'opacity-30'}`;
     };
 
     return (

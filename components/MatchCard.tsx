@@ -29,7 +29,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
 
   const me = match.me || ({} as Participant);
   const isWin = !!me.win;
-  const kills = Number(me.kills ?? 0);
+  const rawKills = me.kills ?? 0;
+  const kills = Number(rawKills);
   const deaths = Number(me.deaths ?? 0);
   const assists = Number(me.assists ?? 0);
   const kda = ((kills + assists) / Math.max(1, deaths)).toFixed(2);
@@ -70,6 +71,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     t
   };
 
+  const csScore = me.cs ?? 0;
+  const visionScore = me.visionScore ?? 0;
+
   return (
     <div className={containerClass} style={isMvp ? { borderColor: '#ffd700', boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)' } : {}}>
       <div className="absolute inset-0 overflow-hidden rounded-[1rem] pointer-events-none z-0">
@@ -108,8 +112,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           <div className="flex justify-between w-full relative z-10" title="Total Gold Earned">
             <span>Gold</span> <span className="text-lol-gold font-bold">{(me.gold || me.goldEarned || 0).toLocaleString()} <span className="text-[9px] text-gray-500">({(me.goldPerMin || 0).toFixed(0)}/m)</span></span>
           </div>
-          <div className="flex justify-between w-full relative z-10"><span>CS</span> <span className="text-gray-200 font-bold">{me.cs ?? 0} <span className="text-[9px] text-gray-500">({csPerMinHeader}/m)</span></span></div>
-          <div className="flex justify-between w-full relative z-10"><span>Vision</span> <span className="text-gray-200 font-bold">{me.visionScore ?? 0}</span></div>
+          <div className="flex justify-between w-full relative z-10"><span>CS</span> <span className="text-gray-200 font-bold">{csScore} <span className="text-[9px] text-gray-500">({csPerMinHeader}/m)</span></span></div>
+          <div className="flex justify-between w-full relative z-10"><span>Vision</span> <span className="text-gray-200 font-bold">{visionScore}</span></div>
         </div>
 
         <div className="flex-grow flex justify-end">

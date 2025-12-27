@@ -64,14 +64,16 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
 
     const rankDisplay = getRankDisplay(p.rank, rankData);
 
-    const cs = (p.cs ?? 0);
+    const rawCs = p.cs ?? 0;
+    const cs = rawCs;
     const duration = gameDurationSeconds > 0 ? gameDurationSeconds : 600;
     const csPerMin = (cs / (duration / 60)).toFixed(1);
 
     const kda = ((p.kills + p.assists) / Math.max(1, p.deaths)).toFixed(2);
     const dmgPct = maxDamage > 0 ? (p.totalDamageDealtToChampions / maxDamage) * 100 : 0;
     const takenPct = maxTaken > 0 ? ((p.totalDamageTaken || 0) / maxTaken) * 100 : 0;
-    const score = p.legendScore?.toFixed(1) || '-';
+    const rawScore = p.legendScore;
+    const score = rawScore?.toFixed(1) || '-';
     const rank = (p as any).legendScoreRank || 0;
 
     // Badges
@@ -84,6 +86,11 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
 
     const summonerLink = `/summoner/${region}/${encodeURIComponent(`${p.summonerName}-${p.tagLine || region}`)}`;
 
+    const spell1Img = p.spells[0]?.imageUrl;
+    const spell2Img = p.spells[1]?.imageUrl;
+    const runePrimary = p.runes?.primary;
+    const runeSecondary = p.runes?.secondary;
+
     return (
         <div className="grid grid-cols-12 gap-2 items-center p-2 hover:bg-white/5 rounded transition-colors text-sm">
             {/* Champion & Summoner & Runes */}
@@ -95,10 +102,10 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
 
                 {/* Spells & Runes - 2x2 Grid */}
                 <div className="grid grid-cols-2 gap-0.5">
-                    <Image src={p.spells[0]?.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 1" />
-                    {p.runes?.primary && <Image src={p.runes.primary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10" alt="Primary Rune" />}
-                    <Image src={p.spells[1]?.imageUrl} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 2" />
-                    {p.runes?.secondary && <Image src={p.runes.secondary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10 p-0.5" alt="Secondary Rune" />}
+                    <Image src={spell1Img} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 1" />
+                    {runePrimary && <Image src={runePrimary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10" alt="Primary Rune" />}
+                    <Image src={spell2Img} width={24} height={24} className="w-6 h-6 rounded border border-white/10" alt="Summoner Spell 2" />
+                    {runeSecondary && <Image src={runeSecondary} width={24} height={24} className="w-6 h-6 rounded-full bg-black border border-white/10 p-0.5" alt="Secondary Rune" />}
                 </div>
 
                 <div className="flex flex-col min-w-0 ml-1">

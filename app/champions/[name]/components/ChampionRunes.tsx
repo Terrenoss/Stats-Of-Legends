@@ -64,7 +64,7 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     return (
         <div className="bg-[#161616] rounded-xl p-8 border border-white/5">
             <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                <Image src={getRuneIcon(isPrimary ? page.primaryStyle : page.subStyle)} alt={isPrimary ? "Primary Style" : "Sub Style"} width={40} height={40} className="w-10 h-10" />
+                <Image src={getRuneIcon(isPrimary ? page.primaryStyle : page.subStyle)} alt={isPrimary ? 'Primary Style' : 'Sub Style'} width={40} height={40} className="w-10 h-10" />
                 <span className="text-2xl font-bold text-white">{tree.name || (isPrimary ? 'Primary' : 'Secondary')}</span>
             </div>
 
@@ -78,8 +78,19 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     );
 };
 
+interface Rune {
+    id: number;
+    icon: string;
+    key: string;
+    name: string;
+}
+
+interface RuneSlot {
+    runes: Rune[];
+}
+
 interface RuneRowProps {
-    slot: any;
+    slot: RuneSlot;
     page: RunePage;
     isPrimary: boolean;
     activeColor: string;
@@ -94,7 +105,7 @@ const RuneRow = ({ slot, page, isPrimary, activeColor }: RuneRowProps) => {
 
     return (
         <div className="flex justify-between items-center px-4">
-            {slot.runes.map((rune: any) => {
+            {slot.runes.map((rune: Rune) => {
                 const active = page.perks.includes(rune.id);
                 return (
                     <div key={rune.id} className="relative group">
