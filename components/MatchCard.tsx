@@ -80,26 +80,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
           </div>
         )}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[40%] opacity-20 grayscale-[0.5] mix-blend-screen hidden md:block transition-all duration-500 group-hover:opacity-40 group-hover:grayscale-0 group-hover:translate-x-[35%]">
-          {(() => {
-            let avgRank = match.averageRank;
-
-            if (!avgRank) {
-              let validRanks: string[] = [];
-              if (ranksLoaded && Object.keys(ranks).length > 0) {
-                validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null).filter(Boolean) as string[];
-              }
-              if (validRanks.length === 0 && match.participants) {
-                validRanks = match.participants.map((p) => p.rank).filter(Boolean) as string[];
-              }
-              avgRank = getAverageRank(validRanks);
-            }
-
-            const tier = avgRank.split(' ')[0];
-            const icon = getRankIconUrl(tier);
-            return icon ? (
-              <Image src={icon} alt={avgRank} title={avgRank} width={350} height={350} className="max-w-none object-contain drop-shadow-2xl" />
-            ) : null;
-          })()}
+          <RankIcon match={match} ranks={ranks} ranksLoaded={ranksLoaded} />
         </div>
       </div>
 
@@ -155,5 +136,29 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
         </div>
       )}
     </div>
+  );
+};
+
+const RankIcon = ({ match, ranks, ranksLoaded }: { match: Match, ranks: any, ranksLoaded: boolean }) => {
+  let avgRank = match.averageRank;
+
+  if (!avgRank) {
+    let validRanks: string[] = [];
+    if (ranksLoaded && Object.keys(ranks).length > 0) {
+      validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null).filter(Boolean) as string[];
+    }
+    if (validRanks.length === 0 && match.participants) {
+      validRanks = match.participants.map((p) => p.rank).filter(Boolean) as string[];
+    }
+    avgRank = getAverageRank(validRanks);
+  }
+
+  const tier = avgRank.split(' ')[0];
+  const icon = getRankIconUrl(tier);
+
+  if (!icon) return null;
+
+  return (
+    <Image src={icon} alt={avgRank} title={avgRank} width={350} height={350} className="max-w-none object-contain drop-shadow-2xl" />
   );
 };

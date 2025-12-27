@@ -62,12 +62,7 @@ const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant: p, maxDama
     const rankData = ranks[p.puuid || ''];
     const isHighElo = rankData?.solo?.tier && ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(rankData.solo.tier);
 
-    let rankDisplay = p.rank || 'Unranked';
-    if (rankData?.solo) {
-        rankDisplay = isHighElo
-            ? `${rankData.solo.tier} ${rankData.solo.lp} LP`
-            : `${rankData.solo.tier} ${rankData.solo.rank}`;
-    }
+    const rankDisplay = getRankDisplay(p.rank, rankData);
 
     const cs = (p.cs ?? 0);
     const duration = gameDurationSeconds > 0 ? gameDurationSeconds : 600;
@@ -275,4 +270,14 @@ export const TeamObjectives = ({ teams, teamId, align }: { teams: any[], teamId:
     );
 
     return content;
+};
+
+const getRankDisplay = (rank: string | undefined, rankData: any) => {
+    if (rankData?.solo) {
+        const isHighElo = rankData.solo.tier && ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(rankData.solo.tier);
+        return isHighElo
+            ? `${rankData.solo.tier} ${rankData.solo.lp} LP`
+            : `${rankData.solo.tier} ${rankData.solo.rank}`;
+    }
+    return rank || 'Unranked';
 };

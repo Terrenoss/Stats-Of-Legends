@@ -29,9 +29,18 @@ interface ChampionBuildPathProps {
     slot6: SlotItem[];
 }
 
+const ITEM_ICON_SIZE_SMALL = 40;
+const ITEM_ICON_SIZE_LARGE = 56;
+
 const StackedItem = ({ item }: { item: { id: number; count: number } }) => (
     <div className="relative z-10">
-        <Image src={getItemIconUrl(item.id, CURRENT_PATCH)} alt={`Item ${item.id}`} width={40} height={40} className="w-10 h-10 rounded-full border-2 border-[#121212]" />
+        <Image
+            src={getItemIconUrl(item.id, CURRENT_PATCH)}
+            alt={`Item ${item.id}`}
+            width={ITEM_ICON_SIZE_SMALL}
+            height={ITEM_ICON_SIZE_SMALL}
+            className="w-10 h-10 rounded-full border-2 border-[#121212]"
+        />
         {item.count > 1 && (
             <div className="absolute -bottom-1 -right-1 bg-[#121212] text-white text-[10px] font-bold px-1 rounded-full border border-white/20">
                 x{item.count}
@@ -84,7 +93,13 @@ const CoreItems = ({ items }: { items: ItemPath[] }) => {
                 <div className="flex items-center gap-4">
                     {items[0].path.map((id: number, i: number) => (
                         <div key={i} className="flex items-center gap-3">
-                            <Image src={getItemIconUrl(id, CURRENT_PATCH)} alt={`Core Item ${id}`} width={56} height={56} className="w-14 h-14 rounded border border-lol-gold shadow-lg" />
+                            <Image
+                                src={getItemIconUrl(id, CURRENT_PATCH)}
+                                alt={`Core Item ${id}`}
+                                width={ITEM_ICON_SIZE_LARGE}
+                                height={ITEM_ICON_SIZE_LARGE}
+                                className="w-14 h-14 rounded border border-lol-gold shadow-lg"
+                            />
                             {i < items[0].path.length - 1 && <span className="text-gray-600 text-xl">→</span>}
                         </div>
                     ))}
@@ -114,7 +129,13 @@ const ItemOptions = ({ slot4, slot5, slot6 }: { slot4: SlotItem[], slot5: SlotIt
                             {slot.data.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5">
                                     <div className="flex items-center gap-3">
-                                        <Image src={getItemIconUrl(item.id, CURRENT_PATCH)} alt={`Item ${item.id}`} width={40} height={40} className="w-10 h-10 rounded border border-white/10" />
+                                        <Image
+                                            src={getItemIconUrl(item.id, CURRENT_PATCH)}
+                                            alt={`Item ${item.id}`}
+                                            width={ITEM_ICON_SIZE_SMALL}
+                                            height={ITEM_ICON_SIZE_SMALL}
+                                            className="w-10 h-10 rounded border border-white/10"
+                                        />
                                         <div className="text-xs text-gray-300 font-bold">
                                             <span className="text-gray-500">#{item.id}</span>
                                         </div>

@@ -48,16 +48,8 @@ export const ChampionInfo = ({ isWin, champName, me, spells, getChampionIconUrl 
             ))}
         </div>
         <div className="flex flex-col gap-1">
-            {me?.runes?.primary ? (
-                <Image src={me.runes.primary} alt="Keystone" width={24} height={24} className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 object-cover" />
-            ) : (
-                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-lol-gold/50 flex items-center justify-center text-[10px] font-bold text-lol-gold">R</div>
-            )}
-            {me?.runes?.secondary ? (
-                <Image src={me.runes.secondary} alt="Secondary Rune" width={24} height={24} className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 object-cover p-1" />
-            ) : (
-                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-black border border-gray-700 flex items-center justify-center text-[10px] text-gray-400">S</div>
-            )}
+            <RuneIcon rune={me?.runes?.primary} isPrimary={true} />
+            <RuneIcon rune={me?.runes?.secondary} isPrimary={false} />
         </div>
     </div>
 );
@@ -163,3 +155,22 @@ export const LegendScoreBadge = ({ me }: any) => (
         )}
     </div>
 );
+
+const RuneIcon = ({ rune, isPrimary }: { rune?: string, isPrimary: boolean }) => {
+    if (rune) {
+        return (
+            <Image
+                src={rune}
+                alt={isPrimary ? "Keystone" : "Secondary Rune"}
+                width={24}
+                height={24}
+                className={`w-6 h-6 md:w-7 md:h-7 rounded-full bg-black object-cover ${isPrimary ? 'border border-lol-gold/50' : 'border border-gray-700 p-1'}`}
+            />
+        );
+    }
+    return (
+        <div className={`w-6 h-6 md:w-7 md:h-7 rounded-full bg-black flex items-center justify-center text-[10px] font-bold ${isPrimary ? 'border border-lol-gold/50 text-lol-gold' : 'border border-gray-700 text-gray-400'}`}>
+            {isPrimary ? 'R' : 'S'}
+        </div>
+    );
+};

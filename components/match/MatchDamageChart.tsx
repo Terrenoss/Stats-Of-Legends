@@ -135,25 +135,35 @@ const PlayerStatRow: React.FC<PlayerStatRowProps> = ({ participant, metricKey, m
 
   return (
     <div className={`flex items-center gap-2 ${align === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
-      {champImg ? (
-        <Image
-          src={champImg}
-          width={20}
-          height={20}
-          className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'}`}
-          alt={champName}
-        />
-      ) : (
-        <div className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>
-          {typeof champName === 'string' ? champName.charAt(0) : '?'}
-        </div>
-      )}
+      <ChampionIcon participant={participant} champImg={champImg} champName={champName} />
       <div className={`flex flex-col w-full ${align === 'right' ? 'items-end' : 'items-start'}`}>
         <div className={`text-[9px] text-gray-300 font-mono leading-none mb-0.5`}>{safeVal.toLocaleString()}</div>
         <div className={`h-1 bg-gray-800 rounded-full w-full flex ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
           <div style={{ width: `${safeWidth}%`, backgroundColor: color }} className="h-full rounded-full opacity-80"></div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const ChampionIcon = ({ participant, champImg, champName }: { participant: Participant, champImg: string | null, champName: string }) => {
+  const borderColor = participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800';
+
+  if (champImg) {
+    return (
+      <Image
+        src={champImg}
+        width={20}
+        height={20}
+        className={`w-5 h-5 rounded border ${borderColor}`}
+        alt={champName}
+      />
+    );
+  }
+
+  return (
+    <div className={`w-5 h-5 rounded border ${borderColor} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>
+      {typeof champName === 'string' ? champName.charAt(0) : '?'}
     </div>
   );
 };

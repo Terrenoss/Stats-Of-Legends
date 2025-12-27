@@ -153,11 +153,7 @@ export const ItemCatalog: React.FC<ItemCatalogProps> = ({ items, onItemSelect, t
               {/* Hover Tooltip */}
               <div className="absolute left-full top-0 ml-4 w-64 bg-[#121212] border border-lol-gold p-4 rounded-2xl shadow-2xl z-[100] hidden group-hover:block pointer-events-none">
                 <div className="font-bold text-lol-gold mb-2 font-display text-lg">{item.name}</div>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {item.tags?.map(tag => (
-                    <span key={tag} className="text-[8px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400 uppercase tracking-wider">{tag}</span>
-                  ))}
-                </div>
+                <ItemTags tags={item.tags} />
                 <div className="text-xs text-gray-300 space-y-1 mb-3">
                   {Object.entries(item.stats || {}).map(([key, val]) => (
                     val ? <div key={key} className="flex justify-between uppercase text-[10px] tracking-wider font-bold"><span>{key}</span> <span className="text-white">+{val}</span></div> : null
@@ -177,5 +173,16 @@ export const ItemCatalog: React.FC<ItemCatalogProps> = ({ items, onItemSelect, t
         )}
       </div>
     </div >
+  );
+};
+
+const ItemTags = ({ tags }: { tags?: string[] }) => {
+  if (!tags || tags.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1 mb-2">
+      {tags.map(tag => (
+        <span key={tag} className="text-[8px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400 uppercase tracking-wider">{tag}</span>
+      ))}
+    </div>
   );
 };

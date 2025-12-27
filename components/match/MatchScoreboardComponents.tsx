@@ -41,13 +41,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
             {/* Champ & Name */}
             <div className="col-span-4 lg:col-span-3 flex items-center gap-3 overflow-hidden">
                 <div className="relative">
-                    {champImg ? (
-                        <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 object-cover" alt={champName} />
-                    ) : (
-                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
-                            {typeof champName === 'string' ? champName.charAt(0) : '?'}
-                        </div>
-                    )}
+                    <ScoreboardChampionIcon champImg={champImg} champName={champName} />
                     <div className="absolute -bottom-1 -right-1 bg-black text-[8px] w-4 h-4 flex items-center justify-center rounded text-gray-400 border border-gray-800">{p.level ?? '-'}</div>
                 </div>
                 <div className="flex flex-col min-w-0">
@@ -181,6 +175,17 @@ export const TeamSection: React.FC<TeamSectionProps> = (props) => {
                     />
                 );
             })}
+        </div>
+    );
+};
+
+const ScoreboardChampionIcon = ({ champImg, champName }: { champImg: string | null, champName: string }) => {
+    if (champImg) {
+        return <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 object-cover" alt={champName} />;
+    }
+    return (
+        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
+            {typeof champName === 'string' ? champName.charAt(0) : '?'}
         </div>
     );
 };

@@ -272,24 +272,27 @@ export const SearchHero: React.FC<SearchHeroProps> = ({ onSearch, seasonInfo, la
 
         {/* Region Selector */}
         <div className="mt-8 flex flex-wrap justify-center gap-2">
-          {REGIONS.map((r) => {
-            const isSelected = selectedRegion === r;
-            const btnClass = isSelected
-              ? 'bg-lol-gold text-black shadow-glow-gold'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white';
-            return (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setSelectedRegion(r)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${btnClass}`}
-              >
-                {r}
-              </button>
-            );
-          })}
+          {REGIONS.map((r) => (
+            <RegionButton key={r} region={r} selectedRegion={selectedRegion} onSelect={setSelectedRegion} />
+          ))}
         </div>
       </div>
     </div>
+  );
+};
+
+const RegionButton = ({ region, selectedRegion, onSelect }: { region: Region, selectedRegion: Region, onSelect: (r: Region) => void }) => {
+  const isSelected = selectedRegion === region;
+  const btnClass = isSelected
+    ? 'bg-lol-gold text-black shadow-glow-gold'
+    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white';
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(region)}
+      className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${btnClass}`}
+    >
+      {region}
+    </button>
   );
 };

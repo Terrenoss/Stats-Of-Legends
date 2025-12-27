@@ -18,6 +18,7 @@ import { ChampionHeader } from './components/ChampionHeader';
 import { ROLES, TIERS, formatTier, getSpellName, getRoleIcon, getTopItems } from '@/utils/championUtils';
 
 const ICON_SIZE = 20;
+const SPELL_ICON_SIZE = 48;
 
 export default function ChampionDetailsClient({ params }: { params: { name: string } }) {
     const router = useRouter();
@@ -153,8 +154,8 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                                         <Image
                                             src={getSpellIconUrl(getSpellName(spell.id), CURRENT_PATCH)}
                                             alt={`Summoner Spell ${spell.id}`}
-                                            width={48}
-                                            height={48}
+                                            width={SPELL_ICON_SIZE}
+                                            height={SPELL_ICON_SIZE}
                                             className="w-12 h-12 rounded-lg border border-white/10"
                                         />
                                         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">

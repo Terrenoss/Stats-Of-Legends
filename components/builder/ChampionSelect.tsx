@@ -120,29 +120,36 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
                     </div>
 
                     <div className="grid grid-cols-5 gap-4 max-h-80 overflow-y-auto pr-2 scrollbar-hide">
-                        {filteredChampions.map(champ => {
-                            const isSelected = currentChampion?.id === champ.id;
-                            const cardClass = isSelected
-                                ? 'border-lol-gold bg-lol-gold/10'
-                                : 'border-transparent hover:border-lol-gold/30';
-
-                            return (
-                                <div
-                                    key={champ.id}
-                                    onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
-                                    className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${cardClass}`}
-                                >
-                                    <Image src={champ.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
-                                    <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
-                                </div>
-                            );
-                        })}
+                        {filteredChampions.map(champ => (
+                            <ChampionCard
+                                key={champ.id}
+                                champ={champ}
+                                isSelected={currentChampion?.id === champ.id}
+                                onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
+                            />
+                        ))}
                         {filteredChampions.length === 0 && (
                             <div className="col-span-5 text-center text-gray-500 text-sm py-4">No champion found.</div>
                         )}
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+const ChampionCard = ({ champ, isSelected, onClick }: { champ: Champion, isSelected: boolean, onClick: () => void }) => {
+    const cardClass = isSelected
+        ? 'border-lol-gold bg-lol-gold/10'
+        : 'border-transparent hover:border-lol-gold/30';
+
+    return (
+        <div
+            onClick={onClick}
+            className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${cardClass}`}
+        >
+            <Image src={champ.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
+            <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
         </div>
     );
 };

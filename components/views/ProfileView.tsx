@@ -78,15 +78,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ profile, matches, lang
                                                     </div>
                                                 </div>
                                                 <div className="text-right flex flex-col items-end">
-                                                    {(() => {
-                                                        const winRate = champ.wins / champ.games;
-                                                        const wrClass = winRate > 0.5 ? 'text-lol-win' : 'text-gray-500';
-                                                        return (
-                                                            <div className={`font-bold ${wrClass}`}>
-                                                                {Math.round(winRate * 100)}%
-                                                            </div>
-                                                        );
-                                                    })()}
+                                                    <WinRateDisplay wins={champ.wins} games={champ.games} />
                                                     <div className="text-gray-600 text-[10px]">{champ.games} games</div>
                                                 </div>
                                             </div>
@@ -166,3 +158,13 @@ const FilterButton = ({ label, active, onClick }: any) => (
         {label}
     </button>
 );
+
+const WinRateDisplay = ({ wins, games }: { wins: number, games: number }) => {
+    const winRate = wins / games;
+    const wrClass = winRate > 0.5 ? 'text-lol-win' : 'text-gray-500';
+    return (
+        <div className={`font-bold ${wrClass}`}>
+            {Math.round(winRate * 100)}%
+        </div>
+    );
+};

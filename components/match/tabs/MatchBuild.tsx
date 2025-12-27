@@ -66,20 +66,29 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
             <div className="bg-[#121212] p-6 rounded-xl border border-white/5">
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Runes</h4>
                 <div className="flex items-center gap-6">
-                    {runes?.primary ? (
-                        <div className="flex flex-col items-center gap-2">
-                            <Image src={runes.primary} width={64} height={64} className="w-16 h-16 rounded-full bg-black border border-lol-gold/50" alt="Keystone" />
-                            <span className="text-xs text-lol-gold font-bold">Keystone</span>
-                        </div>
-                    ) : null}
-                    {runes?.secondary ? (
-                        <div className="flex flex-col items-center gap-2">
-                            <Image src={runes.secondary} width={48} height={48} className="w-12 h-12 rounded-full bg-black border border-gray-600 p-2" alt="Secondary" />
-                            <span className="text-xs text-gray-400 font-bold">Secondary</span>
-                        </div>
-                    ) : null}
+                    <RuneDisplay rune={runes?.primary} type="KEYSTONE" />
+                    <RuneDisplay rune={runes?.secondary} type="SECONDARY" />
                 </div>
             </div>
+        </div>
+    );
+};
+
+const RuneDisplay = ({ rune, type }: { rune?: string, type: 'KEYSTONE' | 'SECONDARY' }) => {
+    if (!rune) return null;
+    const isKeystone = type === 'KEYSTONE';
+    return (
+        <div className="flex flex-col items-center gap-2">
+            <Image
+                src={rune}
+                width={isKeystone ? 64 : 48}
+                height={isKeystone ? 64 : 48}
+                className={`rounded-full bg-black ${isKeystone ? 'w-16 h-16 border border-lol-gold/50' : 'w-12 h-12 border border-gray-600 p-2'}`}
+                alt={isKeystone ? "Keystone" : "Secondary"}
+            />
+            <span className={`text-xs font-bold ${isKeystone ? 'text-lol-gold' : 'text-gray-400'}`}>
+                {isKeystone ? 'Keystone' : 'Secondary'}
+            </span>
         </div>
     );
 };
