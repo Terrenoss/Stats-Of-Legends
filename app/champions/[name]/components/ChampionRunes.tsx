@@ -2,32 +2,56 @@ import React from 'react';
 import Image from 'next/image';
 import { getRuneIconUrl } from '@/utils/ddragon';
 
+interface RunePage {
+    primaryStyle: number;
+    subStyle: number;
+    perks: number[];
+    statPerks?: Record<string, number>;
+    winRate: number;
+    matches: number;
+}
+
+interface RuneTreeData {
+    id: number;
+    key: string;
+    icon: string;
+    name: string;
+    slots: { runes: { id: number; icon: string; key: string; name: string }[] }[];
+}
+
 interface ChampionRunesProps {
     championName: string;
     role: string;
-    runePages: any[];
-    allRunes: any[];
+    runePages: RunePage[];
+    allRunes: RuneTreeData[];
     runeMap: Record<number, string>;
 }
 
+const SHARD_MAP: Record<number, string> = {
+    5001: 'StatModsHealthPlusIcon.png',
+    5002: 'StatModsArmorIcon.png',
+    5003: 'StatModsMagicResIcon.png',
+    5005: 'StatModsAttackSpeedIcon.png',
+    5008: 'StatModsAdaptiveForceIcon.png',
+    5007: 'StatModsCDRScalingIcon.png',
+    5010: 'StatModsMovementSpeedIcon.png',
+    5011: 'StatModsTenacityIcon.png',
+    5013: 'StatModsHealthScalingIcon.png'
+};
+
+const SHARD_ROWS = [
+    [5008, 5005, 5007], // Offense
+    [5008, 5010, 5001], // Flex
+    [5001, 5011, 5013]  // Defense
+];
+
 const getShardIcon = (id: number) => {
-    const map: Record<number, string> = {
-        5001: 'StatModsHealthPlusIcon.png',
-        5002: 'StatModsArmorIcon.png',
-        5003: 'StatModsMagicResIcon.png',
-        5005: 'StatModsAttackSpeedIcon.png',
-        5008: 'StatModsAdaptiveForceIcon.png',
-        5007: 'StatModsCDRScalingIcon.png',
-        5010: 'StatModsMovementSpeedIcon.png',
-        5011: 'StatModsTenacityIcon.png',
-        5013: 'StatModsHealthScalingIcon.png'
-    };
-    return map[id] ? getRuneIconUrl(`perk-images/StatMods/${map[id]}`) : '';
+    return SHARD_MAP[id] ? getRuneIconUrl(`perk-images/StatMods/${SHARD_MAP[id]}`) : '';
 };
 
 interface RuneTreeProps {
-    tree: any;
-    page: any;
+    tree: RuneTreeData;
+    page: RunePage;
     isPrimary: boolean;
     getRuneIcon: (id: number) => string;
 }
@@ -45,7 +69,7 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
             </div>
 
             <div className={`space-y-8 ${!isPrimary ? 'mb-10' : ''}`}>
-                {slots.map((slot: any, sIdx: number) => (
+                {slots.map((slot, sIdx) => (
                     <RuneRow key={sIdx} slot={slot} page={page} isPrimary={isPrimary} activeColor={activeColor} />
                 ))}
             </div>
@@ -54,7 +78,7 @@ const RuneTree = ({ tree, page, isPrimary, getRuneIcon }: RuneTreeProps) => {
     );
 };
 
-const RuneRow = ({ slot, page, isPrimary, activeColor }: any) => {
+const RuneRow = ({ slot, page, isPrimary, activeColor }: { slot: any, page: RunePage, isPrimary: boolean, activeColor: string }) => {
     const getRuneIconClass = (active: boolean) => {
         const sizeClass = isPrimary ? 'w-14 h-14' : 'w-12 h-12';
         const stateClass = active ? `${activeColor} opacity-100 scale-110` : 'border-transparent opacity-30 grayscale hover:opacity-60';
@@ -81,14 +105,10 @@ const RuneRow = ({ slot, page, isPrimary, activeColor }: any) => {
     );
 };
 
-const ShardSection = ({ page }: { page: any }) => (
+const ShardSection = ({ page }: { page: RunePage }) => (
     <div className="pt-8 border-t border-white/5">
         <div className="space-y-4">
-            {[
-                [5008, 5005, 5007], // Offense
-                [5008, 5010, 5001], // Flex
-                [5001, 5011, 5013]  // Defense
-            ].map((rowIds, rowIdx) => (
+            {SHARD_ROWS.map((rowIds, rowIdx) => (
                 <div key={rowIdx} className="flex justify-center gap-8">
                     {rowIds.map((shardId) => {
                         let active = false;
@@ -135,8 +155,8 @@ export const ChampionRunes: React.FC<ChampionRunesProps> = ({ championName, role
     }
 
     const page = runePages[0];
-    const primaryTree = allRunes.find((t: any) => t.id === page.primaryStyle);
-    const subTree = allRunes.find((t: any) => t.id === page.subStyle);
+    const primaryTree = allRunes.find((t) => t.id === page.primaryStyle);
+    const subTree = allRunes.find((t) => t.id === page.subStyle);
 
     return (
         <div className="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden">

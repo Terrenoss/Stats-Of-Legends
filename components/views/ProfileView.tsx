@@ -78,9 +78,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ profile, matches, lang
                                                     </div>
                                                 </div>
                                                 <div className="text-right flex flex-col items-end">
-                                                    <div className={`font-bold ${champ.wins / champ.games > 0.5 ? 'text-lol-win' : 'text-gray-500'}`}>
-                                                        {Math.round((champ.wins / champ.games) * 100)}%
-                                                    </div>
+                                                    {(() => {
+                                                        const winRate = champ.wins / champ.games;
+                                                        const wrClass = winRate > 0.5 ? 'text-lol-win' : 'text-gray-500';
+                                                        return (
+                                                            <div className={`font-bold ${wrClass}`}>
+                                                                {Math.round(winRate * 100)}%
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <div className="text-gray-600 text-[10px]">{champ.games} games</div>
                                                 </div>
                                             </div>

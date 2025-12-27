@@ -68,7 +68,8 @@ export default function SummonerClientPage({ params }: { params: { region: strin
       default: return '#ffd700';
     }
   };
-  const rankColor = profile?.ranks?.solo?.tier ? getRankColor(profile.ranks.solo.tier) : '#ffd700';
+  const tier = profile?.ranks?.solo?.tier;
+  const rankColor = tier ? getRankColor(tier) : '#ffd700';
 
   if (loading) {
     return <SummonerPageSkeleton />;

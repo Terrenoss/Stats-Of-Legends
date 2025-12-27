@@ -96,24 +96,31 @@ export const MatchScore: React.FC<MatchScoreProps> = ({ participants, timelineDa
                     <div className="absolute top-0 left-0 z-10 flex flex-col gap-2">
                         {/* Toggle for Champion vs Rank comparison */}
                         <div className="flex bg-black/50 rounded-lg p-1 border border-white/10 backdrop-blur-sm mt-1">
-                            <button
-                                onClick={() => setComparisonMode('CHAMPION')}
-                                className={`flex-1 px-3 py-1.5 text-[10px] font-bold rounded transition-all ${comparisonMode === 'CHAMPION'
+                            {(() => {
+                                const champBtnClass = comparisonMode === 'CHAMPION'
                                     ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                Champion
-                            </button>
-                            <button
-                                onClick={() => setComparisonMode('TIER')}
-                                className={`flex-1 px-3 py-1.5 text-[10px] font-bold rounded transition-all ${comparisonMode === 'TIER'
+                                    : 'text-gray-400 hover:text-white hover:bg-white/5';
+                                const tierBtnClass = comparisonMode === 'TIER'
                                     ? 'bg-purple-600 text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                Rank
-                            </button>
+                                    : 'text-gray-400 hover:text-white hover:bg-white/5';
+
+                                return (
+                                    <>
+                                        <button
+                                            onClick={() => setComparisonMode('CHAMPION')}
+                                            className={`flex-1 px-3 py-1.5 text-[10px] font-bold rounded transition-all ${champBtnClass}`}
+                                        >
+                                            Champion
+                                        </button>
+                                        <button
+                                            onClick={() => setComparisonMode('TIER')}
+                                            className={`flex-1 px-3 py-1.5 text-[10px] font-bold rounded transition-all ${tierBtnClass}`}
+                                        >
+                                            Rank
+                                        </button>
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
 

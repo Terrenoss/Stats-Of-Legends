@@ -18,7 +18,7 @@ interface BuilderGridProps {
   onAnalyze: () => void;
   isAnalyzing: boolean;
   aiAnalysis: string | null;
-  t: any;
+  t: Record<string, string>;
 }
 
 export const BuilderGrid: React.FC<BuilderGridProps> = ({

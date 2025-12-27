@@ -3,13 +3,15 @@ import Image from 'next/image';
 import { Participant } from '../../types';
 import { SafeLink } from '../ui/SafeLink';
 
+import { Item } from '../../types';
+
 export interface ParticipantRowProps {
     participant: Participant;
     context: {
         maxDamage: number;
         calcCsPerMin: (p: Participant) => number;
-        isWardItem: (item: any) => boolean;
-        normalizeWardType: (item: any) => string | null;
+        isWardItem: (item: Item) => boolean;
+        normalizeWardType: (item: Item) => string | null;
     };
     badges: {
         isAce: boolean;
@@ -26,7 +28,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
     const champImg = p.champion?.imageUrl ?? null;
     const champName = p.champion?.name ?? 'Unknown';
     const items = Array.isArray(p.items) ? p.items : [];
-    const itemsFiltered = items.filter((it: any) => !isWardItem(it));
+    const itemsFiltered = items.filter((it: Item) => !isWardItem(it));
     const damage = Number(p.totalDamageDealtToChampions ?? 0);
     const kills = p.kills ?? 0;
     const deaths = p.deaths ?? 0;
@@ -42,7 +44,9 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
                     {champImg ? (
                         <Image src={champImg} width={32} height={32} className="w-8 h-8 rounded-lg border border-gray-700 object-cover" alt={champName} />
                     ) : (
-                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
+                        <div className="w-8 h-8 rounded-lg border border-gray-700 bg-white/5 flex items-center justify-center text-xs font-bold text-gray-300">
+                            {typeof champName === 'string' ? champName.charAt(0) : '?'}
+                        </div>
                     )}
                     <div className="absolute -bottom-1 -right-1 bg-black text-[8px] w-4 h-4 flex items-center justify-center rounded text-gray-400 border border-gray-800">{p.level ?? '-'}</div>
                 </div>
@@ -92,7 +96,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({ participant, con
     );
 };
 
-export const ParticipantItems = ({ items }: { items: any[] }) => {
+export const ParticipantItems = ({ items }: { items: Item[] }) => {
     const displayItems = [...items];
     while (displayItems.length < 6) {
         displayItems.push(null as any);
@@ -114,7 +118,7 @@ export const ParticipantItems = ({ items }: { items: any[] }) => {
     );
 };
 
-export const ParticipantWard = ({ items, isWardItem, normalizeWardType }: any) => {
+export const ParticipantWard = ({ items, isWardItem, normalizeWardType }: { items: Item[], isWardItem: (i: Item) => boolean, normalizeWardType: (i: Item) => string | null }) => {
     const wardItem = Array.isArray(items) ? items.find(isWardItem) : null;
     if (!wardItem) {
         return <div className="w-6 h-6 rounded-full bg-yellow-500/10 border border-yellow-500/30 ml-1"></div>;
@@ -145,20 +149,21 @@ const participantEquals = (a?: Participant | null, b?: Participant | null) => {
 interface TeamSectionProps {
     teamName: string;
     isWin: boolean;
-    participants: any[];
-    bestWinningByGold?: any;
-    bestLosingByOp?: any;
-    context: any;
+    participants: Participant[];
+    bestWinningByGold?: Participant | null;
+    bestLosingByOp?: Participant | null;
+    context: ParticipantRowProps['context'];
 }
 
-export const TeamSection = ({ teamName, isWin, participants, bestWinningByGold, bestLosingByOp, context }: TeamSectionProps) => {
+export const TeamSection: React.FC<TeamSectionProps> = (props) => {
+    const { teamName, isWin, participants, bestWinningByGold, bestLosingByOp, context } = props;
     return (
         <div className="flex flex-col gap-1">
             <div className={`text-xs font-bold px-2 mb-2 flex justify-between items-center ${isWin ? 'text-lol-win' : 'text-lol-loss'}`}>
                 <span>{isWin ? 'VICTORY' : 'DEFEAT'}</span>
                 <span className="text-gray-600 text-[10px] uppercase">{teamName}</span>
             </div>
-            {participants.map((p: any, i: number) => {
+            {participants.map((p, i) => {
                 const isAce = !!p.ace || (Number(p.aceCount ?? 0) > 0);
                 const isMvpGold = !!bestWinningByGold && participantEquals(p, bestWinningByGold);
                 const isMvpGrey = !!bestLosingByOp && participantEquals(p, bestLosingByOp);

@@ -6,7 +6,7 @@ interface BuilderActionsProps {
     onAnalyze: () => void;
     isAnalyzing: boolean;
     aiAnalysis: string | null;
-    t: any;
+    t: Record<string, string>;
 }
 
 export const BuilderActions: React.FC<BuilderActionsProps> = ({ history, onAnalyze, isAnalyzing, aiAnalysis, t }) => {

@@ -6,38 +6,45 @@ import { SafeLink } from '../ui/SafeLink';
 import { ParticipantRow, ParticipantItems, ParticipantWard, TeamSection } from './MatchScoreboardComponents';
 import { isWardItem, normalizeWardType } from '../../utils/matchUtils';
 
+import { Language } from '../../types';
+
 interface MatchScoreboardProps {
   participants: Participant[];
   maxDamage: number;
   mvpId: string;
   aceId: string;
-  lang: string;
+  lang: Language;
   gameDurationSeconds?: number; // ajouté pour calculer cs/m
 }
+
+const TEAM_BLUE_ID = 100;
+const TEAM_RED_ID = 200;
+const DEFAULT_GAME_DURATION = 600; // 10 minutes fallback
+
 
 export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ participants, maxDamage, mvpId, aceId, lang, gameDurationSeconds }) => {
   const t = TRANSLATIONS[lang as keyof typeof TRANSLATIONS];
 
   const calcCsPerMin = (p: Participant) => {
     const cs = (p.cs ?? 0);
-    const duration = (gameDurationSeconds && gameDurationSeconds > 0) ? gameDurationSeconds : 600; // fallback 10min to avoid huge numbers
+    const duration = (gameDurationSeconds && gameDurationSeconds > 0) ? gameDurationSeconds : DEFAULT_GAME_DURATION;
     const minutes = Math.max(0.1, duration / 60);
     return +(cs / minutes).toFixed(1);
   };
 
-  const team100 = participants.filter(p => p.teamId === 100);
-  const team200 = participants.filter(p => p.teamId === 200);
+  const team100 = participants.filter(p => p.teamId === TEAM_BLUE_ID);
+  const team200 = participants.filter(p => p.teamId === TEAM_RED_ID);
   const team100Win = team100.length ? !!team100[0].win : false;
   const team200Win = team200.length ? !!team200[0].win : false;
 
   // Determine MVP gold: best gold from winning team
   let winningTeamId: number | null = null;
-  if (team100Win) winningTeamId = 100;
-  else if (team200Win) winningTeamId = 200;
+  if (team100Win) winningTeamId = TEAM_BLUE_ID;
+  else if (team200Win) winningTeamId = TEAM_RED_ID;
 
   let losingTeamId: number | null = null;
-  if (winningTeamId === 100) losingTeamId = 200;
-  else if (winningTeamId === 200) losingTeamId = 100;
+  if (winningTeamId === TEAM_BLUE_ID) losingTeamId = TEAM_RED_ID;
+  else if (winningTeamId === TEAM_RED_ID) losingTeamId = TEAM_BLUE_ID;
 
   // compute arrays for potential use
   const winningTeamParticipants = winningTeamId ? participants.filter(p => p.teamId === winningTeamId) : [];

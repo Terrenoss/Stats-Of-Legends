@@ -3,6 +3,17 @@ import { CURRENT_PATCH } from '@/constants';
 import { mapWithConcurrency } from '@/utils/concurrency';
 
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
+const CACHE_DURATION_24H = 1000 * 60 * 60 * 24;
+const QUEUE_SOLO = 'RANKED_SOLO_5x5';
+const QUEUE_FLEX = 'RANKED_FLEX_SR';
+const HIGH_ELO_TIERS = ['MASTER', 'GRANDMASTER', 'CHALLENGER'];
+
+const REGION_MAP: Record<string, string> = {
+    'euw': 'euw1', 'eune': 'eun1', 'na': 'na1', 'kr': 'kr', 'br': 'br1',
+    'lan': 'la1', 'las': 'la2', 'oce': 'oc1', 'ru': 'ru', 'tr': 'tr1',
+    'jp': 'jp1', 'ph': 'ph2', 'sg': 'sg2', 'th': 'th2', 'tw': 'tw2', 'vn': 'vn2',
+};
+
 
 async function riotFetch(url: string) {
     const response = await fetch(url, {
@@ -20,13 +31,13 @@ export class SpectatorService {
             const cachedRank = await prisma.summonerRank.findFirst({
                 where: {
                     summonerPuuid: puuid,
-                    queueType: 'RANKED_SOLO_5x5',
-                    updatedAt: { gt: new Date(Date.now() - 1000 * 60 * 60 * 24) } // 24h cache
+                    queueType: QUEUE_SOLO,
+                    updatedAt: { gt: new Date(Date.now() - CACHE_DURATION_24H) } // 24h cache
                 }
             });
 
             if (cachedRank) {
-                if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(cachedRank.tier)) {
+                if (HIGH_ELO_TIERS.includes(cachedRank.tier)) {
                     return `${cachedRank.tier} ${cachedRank.leaguePoints} LP`;
                 }
                 return `${cachedRank.tier} ${cachedRank.rank}`;
@@ -97,7 +108,7 @@ export class SpectatorService {
             }
 
             const leagues = await leagueRes.json();
-            const solo = leagues.find((league: any) => league.queueType === 'RANKED_SOLO_5x5');
+            const solo = leagues.find((league: any) => league.queueType === QUEUE_SOLO);
 
             if (solo) {
                 // Cache to DB
@@ -106,7 +117,7 @@ export class SpectatorService {
                         where: {
                             summonerPuuid_queueType: {
                                 summonerPuuid: participant.puuid,
-                                queueType: 'RANKED_SOLO_5x5'
+                                queueType: QUEUE_SOLO
                             }
                         },
                         update: {
@@ -118,7 +129,7 @@ export class SpectatorService {
                         },
                         create: {
                             summonerPuuid: participant.puuid,
-                            queueType: 'RANKED_SOLO_5x5',
+                            queueType: QUEUE_SOLO,
                             tier: solo.tier,
                             rank: solo.rank,
                             leaguePoints: solo.leaguePoints,
@@ -130,13 +141,13 @@ export class SpectatorService {
                     console.warn('[Spectator] Rank cache write failed:', cacheErr);
                 }
 
-                if (['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(solo.tier)) {
+                if (HIGH_ELO_TIERS.includes(solo.tier)) {
                     return `${solo.tier} ${solo.leaguePoints} LP`;
                 }
                 return `${solo.tier} ${solo.rank}`;
             }
 
-            const flex = leagues.find((league: any) => league.queueType === 'RANKED_FLEX_SR');
+            const flex = leagues.find((league: any) => league.queueType === QUEUE_FLEX);
             if (flex) return `${flex.tier} ${flex.rank} (Flex)`;
 
         } catch (e) {
@@ -232,14 +243,8 @@ export class SpectatorService {
     }
 
     static getRegionRouting(region: string) {
-        const regionMap: Record<string, string> = {
-            'euw': 'euw1', 'eune': 'eun1', 'na': 'na1', 'kr': 'kr', 'br': 'br1',
-            'lan': 'la1', 'las': 'la2', 'oce': 'oc1', 'ru': 'ru', 'tr': 'tr1',
-            'jp': 'jp1', 'ph': 'ph2', 'sg': 'sg2', 'th': 'th2', 'tw': 'tw2', 'vn': 'vn2',
-        };
-
         const cleanRegion = region.toLowerCase();
-        const routing = regionMap[cleanRegion] || cleanRegion;
+        const routing = REGION_MAP[cleanRegion] || cleanRegion;
 
         let regionalRouting = 'europe';
         if (['na1', 'br1', 'la1', 'la2'].includes(routing)) regionalRouting = 'americas';

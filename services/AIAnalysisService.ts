@@ -2,6 +2,10 @@ import { GoogleGenAI } from "@google/genai";
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || '1024');
+const DEFAULT_TEMPERATURE = 0.2;
+const MIN_RESPONSE_LENGTH = 10;
+const MAX_STREAM_TOKENS = 8192;
+
 
 export class AIAnalysisService {
 
@@ -10,7 +14,7 @@ export class AIAnalysisService {
             const stream = await ai.models.generateContentStream({
                 model,
                 contents: prompt,
-                config: { maxOutputTokens: maxTokens, temperature: 0.2 }
+                config: { maxOutputTokens: maxTokens, temperature: DEFAULT_TEMPERATURE }
             });
             let collected = '';
             for await (const chunk of stream) {
@@ -111,22 +115,22 @@ export class AIAnalysisService {
                 model: MODEL,
                 contents: prompt,
                 config: {
-                    temperature: 0.2,
+                    temperature: DEFAULT_TEMPERATURE,
                     maxOutputTokens: MAX_OUTPUT_TOKENS,
                 }
             });
 
             let extracted = this.extractTextFromResponse(response);
 
-            if ((!extracted.text || extracted.text.length < 10) && extracted.truncated) {
-                const increased = Math.min(MAX_OUTPUT_TOKENS * 2, 8192);
+            if ((!extracted.text || extracted.text.length < MIN_RESPONSE_LENGTH) && extracted.truncated) {
+                const increased = Math.min(MAX_OUTPUT_TOKENS * 2, MAX_STREAM_TOKENS);
                 const streamed = await this.streamResponseToText(ai, prompt, MODEL, increased);
                 if (streamed && streamed.trim().length) {
                     extracted = { text: streamed.trim(), truncated: false };
                 }
             }
 
-            if (!extracted.text || extracted.text.trim().length < 10) {
+            if (!extracted.text || extracted.text.trim().length < MIN_RESPONSE_LENGTH) {
                 console.error('Gemini: no usable text returned from model (response truncated or empty).');
                 return { result: '', error: "Erreur IA : impossible de générer l'analyse." };
             }
@@ -165,7 +169,7 @@ export async function analyzeBuild(champion: any, items: any[], stats: any): Pro
         const response = await ai.models.generateContent({
             model: MODEL,
             contents: prompt,
-            config: { temperature: 0.2, maxOutputTokens: 500 }
+            config: { temperature: DEFAULT_TEMPERATURE, maxOutputTokens: 500 }
         });
 
         const extracted = AIAnalysisService.extractTextFromResponse(response);

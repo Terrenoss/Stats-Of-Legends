@@ -8,6 +8,12 @@ import { SafeLink } from './ui/SafeLink';
 import { useSafeNavigation } from '../hooks/useSafeNavigation';
 import { useLanguage } from "../app/LanguageContext";
 
+const PATCH_URL_BASE = 'https://www.leagueoflegends.com/fr-fr/news/game-updates/patch-';
+const DEFAULT_REGION = 'EUW';
+const REGIONS = ['EUW', 'NA1', 'KR', 'EUN1'];
+const LANGUAGES: Language[] = ['FR', 'EN', 'ES', 'KR'];
+
+
 interface NavbarProps {
   currentView?: string;
   onNavigate?: (view: string) => void;
@@ -39,14 +45,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Logic to generate patch notes URL
   // Mapping logic: 15.x.y -> patch-25-x-notes (Season 15 -> Year 25)
   const patchParts = currentPatch.split('.');
-
   let season = patchParts[0];
   if (season === '15') season = '25'; // Map Season 15 to Year 2025 shortcode
-
   const patchNumber = patchParts[1];
 
   const patchUrl = patchParts.length >= 2
-    ? `https://www.leagueoflegends.com/fr-fr/news/game-updates/patch-${season}-${patchNumber}-notes/`
+    ? `${PATCH_URL_BASE}${season}-${patchNumber}-notes/`
     : '#';
 
   return (
@@ -128,12 +132,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <select
                   name="region"
                   className="appearance-none bg-transparent text-xs font-bold text-gray-300 py-3 pl-4 pr-8 focus:outline-none cursor-pointer uppercase tracking-wider"
-                  defaultValue="EUW"
+                  defaultValue={DEFAULT_REGION}
                 >
-                  <option value="EUW">EUW</option>
-                  <option value="NA1">NA</option>
-                  <option value="KR">KR</option>
-                  <option value="EUN1">EUNE</option>
+                  {REGIONS.map(r => (
+                    <option key={r} value={r}>{r === 'NA1' ? 'NA' : r === 'EUN1' ? 'EUNE' : r}</option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
               </div>
@@ -187,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {isLangMenuOpen && (
                 <div className="absolute right-0 top-full mt-3 w-32 bg-[#121212] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn overflow-hidden">
-                  {(['FR', 'EN', 'ES', 'KR'] as Language[]).map(lang => (
+                  {LANGUAGES.map(lang => (
                     <div
                       key={lang}
                       className={`px-4 py-2 text-xs font-bold hover:bg-white/5 cursor-pointer flex items-center justify-between group ${currentLang === lang ? 'text-lol-gold' : 'text-gray-400'}`}

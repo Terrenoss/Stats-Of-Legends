@@ -66,12 +66,12 @@ export const LegendScoreRadar: React.FC<LegendScoreRadarProps> = ({ playerStats,
     // Inject comparison data
     comparisons.forEach((comp, idx) => {
         const key = `C${idx}`;
-        data[0][key] = comp.stats?.combat;
-        data[1][key] = comp.stats?.objectives;
-        data[2][key] = comp.stats?.vision;
-        data[3][key] = comp.stats?.farming;
-        data[4][key] = comp.stats?.survival;
-        data[5][key] = comp.stats?.aggressiveness;
+        data[0][key] = comp.stats?.combat ?? 0;
+        data[1][key] = comp.stats?.objectives ?? 0;
+        data[2][key] = comp.stats?.vision ?? 0;
+        data[3][key] = comp.stats?.farming ?? 0;
+        data[4][key] = comp.stats?.survival ?? 0;
+        data[5][key] = comp.stats?.aggressiveness ?? 0;
     });
 
     return (

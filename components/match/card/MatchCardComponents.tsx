@@ -76,33 +76,39 @@ interface KDAInfoProps {
     };
 }
 
-export const KDAInfo = ({ stats, context }: KDAInfoProps) => (
-    <div className="flex flex-col items-center w-32 relative">
-        {/* MVP Badge Logic */}
-        {(() => {
-            const myScore = context.me.legendScore || 0;
-            const maxScore = Math.max(...(context.match.participants || []).map((p: any) => p.legendScore || 0));
-            const isMvp = myScore > 0 && myScore === maxScore;
+export const KDAInfo = ({ stats, context }: KDAInfoProps) => {
+    const teamParticipants = context.match.participants.filter((p: any) => p.win === context.isWin);
+    const teamTotalKills = teamParticipants.reduce((a: any, b: any) => a + b.kills, 0);
+    const killParticipation = Math.round(((stats.kills + stats.assists) / Math.max(1, teamTotalKills)) * 100);
 
-            if (isMvp && context.isWin) {
-                return (
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-t-lg shadow-[0_-2px_10px_rgba(255,215,0,0.5)] z-20 animate-pulse">
-                        MVP
-                    </div>
-                );
-            }
-            return null;
-        })()}
+    return (
+        <div className="flex flex-col items-center w-32 relative">
+            {/* MVP Badge Logic */}
+            {(() => {
+                const myScore = context.me.legendScore || 0;
+                const maxScore = Math.max(...(context.match.participants || []).map((p: any) => p.legendScore || 0));
+                const isMvp = myScore > 0 && myScore === maxScore;
 
-        <div className="text-xl font-display font-black text-white tracking-widest">
-            {stats.kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{stats.deaths}</span> <span className="text-gray-500 text-sm">/</span> {stats.assists}
+                if (isMvp && context.isWin) {
+                    return (
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-t-lg shadow-[0_-2px_10px_rgba(255,215,0,0.5)] z-20 animate-pulse">
+                            MVP
+                        </div>
+                    );
+                }
+                return null;
+            })()}
+
+            <div className="text-xl font-display font-black text-white tracking-widest">
+                {stats.kills} <span className="text-gray-500 text-sm">/</span> <span className="text-lol-red">{stats.deaths}</span> <span className="text-gray-500 text-sm">/</span> {stats.assists}
+            </div>
+            <div className={`text-xs font-mono mt-0.5 font-bold ${getKdaColorClass(stats.kda)}`}>
+                {stats.kda} KDA
+            </div>
+            <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {killParticipation}%</div>
         </div>
-        <div className={`text-xs font-mono mt-0.5 font-bold ${getKdaColorClass(stats.kda)}`}>
-            {stats.kda} KDA
-        </div>
-        <div className="text-[10px] text-gray-500 font-bold uppercase mt-1">P/Kill {Math.round(((stats.kills + stats.assists) / Math.max(1, (context.isWin ? context.match.participants.filter((p: any) => p.win) : context.match.participants.filter((p: any) => !p.win)).reduce((a: any, b: any) => a + b.kills, 0))) * 100)}%</div>
-    </div>
-);
+    );
+};
 
 export const ItemsList = ({ me }: any) => (
     <div className="grid grid-cols-4 gap-1 max-w-[120px]">

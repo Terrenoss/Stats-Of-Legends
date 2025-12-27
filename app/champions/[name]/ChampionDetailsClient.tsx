@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { CURRENT_PATCH } from '@/constants';
@@ -16,6 +16,8 @@ import { ChampionDuos } from './components/ChampionDuos';
 import { ChampionHeader } from './components/ChampionHeader';
 
 import { ROLES, TIERS, formatTier, getSpellName, getRoleIcon, getTopItems } from '@/utils/championUtils';
+
+const ICON_SIZE = 20;
 
 export default function ChampionDetailsClient({ params }: { params: { name: string } }) {
     const router = useRouter();
@@ -67,14 +69,13 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                 getSpellName={getSpellName}
             />
 
-            {/* Filters & Stats Bar */}
             <div className="bg-[#0f0f0f] border-b border-white/5 py-4">
                 <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row gap-6 items-center justify-between">
                     {/* Filters */}
                     <div className="flex gap-4">
                         <div className="relative">
                             <div className="flex items-center bg-[#1a1a1a] border border-white/10 rounded-lg px-2">
-                                {getRoleIcon(role) && <Image src={getRoleIcon(role)} alt={role} width={20} height={20} className="w-5 h-5 mr-2 opacity-70" />}
+                                {getRoleIcon(role) && <Image src={getRoleIcon(role)} alt={role} width={ICON_SIZE} height={ICON_SIZE} className="w-5 h-5 mr-2 opacity-70" />}
                                 <select
                                     value={role}
                                     onChange={(e) => handleRoleChange(e.target.value)}
@@ -97,7 +98,6 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                         </div>
                     </div>
 
-                    {/* Stats Row */}
                     <div className="flex gap-12 text-center">
                         <div>
                             <div className={`text-2xl font-bold ${tier === 'S+' || tier === 'S' ? 'text-lol-gold' : 'text-white'}`}>{tier}</div>
@@ -143,7 +143,6 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Runes & Spells */}
                     <div className="space-y-8">
                         {/* Summoner Spells */}
                         <div className="bg-[#121212] border border-white/5 rounded-2xl p-6">
@@ -182,6 +181,6 @@ export default function ChampionDetailsClient({ params }: { params: { name: stri
                 </div>
             </div>
 
-        </div >
+        </div>
     );
 }

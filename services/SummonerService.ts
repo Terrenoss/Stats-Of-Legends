@@ -9,6 +9,9 @@ import {
 import { RiotAccount, RiotSummoner } from '@/types';
 
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+export const QUEUE_SOLO = 'RANKED_SOLO_5x5';
+export const QUEUE_FLEX = 'RANKED_FLEX_SR';
+
 
 export class SummonerService {
 
@@ -105,7 +108,7 @@ export class SummonerService {
             const leagueEntries = JSON.parse(lRes.body || '[]');
 
             for (const entry of leagueEntries) {
-                if (entry.queueType === 'RANKED_SOLO_5x5' || entry.queueType === 'RANKED_FLEX_SR') {
+                if (entry.queueType === QUEUE_SOLO || entry.queueType === QUEUE_FLEX) {
                     // 1. Upsert Current Rank
                     await prisma.summonerRank.upsert({
                         where: {

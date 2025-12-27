@@ -3,12 +3,30 @@ import Image from 'next/image';
 import { getItemIconUrl } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';
 
+interface ItemGroup {
+    items: number[];
+    winRate: number;
+    matches: number;
+}
+
+interface ItemPath {
+    path: number[];
+    winRate: number;
+    matches: number;
+}
+
+interface SlotItem {
+    id: number;
+    winRate: number;
+    matches: number;
+}
+
 interface ChampionBuildPathProps {
-    startingItems: any[];
-    itemPaths: any[];
-    slot4: any[];
-    slot5: any[];
-    slot6: any[];
+    startingItems: ItemGroup[];
+    itemPaths: ItemPath[];
+    slot4: SlotItem[];
+    slot5: SlotItem[];
+    slot6: SlotItem[];
 }
 
 const StackedItem = ({ item }: { item: { id: number; count: number } }) => (
@@ -22,7 +40,7 @@ const StackedItem = ({ item }: { item: { id: number; count: number } }) => (
     </div>
 );
 
-const StartingItemGroup = ({ group }: { group: any }) => {
+const StartingItemGroup = ({ group }: { group: ItemGroup }) => {
     const stackedItems: { id: number; count: number }[] = [];
     group.items.forEach((id: number) => {
         const existing = stackedItems.find(i => i.id === id);
@@ -45,19 +63,19 @@ const StartingItemGroup = ({ group }: { group: any }) => {
     );
 };
 
-const StartingItems = ({ items }: { items: any[] }) => {
+const StartingItems = ({ items }: { items: ItemGroup[] }) => {
     if (!items || items.length === 0) return <div className="text-gray-500 text-sm">No data.</div>;
 
     return (
         <div className="space-y-3">
-            {items.map((group: any, idx: number) => (
+            {items.map((group, idx) => (
                 <StartingItemGroup key={idx} group={group} />
             ))}
         </div>
     );
 };
 
-const CoreItems = ({ items }: { items: any[] }) => {
+const CoreItems = ({ items }: { items: ItemPath[] }) => {
     if (!items || items.length === 0) return <div className="text-gray-500">No core build data.</div>;
 
     return (
@@ -81,7 +99,7 @@ const CoreItems = ({ items }: { items: any[] }) => {
     );
 };
 
-const ItemOptions = ({ slot4, slot5, slot6 }: { slot4: any[], slot5: any[], slot6: any[] }) => {
+const ItemOptions = ({ slot4, slot5, slot6 }: { slot4: SlotItem[], slot5: SlotItem[], slot6: SlotItem[] }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -93,7 +111,7 @@ const ItemOptions = ({ slot4, slot5, slot6 }: { slot4: any[], slot5: any[], slot
                     <h4 className="text-sm font-bold text-purple-400 mb-3 border-l-2 border-purple-400 pl-2">{slot.title}</h4>
                     {slot.data && slot.data.length > 0 ? (
                         <div className="space-y-2">
-                            {slot.data.map((item: any) => (
+                            {slot.data.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5">
                                     <div className="flex items-center gap-3">
                                         <Image src={getItemIconUrl(item.id, CURRENT_PATCH)} alt={`Item ${item.id}`} width={40} height={40} className="w-10 h-10 rounded border border-white/10" />

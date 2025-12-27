@@ -144,7 +144,9 @@ const PlayerStatRow: React.FC<PlayerStatRowProps> = ({ participant, metricKey, m
           alt={champName}
         />
       ) : (
-        <div className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>{(champName && typeof champName === 'string') ? champName.charAt(0) : '?'}</div>
+        <div className={`w-5 h-5 rounded border ${participant.summonerName === 'Faker' ? 'border-lol-gold' : 'border-gray-800'} bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-300`}>
+          {typeof champName === 'string' ? champName.charAt(0) : '?'}
+        </div>
       )}
       <div className={`flex flex-col w-full ${align === 'right' ? 'items-end' : 'items-start'}`}>
         <div className={`text-[9px] text-gray-300 font-mono leading-none mb-0.5`}>{safeVal.toLocaleString()}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useBuilderData } from '@/hooks/useBuilderData';
 import { useStatsCalculation } from '@/hooks/useStatsCalculation';
 import { useHistory } from '@/hooks/useHistory';
@@ -18,6 +18,9 @@ const DEFAULT_DUMMY: DummyStats = {
   mr: 0
 };
 
+const MAX_HISTORY_SIZE = 20;
+const DEFAULT_CHAMPION_LEVEL = 18;
+
 export default function BuilderPage() {
   const { lang } = useLanguage();
   const t = TRANSLATIONS[lang];
@@ -26,12 +29,12 @@ export default function BuilderPage() {
     state: selectedItems,
     set: setSelectedItems,
     undo, redo, canUndo, canRedo, reset: resetHistory
-  } = useHistory<(Item | null)[]>([null, null, null, null, null, null], 20);
+  } = useHistory<(Item | null)[]>([null, null, null, null, null, null], MAX_HISTORY_SIZE);
 
   const { champions, items } = useBuilderData();
 
   const [currentChampion, setCurrentChampion] = useState<Champion | null>(null);
-  const [championLevel, setChampionLevel] = useState<number>(18);
+  const [championLevel, setChampionLevel] = useState<number>(DEFAULT_CHAMPION_LEVEL);
   const [spellLevels, setSpellLevels] = useState<{ [key: string]: number }>({ Q: 1, W: 1, E: 1, R: 1 });
   const stats = useStatsCalculation(currentChampion, championLevel, selectedItems);
   const [dummy, setDummy] = useState<DummyStats>(DEFAULT_DUMMY);
@@ -58,8 +61,8 @@ export default function BuilderPage() {
     const activeItems = selectedItems.filter((i): i is Item => i !== null);
     if (activeItems.length === 0) return;
     setIsAnalyzing(true);
-    const result = await analyzeBuild(currentChampion, activeItems, stats);
-    setAiAnalysis(result);
+    const aiAnalysisResult = await analyzeBuild(currentChampion, activeItems, stats);
+    setAiAnalysis(aiAnalysisResult);
     setIsAnalyzing(false);
   };
 
@@ -113,4 +116,4 @@ export default function BuilderPage() {
       )}
     </div>
   );
-}
+};

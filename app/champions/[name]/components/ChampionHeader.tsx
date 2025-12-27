@@ -15,6 +15,9 @@ interface ChampionHeaderProps {
     getSpellName: (id: string) => string;
 }
 
+const TABS = ['Build', 'Counters', 'Pro Builds'];
+
+
 export const ChampionHeader: React.FC<ChampionHeaderProps> = ({
     championName, role, rank, tier, patch, topSpells, formatTier, getSpellName
 }) => {
@@ -67,9 +70,14 @@ export const ChampionHeader: React.FC<ChampionHeaderProps> = ({
 
                 {/* Navigation Tabs */}
                 <div className="flex gap-8 text-sm font-bold text-gray-400 border-b border-white/10">
-                    <button className="pb-4 border-b-2 border-lol-blue text-white">Build</button>
-                    <button className="pb-4 hover:text-white transition-colors">Counters</button>
-                    <button className="pb-4 hover:text-white transition-colors">Pro Builds</button>
+                    {TABS.map((tab, index) => (
+                        <button
+                            key={tab}
+                            className={`pb-4 transition-colors ${index === 0 ? 'border-b-2 border-lol-blue text-white' : 'hover:text-white'}`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>

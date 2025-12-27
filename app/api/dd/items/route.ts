@@ -38,13 +38,13 @@ export async function GET(req: NextRequest) {
 
 function mapItemsData(itemsMap: any) {
   return Object.keys(itemsMap || {}).map(id => {
-    const item = itemsMap[id];
+    const itemDetail = itemsMap[id];
     return {
       id: String(id),
-      name: item.name,
-      imageFull: item.image?.full || `${id}.png`,
-      stats: item.stats || {},
-      gold: item.gold || {},
+      name: itemDetail.name,
+      imageFull: itemDetail.image?.full || `${id}.png`,
+      stats: itemDetail.stats || {},
+      gold: itemDetail.gold || {},
     };
   });
 }

@@ -11,7 +11,7 @@ interface ChampionSelectProps {
     setChampionLevel: (l: number) => void;
     spellLevels: { [key: string]: number };
     handleSpellLevelChange: (spellKey: string, delta: number, max: number) => void;
-    t: any;
+    t: Record<string, string>;
 }
 
 export const ChampionSelect: React.FC<ChampionSelectProps> = ({
@@ -120,16 +120,23 @@ export const ChampionSelect: React.FC<ChampionSelectProps> = ({
                     </div>
 
                     <div className="grid grid-cols-5 gap-4 max-h-80 overflow-y-auto pr-2 scrollbar-hide">
-                        {filteredChampions.map(champ => (
-                            <div
-                                key={champ.id}
-                                onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
-                                className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${currentChampion?.id === champ.id ? 'border-lol-gold bg-lol-gold/10' : 'border-transparent hover:border-lol-gold/30'}`}
-                            >
-                                <Image src={champ.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
-                                <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
-                            </div>
-                        ))}
+                        {filteredChampions.map(champ => {
+                            const isSelected = currentChampion?.id === champ.id;
+                            const cardClass = isSelected
+                                ? 'border-lol-gold bg-lol-gold/10'
+                                : 'border-transparent hover:border-lol-gold/30';
+
+                            return (
+                                <div
+                                    key={champ.id}
+                                    onClick={() => { setCurrentChampion(champ); setIsChampSelectOpen(false); setChampSearchQuery(''); }}
+                                    className={`flex flex-col items-center gap-3 p-4 hover:bg-white/5 cursor-pointer rounded-2xl border transition-all ${cardClass}`}
+                                >
+                                    <Image src={champ.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-gray-700 shadow-sm" alt={champ.name} />
+                                    <span className="text-[10px] text-center text-gray-300 font-bold uppercase truncate w-full">{champ.name}</span>
+                                </div>
+                            );
+                        })}
                         {filteredChampions.length === 0 && (
                             <div className="col-span-5 text-center text-gray-500 text-sm py-4">No champion found.</div>
                         )}

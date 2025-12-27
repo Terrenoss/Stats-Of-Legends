@@ -3,10 +3,12 @@ import React from 'react';
 import { Sparkles, Brain, Zap, Loader2 } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants';
 
+import { Language } from '../../types';
+
 interface MatchAnalysisProps {
    analysis: string | null;
    loading: boolean;
-   lang: string;
+   lang: Language;
 }
 
 export const MatchAnalysis: React.FC<MatchAnalysisProps> = ({ analysis, loading, lang }) => {

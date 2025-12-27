@@ -27,21 +27,25 @@ export default function Home() {
   );
 }
 
-const FeatureCard = ({ icon, title, desc, color }: any) => {
-  const getBgColor = (c: string) => {
-    if (c === 'gold') return 'lol-gold';
-    if (c === 'red') return 'lol-red';
-    return 'lol-hextech';
+interface FeatureCardProps {
+  icon: string;
+  title: string;
+  desc: string;
+  color: 'gold' | 'red' | 'purple';
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, desc, color }) => {
+  const colorClasses = {
+    gold: { border: 'hover:border-lol-gold/50', bar: 'bg-lol-gold' },
+    red: { border: 'hover:border-red-500/50', bar: 'bg-lol-red' },
+    purple: { border: 'hover:border-purple-500/50', bar: 'bg-lol-hextech' }
   };
 
-  const getBorderColor = (c: string) => {
-    if (c === 'gold') return 'lol-gold';
-    return `${c}-500`;
-  };
+  const classes = colorClasses[color];
 
   return (
-    <div className={`h-full p-6 rounded-[2rem] bg-[#121212] border border-white/5 hover:border-${getBorderColor(color)}/50 transition group cursor-pointer relative overflow-hidden`}>
-      <div className={`absolute top-0 left-0 w-full h-1 bg-${getBgColor(color)}`}></div>
+    <div className={`h-full p-6 rounded-[2rem] bg-[#121212] border border-white/5 ${classes.border} transition group cursor-pointer relative overflow-hidden`}>
+      <div className={`absolute top-0 left-0 w-full h-1 ${classes.bar}`}></div>
       <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{icon}</div>
       <h3 className="text-xl font-bold text-white mb-2 font-display uppercase tracking-wide">{title}</h3>
       <p className="text-gray-400 text-sm">{desc}</p>

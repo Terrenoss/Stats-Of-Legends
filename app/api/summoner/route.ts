@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PLATFORM_MAP } from '../../../services/RiotService';
-import { SummonerService } from '../../../services/SummonerService';
+import { SummonerService, QUEUE_SOLO, QUEUE_FLEX } from '../../../services/SummonerService';
+
 import { MatchHistoryService } from '../../../services/MatchHistoryService';
 import { AggregationService } from '../../../services/AggregationService';
 import { CURRENT_PATCH } from '../../../constants';
@@ -64,18 +65,18 @@ export async function GET(req: NextRequest) {
       profileIconId: dbSummoner.profileIconId,
       ranks: {
         solo: {
-          tier: dbSummoner.ranks.find(r => r.queueType === 'RANKED_SOLO_5x5')?.tier || 'UNRANKED',
-          rank: dbSummoner.ranks.find(r => r.queueType === 'RANKED_SOLO_5x5')?.rank || '',
-          lp: dbSummoner.ranks.find(r => r.queueType === 'RANKED_SOLO_5x5')?.leaguePoints || 0,
-          wins: dbSummoner.ranks.find(r => r.queueType === 'RANKED_SOLO_5x5')?.wins || 0,
-          losses: dbSummoner.ranks.find(r => r.queueType === 'RANKED_SOLO_5x5')?.losses || 0,
+          tier: dbSummoner.ranks.find(r => r.queueType === QUEUE_SOLO)?.tier || 'UNRANKED',
+          rank: dbSummoner.ranks.find(r => r.queueType === QUEUE_SOLO)?.rank || '',
+          lp: dbSummoner.ranks.find(r => r.queueType === QUEUE_SOLO)?.leaguePoints || 0,
+          wins: dbSummoner.ranks.find(r => r.queueType === QUEUE_SOLO)?.wins || 0,
+          losses: dbSummoner.ranks.find(r => r.queueType === QUEUE_SOLO)?.losses || 0,
         },
         flex: {
-          tier: dbSummoner.ranks.find(r => r.queueType === 'RANKED_FLEX_SR')?.tier || 'UNRANKED',
-          rank: dbSummoner.ranks.find(r => r.queueType === 'RANKED_FLEX_SR')?.rank || '',
-          lp: dbSummoner.ranks.find(r => r.queueType === 'RANKED_FLEX_SR')?.leaguePoints || 0,
-          wins: dbSummoner.ranks.find(r => r.queueType === 'RANKED_FLEX_SR')?.wins || 0,
-          losses: dbSummoner.ranks.find(r => r.queueType === 'RANKED_FLEX_SR')?.losses || 0,
+          tier: dbSummoner.ranks.find(r => r.queueType === QUEUE_FLEX)?.tier || 'UNRANKED',
+          rank: dbSummoner.ranks.find(r => r.queueType === QUEUE_FLEX)?.rank || '',
+          lp: dbSummoner.ranks.find(r => r.queueType === QUEUE_FLEX)?.leaguePoints || 0,
+          wins: dbSummoner.ranks.find(r => r.queueType === QUEUE_FLEX)?.wins || 0,
+          losses: dbSummoner.ranks.find(r => r.queueType === QUEUE_FLEX)?.losses || 0,
         },
       },
       pastRanks: [],

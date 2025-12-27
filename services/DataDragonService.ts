@@ -1,17 +1,24 @@
 import { CURRENT_PATCH } from '@/constants';
 
 const DATA_BASE = process.env.DATA_BASE || '';
+const SPELL_KEYS = ['qdamage', 'wdamage', 'edamage', 'rdamage', 'totaldamage', 'damage'];
+const DEFAULT_COOLDOWN = [0, 0, 0, 0, 0];
+const DEFAULT_BASE_DAMAGE_3_RANKS = [100, 200, 300];
+const DEFAULT_BASE_DAMAGE_4_RANKS = [60, 105, 150, 195];
+const DEFAULT_BASE_DAMAGE_5_RANKS = [50, 80, 110, 140, 170];
+const SPELL_KEYS_MAP = ['Q', 'W', 'E', 'R'];
+
 
 export class DataDragonService {
 
     private static approximateBaseFromTooltip(spell: any): number[] {
-        const t: string = spell.tooltip || '';
-        const keys = ['qdamage', 'wdamage', 'edamage', 'rdamage', 'totaldamage', 'damage'];
-        const dv = spell.datavalues || spell.dataValues || {};
+        const tooltip: string = spell.tooltip || '';
+        const dataValues = spell.datavalues || spell.dataValues || {};
 
-        for (const key of keys) {
-            const val = dv[key];
+        for (const key of SPELL_KEYS) {
+            const val = dataValues[key];
             if (!val) continue;
+
             if (Array.isArray(val)) {
                 const nums = (val as any[]).map(v => Number(v) || 0);
                 if (nums.some(n => n > 0)) return nums;
@@ -24,7 +31,7 @@ export class DataDragonService {
                 if (nums.some(n => n > 0)) return nums;
             }
         }
-        return [0, 0, 0, 0, 0];
+        return [...DEFAULT_COOLDOWN];
     }
 
     private static processSpell(spell: any, idx: number) {
@@ -43,11 +50,11 @@ export class DataDragonService {
             base = this.approximateBaseFromTooltip(spell);
         }
 
-        const mr = spell.maxrank || spell.maxRank || 5;
+        const maxRank = spell.maxrank || spell.maxRank || 5;
         if (!base || !base.some(n => n > 0)) {
-            if (mr === 3) base = [100, 200, 300];
-            else if (mr === 4) base = [60, 105, 150, 195];
-            else base = [50, 80, 110, 140, 170];
+            if (maxRank === 3) base = DEFAULT_BASE_DAMAGE_3_RANKS;
+            else if (maxRank === 4) base = DEFAULT_BASE_DAMAGE_4_RANKS;
+            else base = DEFAULT_BASE_DAMAGE_5_RANKS;
         }
 
         let apRatio = 0;
@@ -71,12 +78,12 @@ export class DataDragonService {
         else if (rawDamageType === 'true') damageType = 'true';
 
         return {
-            id: ['Q', 'W', 'E', 'R'][idx] || String(idx),
+            id: SPELL_KEYS_MAP[idx] || String(idx),
             name: spell.name,
             imageFull: spell.image?.full || null,
             description: spell.description || '',
             tooltip: spell.tooltip || '',
-            maxRank: mr,
+            maxRank: maxRank,
             cooldown: spell.cooldown || [],
             cost: spell.cost || [],
             baseDamage: base,

@@ -78,6 +78,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
 
   const rankColor = getRankColor(safeSolo.tier);
 
+  const wins = safeSolo.wins || 0;
+  const losses = safeSolo.losses || 0;
+  const totalGames = wins + losses;
+  const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+  const isPositiveWr = winRate >= 50;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
 
@@ -179,14 +185,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
             </div>
 
             <div className="flex items-center gap-3 mt-3">
-              <div className={`text-sm font-black ${(safeSolo.wins && safeSolo.losses && (safeSolo.wins / (safeSolo.wins + safeSolo.losses)) >= 0.5)
-                ? 'text-green-400'
-                : 'text-red-400'
-                }`}>
-                {safeSolo.wins && safeSolo.losses ? Math.round((safeSolo.wins / (safeSolo.wins + safeSolo.losses)) * 100) : 0}% WR
+              <div className={`text-sm font-black ${isPositiveWr ? 'text-green-400' : 'text-red-400'}`}>
+                {winRate}% WR
               </div>
               <div className="text-xs text-gray-500 font-bold">
-                {safeSolo.wins ?? 0}W - {safeSolo.losses ?? 0}L
+                {wins}W - {losses}L
               </div>
             </div>
           </div>

@@ -10,13 +10,13 @@ export async function GET(request: Request, props: { params: Promise<{ name: str
         const role = searchParams.get('role') || 'ALL';
         const rank = searchParams.get('rank') || 'ALL';
 
-        const data = await ChampionDetailService.getChampionDetails(params.name, role, rank);
+        const championDetail = await ChampionDetailService.getChampionDetails(params.name, role, rank);
 
-        if (!data) {
+        if (!championDetail) {
             return NextResponse.json({ error: 'Champion not found' }, { status: 404 });
         }
 
-        return NextResponse.json(data);
+        return NextResponse.json(championDetail);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

@@ -6,7 +6,7 @@ import { Item, Stats } from '../../types';
 interface ItemCatalogProps {
   items: Item[];
   onItemSelect: (item: Item) => void;
-  t: any;
+  t: Record<string, string>;
 }
 
 const STAT_FILTERS: { key: keyof Stats; label: string; icon: React.ReactNode }[] = [
@@ -96,14 +96,15 @@ export const ItemCatalog: React.FC<ItemCatalogProps> = ({ items, onItemSelect, t
         <div className="flex flex-wrap gap-2">
           {STAT_FILTERS.map(sf => {
             const isActive = activeStatFilters.includes(sf.key);
+            const btnClass = isActive
+              ? 'bg-lol-red/20 border-lol-red text-lol-red'
+              : 'bg-black/30 border-white/5 text-gray-500 hover:border-gray-600';
+
             return (
               <button
                 key={sf.key}
                 onClick={() => toggleStatFilter(sf.key)}
-                className={`p-2 rounded-xl border transition-all flex items-center gap-1 ${isActive
-                  ? 'bg-lol-red/20 border-lol-red text-lol-red'
-                  : 'bg-black/30 border-white/5 text-gray-500 hover:border-gray-600'
-                  }`}
+                className={`p-2 rounded-xl border transition-all flex items-center gap-1 ${btnClass}`}
                 title={sf.label}
               >
                 {sf.icon}

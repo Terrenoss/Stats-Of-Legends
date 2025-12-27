@@ -22,7 +22,7 @@ interface MatchCardProps {
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) => {
-  const me: Participant = match.me ?? {} as Participant;
+  const me = match.me || ({} as Participant);
   const isWin = !!me.win;
   const kills = Number(me.kills ?? 0);
   const deaths = Number(me.deaths ?? 0);
@@ -107,10 +107,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, region = 'EUW' }) =
     }
   };
 
-  const maxDamage = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p) => Number(p.totalDamageDealtToChampions ?? 0)) : [0]));
-  const maxTaken = Math.max(...(Array.isArray(match.participants) ? match.participants.map((p) => Number(p.totalDamageTaken ?? 0)) : [0]));
+  const participants = match.participants || [];
+  const maxDamage = Math.max(...participants.map((p) => Number(p.totalDamageDealtToChampions || 0)), 0);
+  const maxTaken = Math.max(...participants.map((p) => Number(p.totalDamageTaken || 0)), 0);
 
-  const champName = me?.champion?.name ?? 'Unknown';
+  const champName = me.champion?.name || 'Unknown';
   const spells = Array.isArray(me?.spells) ? me.spells : [];
 
   const containerClass = `mb-2 relative rounded-[1rem] border transition-all duration-300 group
