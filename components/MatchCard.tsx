@@ -173,8 +173,11 @@ const RankIcon = ({ match, ranks, ranksLoaded }: { match: Match, ranks: any, ran
   if (!avgRank) {
     let validRanks: string[] = [];
     if (ranksLoaded && Object.keys(ranks).length > 0) {
-      validRanks = Object.values(ranks).map((r: any) => r?.solo?.tier ? `${r.solo.tier} ${r.solo.rank}` : null)
-        .filter(Boolean) as string[];
+      validRanks = Object.values(ranks).map((r: any) => {
+        if (r?.solo?.tier) return `${r.solo.tier} ${r.solo.rank}`;
+        if (r?.flex?.tier) return `${r.flex.tier} ${r.flex.rank}`;
+        return null;
+      }).filter(Boolean) as string[];
     }
     if (validRanks.length === 0 && match.participants) {
       validRanks = match.participants.map((p) => p.rank).filter(Boolean) as string[];

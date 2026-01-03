@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/seed_database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/seed_database.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/MatchCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/MatchCard.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/MatchHistoryService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/MatchHistoryService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/RankService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/RankService.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,7 +151,7 @@
       <workItem from="1766967350862" duration="11842000" />
       <workItem from="1767045113384" duration="33485000" />
       <workItem from="1767309344892" duration="1645000" />
-      <workItem from="1767473622751" duration="1644000" />
+      <workItem from="1767473622751" duration="2425000" />
     </task>
     <servers />
   </component>

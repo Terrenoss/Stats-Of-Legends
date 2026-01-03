@@ -37,8 +37,12 @@ export class RankService {
         const allRanks: string[] = [];
 
         results.forEach((r) => {
-            if (r && r.solo) {
-                allRanks.push(`${r.solo.tier} ${r.solo.rank}`);
+            if (r) {
+                if (r.solo) {
+                    allRanks.push(`${r.solo.tier} ${r.solo.rank}`);
+                } else if (r.flex) {
+                    allRanks.push(`${r.flex.tier} ${r.flex.rank}`);
+                }
             }
         });
 

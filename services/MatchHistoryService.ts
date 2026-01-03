@@ -120,8 +120,13 @@ export class MatchHistoryService {
 
                     const m = { id: matchId, data: matchData };
 
+                    const ranks = dbSummoner?.ranks || [];
+                    const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
+                    const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
+                    const tier = solo?.tier || flex?.tier || 'EMERALD';
+
                     // PROGRESSIVE LOADING: Save immediately
-                    await MatchHistoryService.saveMatchAndStats(m, puuid, region, dbSummoner);
+                    await MatchHistoryService.saveMatchAndStats(m, puuid, region, dbSummoner, tier);
 
                     return m;
                 } catch (e) {
