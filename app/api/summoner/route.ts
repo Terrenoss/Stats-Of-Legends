@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
       version: latestVersion
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=300'
       }
     });
 
