@@ -130,11 +130,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, lang, onU
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                 <span className="relative z-10 text-xs font-bold uppercase tracking-widest text-gray-300 group-hover:text-white flex items-center gap-2 whitespace-nowrap">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  Invoke Update
+                  Mettre à jour
                 </span>
               </button>
-              <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider">
-                {getLastUpdatedText()}
+              <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider flex flex-col items-start">
+                <span>{getLastUpdatedText()}</span>
+                {profile.lastUpdateLog && (
+                  <span className="text-orange-400 text-[9px] mt-0.5 normal-case tracking-normal">
+                    {profile.lastUpdateLog}
+                  </span>
+                )}
               </span>
             </div>
           </div>

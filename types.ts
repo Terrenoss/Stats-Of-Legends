@@ -122,9 +122,25 @@ export interface ItemTimestamp {
   action?: string; // optional: 'ITEM_PURCHASED' | 'ITEM_SOLD' | 'ITEM_UNDO'
 }
 
+export interface RuneSelection {
+  id: number;
+  icon: string;
+  name?: string;
+}
+
 export interface ParticipantRunes {
   primary: string | null;
   secondary: string | null;
+  primaryStyleId?: number;
+  subStyleId?: number;
+  subStyleIcon?: string;
+  primarySelections?: RuneSelection[];
+  subSelections?: RuneSelection[];
+  statPerks?: {
+    offense: RuneSelection | null;
+    flex: RuneSelection | null;
+    defense: RuneSelection | null;
+  };
 }
 
 export interface Participant {
@@ -290,6 +306,7 @@ export interface SummonerProfile {
   ladderRank: number; // Position in ladder
   topPercent: number; // Top % of players
   lastUpdated: number; // Timestamp
+  lastUpdateLog?: string | null;
   metrics?: PerformanceMetrics;
   consistencyBadge?: 'Rock Solid' | 'Coinflip' | 'Average';
 }
@@ -428,4 +445,21 @@ export interface RiotMatch {
     [key: string]: any;
   };
   timeline?: any;
+}
+
+export interface LeaderboardEntry {
+  puuid: string;
+  summonerName: string;
+  tagLine: string;
+  region: string;
+  profileIconId: number;
+  tier: string;
+  rank: string;
+  lp: number;
+  wins: number;
+  losses: number;
+  winrate: number;
+  rankValue: string; // BigInt serialized as string
+  legendScore: number;
+  topChampions: { championName: string; count: number; winrate: number }[];
 }

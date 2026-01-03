@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "worker": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/worker.ts",
+    "job:leaderboard": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/trigger_leaderboard_update.ts",
+    "backfill:score": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/backfill_legend_score.ts"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
@@ -34,6 +37,8 @@
     "postcss": "^8.5.6",
     "prisma": "^5.10.2",
     "tailwindcss": "^4.1.18",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.0"
   }
 }

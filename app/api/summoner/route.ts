@@ -48,8 +48,13 @@ export async function GET(req: NextRequest) {
 
     const puuid = dbSummoner.puuid;
 
-    // 2. Update Matches
-    await MatchHistoryService.updateMatches(puuid, region, dbSummoner);
+    // 2. Update Matches (Only if forced or never fetched)
+    const shouldUpdateMatches = forceUpdate || !dbSummoner.lastMatchFetch;
+    if (shouldUpdateMatches) {
+      // PROGRESSIVE LOADING: Fire and forget
+      MatchHistoryService.updateMatches(puuid, region, dbSummoner, forceUpdate)
+        .catch(err => console.error('Background update failed', err));
+    }
 
     // 3. Get Matches for Display
     const matches = await MatchHistoryService.getMatchesForDisplay(puuid);

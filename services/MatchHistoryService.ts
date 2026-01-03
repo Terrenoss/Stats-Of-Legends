@@ -11,61 +11,137 @@ import { ScoringService } from './ScoringService';
 import { getChampionIconUrl, getItemIconUrl, getSpellIconUrl, getRuneIconUrl, getSpellName } from '@/utils/ddragon';
 import { CURRENT_PATCH } from '@/constants';
 import { getDurationBucket, calculateWeightedDeaths, calculateLaneStats, generateGraphPoints, processItemBuild } from '@/utils/matchUtils';
+import { Priority } from './RiotGateway';
 
 export class MatchHistoryService {
 
-    static async updateMatches(puuid: string, region: string, dbSummoner: any) {
+    static async updateMatches(puuid: string, region: string, dbSummoner: any, forceUpdate: boolean = false, priority: Priority = 'INTERACTIVE') {
         const routing = REGION_ROUTING[region];
 
         try {
-            const matchIds = await fetchMatchIds(puuid, routing, 0, 60);
+            // SMART LOADING LOGIC
+            const existingCount = await prisma.summonerMatch.count({ where: { summonerPuuid: puuid } });
 
+            // OPTIMIZATION: Check revisionDate (Last Played)
+            if (!forceUpdate && dbSummoner.lastMatchFetch && dbSummoner.revisionDate) {
+                const lastFetchTime = new Date(dbSummoner.lastMatchFetch).getTime();
+                const revisionTime = Number(dbSummoner.revisionDate); // BigInt to Number
+
+                // If we fetched AFTER the last revision, we are up to date.
+                // We add a small buffer (e.g., 1 minute) to be safe against clock skew.
+                if (lastFetchTime > revisionTime + 60000) {
+                    console.log(`[MatchHistory] Skipping update for ${puuid} (Up to date)`);
+                    return;
+                }
+            }
+
+            // 1. Check for NEW matches (Top of the list)
+            const recentMatchIds = await fetchMatchIds(puuid, routing, 0, 20, priority);
             const existingMatches = await prisma.match.findMany({
-                where: { id: { in: matchIds } },
+                where: { id: { in: recentMatchIds } },
                 select: { id: true },
             });
             const existingIds = new Set(existingMatches.map(m => m.id));
-            const newMatchIds = matchIds.filter(id => !existingIds.has(id)).slice(0, 20);
+            const newMatchIds = recentMatchIds.filter(id => !existingIds.has(id));
+
+            let matchesToProcess: string[] = [];
+
+            if (existingCount === 0) {
+                // FIRST LOAD: Load 10 matches immediately
+                if (newMatchIds.length > 0) {
+                    matchesToProcess.push(...newMatchIds.slice(0, 10));
+                }
+            } else if (newMatchIds.length >= 5) {
+                // Scenario A: >= 5 new matches
+                // Load 5 new + 5 old
+                matchesToProcess.push(...newMatchIds.slice(0, 5));
+
+                // Fetch 5 older matches (extending history)
+                // We offset by existingCount + the number of new matches we detected (to skip them)
+                const start = existingCount + newMatchIds.length;
+                const oldMatchIds = await fetchMatchIds(puuid, routing, start, 5, priority);
+                matchesToProcess.push(...oldMatchIds);
+            } else if (newMatchIds.length > 0) {
+                // Scenario A (Partial): < 5 new matches
+                // Load all new + 5 old
+                matchesToProcess.push(...newMatchIds);
+
+                const start = existingCount + newMatchIds.length;
+                const oldMatchIds = await fetchMatchIds(puuid, routing, start, 5, priority);
+                matchesToProcess.push(...oldMatchIds);
+            } else {
+                // Scenario B: 0 new matches
+                // Load 10 old matches
+                const oldMatchIds = await fetchMatchIds(puuid, routing, existingCount, 10, priority);
+                matchesToProcess.push(...oldMatchIds);
+            }
+
+            // Filter duplicates and already existing (for the old ones)
+            matchesToProcess = Array.from(new Set(matchesToProcess));
+
+            // Double check we don't re-process existing matches (in case offset logic overlapped)
+            const alreadySaved = await prisma.match.findMany({
+                where: { id: { in: matchesToProcess } },
+                select: { id: true }
+            });
+            const alreadySavedIds = new Set(alreadySaved.map(m => m.id));
+            matchesToProcess = matchesToProcess.filter(id => !alreadySavedIds.has(id));
+
+            if (matchesToProcess.length === 0) return;
+
+            let skippedCount = 0;
 
             const processMatch = async (matchId: string) => {
                 try {
                     const matchUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}`;
-                    const r = await riotFetchRaw(matchUrl);
+                    const r = await riotFetchRaw(matchUrl, priority);
                     if (!r.ok) return null;
                     const matchData = JSON.parse(r.body || '{}');
 
+                    // PATCH CHECK
+                    const currentMajorMinor = CURRENT_PATCH.split('.').slice(0, 2).join('.');
+                    const matchVersion = matchData.info.gameVersion;
+
+                    if (!matchVersion.startsWith(currentMajorMinor)) {
+                        skippedCount++;
+                        return null;
+                    }
+
                     let timelineData = null;
-                    if (matchIds.indexOf(matchId) < 20) {
-                        const timelineUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`;
-                        const tRes = await riotFetchRaw(timelineUrl);
-                        if (tRes.ok) {
-                            timelineData = JSON.parse(tRes.body || '{}');
-                        }
+                    const timelineUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`;
+                    const tRes = await riotFetchRaw(timelineUrl, priority);
+                    if (tRes.ok) {
+                        timelineData = JSON.parse(tRes.body || '{}');
                     }
 
                     if (timelineData) {
                         matchData.timeline = timelineData;
                     }
 
-                    return { id: matchId, data: matchData };
+                    const m = { id: matchId, data: matchData };
+
+                    // PROGRESSIVE LOADING: Save immediately
+                    await MatchHistoryService.saveMatchAndStats(m, puuid, region, dbSummoner);
+
+                    return m;
                 } catch (e) {
+                    console.error(`Failed to process match ${matchId}`, e);
                     return null;
                 }
             };
 
-            const newMatchesData = await mapWithConcurrency(newMatchIds, 3, processMatch);
+            await mapWithConcurrency(matchesToProcess, 3, processMatch);
 
-            for (const m of newMatchesData) {
-                if (!m) continue;
-                await this.saveMatchAndStats(m, puuid, region, dbSummoner);
-            }
-
+            const logMessage = skippedCount > 0
+                ? `${skippedCount} match(s) ignoré(s) (Ancien Patch)`
+                : null;
 
             await prisma.summoner.update({
                 where: { puuid: puuid },
                 data: {
                     lastMatchFetch: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    lastUpdateLog: logMessage
                 },
             });
 
@@ -86,7 +162,20 @@ export class MatchHistoryService {
 
         const matches = await Promise.all(summonerMatches.map(async (sm) => {
             const mj = sm.match.jsonData as unknown as RiotMatch;
-            return this.formatMatchData(mj, puuid, latestVersion, sm.match.averageRank);
+            const formatted = await this.formatMatchData(mj, puuid, latestVersion, sm.match.averageRank);
+
+            // LAZY BACKFILL: If Legend Score is 0, update it
+            if (sm.legendScore === 0) {
+                const me = formatted.participants.find((p: any) => p.puuid === puuid);
+                if (me && me.legendScore > 0) {
+                    // Run in background to not block response too much
+                    prisma.summonerMatch.update({
+                        where: { summonerPuuid_matchId: { summonerPuuid: puuid, matchId: sm.matchId } },
+                        data: { legendScore: me.legendScore }
+                    }).catch(err => console.error(`Failed to backfill score for ${sm.matchId}`, err));
+                }
+            }
+            return formatted;
         }));
 
         return matches;
@@ -95,21 +184,48 @@ export class MatchHistoryService {
     private static async saveMatchAndStats(m: any, puuid: string, region: string, dbSummoner: any) {
         const info = m.data.info;
 
-        await prisma.match.create({
-            data: {
-                id: m.id,
-                gameCreation: new Date(info.gameStartTimestamp),
-                gameDuration: info.gameDuration,
-                gameMode: info.gameMode,
-                gameVersion: info.gameVersion,
-                jsonData: m.data,
-            },
-        });
+        try {
+            await prisma.match.upsert({
+                where: { id: m.id },
+                create: {
+                    id: m.id,
+                    gameCreation: new Date(info.gameStartTimestamp),
+                    gameDuration: info.gameDuration,
+                    gameMode: info.gameMode,
+                    gameVersion: info.gameVersion,
+                    jsonData: m.data,
+                },
+                update: {}, // Already exists, do nothing
+            });
+        } catch (e: any) {
+            // P2002: Unique constraint failed. 
+            // This means another thread saved the match just now. We can ignore it.
+            if (e.code !== 'P2002') {
+                throw e;
+            }
+        }
 
-        for (const p of info.participants) {
+        // Calculate Legend Scores for all participants before saving
+        // We need to process the match data to get the scores
+        // We can reuse formatMatchData logic or call ScoringService directly if we have enough data.
+        // Since formatMatchData is complex and requires fetching extra data (runes, etc.), 
+        // we might want to do a simplified calculation or reuse the existing flow.
+
+        // Better approach: We already have the full match data in 'm.data'.
+        // We can use MatchHistoryService.formatMatchData to get the calculated scores.
+        // However, formatMatchData is static and might be heavy.
+        // Let's try to calculate it using the same logic as in formatMatchData but optimized?
+        // Or just call formatMatchData since we are in background job usually?
+        // Actually, saveMatchAndStats is called during updateMatches.
+
+        // Let's use formatMatchData to get the scores. It returns 'participants' with 'legendScore'.
+        const formattedMatch = await MatchHistoryService.formatMatchData(m.data, puuid, m.data.info.gameVersion, null);
+
+        for (const p of formattedMatch.participants) {
             if (p.puuid === puuid) {
-                await prisma.summonerMatch.create({
-                    data: {
+                await prisma.summonerMatch.upsert({
+                    where: { summonerPuuid_matchId: { summonerPuuid: puuid, matchId: m.id } },
+                    create: {
                         summonerPuuid: puuid,
                         matchId: m.id,
                         championId: p.championId,
@@ -123,6 +239,10 @@ export class MatchHistoryService {
                         goldEarned: p.goldEarned || 0,
                         visionScore: p.visionScore || 0,
                         items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
+                        legendScore: p.legendScore || 0,
+                    },
+                    update: {
+                        legendScore: p.legendScore || 0 // Update score if it changed (e.g. backfill)
                     }
                 });
             }
@@ -174,25 +294,44 @@ export class MatchHistoryService {
         return {};
     }
 
-    private static getRuneImages(perks: any, runesData: any[]) {
+    private static getRunesDetailed(perks: any, runesData: any[]) {
         if (!perks || !runesData) return { primary: null, secondary: null };
 
         const styles = perks.styles || [];
         const primaryStyle = styles.find((s: any) => s.description === 'primaryStyle');
         const subStyle = styles.find((s: any) => s.description === 'subStyle');
+        const statPerks = perks.statPerks || {};
 
-        let primaryImg = '';
-        let secondaryImg = '';
+        let primaryImg = null;
+        let secondaryImg = null;
+        let primarySelections: any[] = [];
+        let subSelections: any[] = [];
 
-        if (primaryStyle && primaryStyle.selections && primaryStyle.selections.length > 0) {
-            const keystoneId = primaryStyle.selections[0].perk;
+        // Helper to find rune in tree
+        const findRune = (id: number, styleId: number) => {
+            const style = runesData.find((r: any) => r.id === styleId);
+            if (!style || !style.slots) return null;
+            for (const slot of style.slots) {
+                const rune = slot.runes.find((r: any) => r.id === id);
+                if (rune) return { ...rune, icon: getRuneIconUrl(rune.icon) };
+            }
+            return null;
+        };
+
+        if (primaryStyle) {
             const styleData = runesData.find((r: any) => r.id === primaryStyle.style);
             if (styleData && styleData.slots && styleData.slots[0]) {
+                const keystoneId = primaryStyle.selections[0].perk;
                 const keystoneData = styleData.slots[0].runes.find((r: any) => r.id === keystoneId);
                 if (keystoneData) {
                     primaryImg = getRuneIconUrl(keystoneData.icon);
                 }
             }
+            // Get all primary selections
+            primarySelections = primaryStyle.selections.map((s: any) => {
+                const r = findRune(s.perk, primaryStyle.style);
+                return r ? { id: s.perk, icon: r.icon, name: r.name } : { id: s.perk, icon: '' };
+            });
         }
 
         if (subStyle) {
@@ -200,12 +339,45 @@ export class MatchHistoryService {
             if (styleData) {
                 secondaryImg = getRuneIconUrl(styleData.icon);
             }
+            // Get all sub selections
+            subSelections = subStyle.selections.map((s: any) => {
+                const r = findRune(s.perk, subStyle.style);
+                return r ? { id: s.perk, icon: r.icon, name: r.name } : { id: s.perk, icon: '' };
+            });
         }
 
-        return { primary: primaryImg, secondary: secondaryImg };
+        // Stat Perks Mapping
+        const STAT_PERKS_MAP: Record<number, string> = {
+            5001: 'perk-images/StatMods/StatModsHealthScalingIcon.png',
+            5002: 'perk-images/StatMods/StatModsArmorIcon.png',
+            5003: 'perk-images/StatMods/StatModsMagicResIcon.png',
+            5005: 'perk-images/StatMods/StatModsAttackSpeedIcon.png',
+            5007: 'perk-images/StatMods/StatModsCDRScalingIcon.png',
+            5008: 'perk-images/StatMods/StatModsAdaptiveForceIcon.png'
+        };
+
+        const getStatPerk = (id: number) => ({
+            id,
+            icon: STAT_PERKS_MAP[id] ? getRuneIconUrl(STAT_PERKS_MAP[id]) : ''
+        });
+
+        return {
+            primary: primaryImg,
+            secondary: secondaryImg,
+            primaryStyleId: primaryStyle?.style,
+            subStyleId: subStyle?.style,
+            subStyleIcon: secondaryImg, // Add this line
+            primarySelections,
+            subSelections,
+            statPerks: {
+                offense: statPerks.offense ? getStatPerk(statPerks.offense) : null,
+                flex: statPerks.flex ? getStatPerk(statPerks.flex) : null,
+                defense: statPerks.defense ? getStatPerk(statPerks.defense) : null
+            }
+        };
     }
 
-    private static async formatMatchData(mj: RiotMatch, puuid: string, version: string, averageRank?: string | null) {
+    public static async formatMatchData(mj: RiotMatch, puuid: string, version: string, averageRank?: string | null) {
         const info = mj.info;
         const participants = info.participants;
         const me = participants.find((p: any) => p.puuid === puuid);
@@ -356,7 +528,7 @@ export class MatchHistoryService {
 
         const mappedParticipants = participants.map((p: any) => {
             const pCs = (p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0);
-            const runes = this.getRuneImages(p.perks, runesData);
+            const runes = this.getRunesDetailed(p.perks, runesData);
 
             const pRole = p.teamPosition || 'MID';
             const pChampStats = dbChampStats.find(s => s.championId === p.championName && s.role === pRole);

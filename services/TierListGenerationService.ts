@@ -93,51 +93,53 @@ export class TierListGenerationService {
         }
 
         // Convert to ChampionTier format
-        const data: ChampionTier[] = Array.from(aggregated.values()).map(s => {
-            const winRate = s.matches > 0 ? (s.wins / s.matches) * 100 : 0;
-            const pickRate = totalMatches > 0 ? (s.matches / totalMatches) * 100 : 0;
-            const banRate = totalMatches > 0 ? ((banCounts.get(s.championId) || 0) / totalMatches) * 100 : 0;
+        const data: ChampionTier[] = Array.from(aggregated.values())
+            .filter(s => s.matches >= 10)
+            .map(s => {
+                const winRate = s.matches > 0 ? (s.wins / s.matches) * 100 : 0;
+                const pickRate = totalMatches > 0 ? (s.matches / totalMatches) * 100 : 0;
+                const banRate = totalMatches > 0 ? ((banCounts.get(s.championId) || 0) / totalMatches) * 100 : 0;
 
-            // Determine Tier based on WinRate & PickRate
-            let tier: 'S+' | 'S' | 'A+' | 'A' | 'B' | 'C' | 'D' = 'B';
-            if (winRate >= 53 && pickRate > 1) tier = 'S+';
-            else if (winRate >= 52) tier = 'S';
-            else if (winRate >= 51) tier = 'A+';
-            else if (winRate >= 50) tier = 'A';
-            else if (winRate >= 48) tier = 'B';
-            else if (winRate >= 45) tier = 'C';
-            else tier = 'D';
+                // Determine Tier based on WinRate & PickRate
+                let tier: 'S+' | 'S' | 'A+' | 'A' | 'B' | 'C' | 'D' = 'B';
+                if (winRate >= 53 && pickRate > 1) tier = 'S+';
+                else if (winRate >= 52) tier = 'S';
+                else if (winRate >= 51) tier = 'A+';
+                else if (winRate >= 50) tier = 'A';
+                else if (winRate >= 48) tier = 'B';
+                else if (winRate >= 45) tier = 'C';
+                else tier = 'D';
 
-            // Get Top 3 Counters (Lowest Win Rate)
-            const key = `${s.championId}_${s.role}`;
-            const champMatchups = matchupMap.get(key);
-            let counters: string[] = [];
+                // Get Top 3 Counters (Lowest Win Rate)
+                const key = `${s.championId}_${s.role}`;
+                const champMatchups = matchupMap.get(key);
+                let counters: string[] = [];
 
-            if (champMatchups) {
-                counters = Array.from(champMatchups.entries())
-                    .map(([oppId, stats]) => ({
-                        id: oppId,
-                        wr: (stats.wins / stats.matches) * 100
-                    }))
-                    .sort((a, b) => a.wr - b.wr) // Sort by lowest WR (hardest counters)
-                    .slice(0, 3)
-                    .map(c => c.id);
-            }
+                if (champMatchups) {
+                    counters = Array.from(champMatchups.entries())
+                        .map(([oppId, stats]) => ({
+                            id: oppId,
+                            wr: (stats.wins / stats.matches) * 100
+                        }))
+                        .sort((a, b) => a.wr - b.wr) // Sort by lowest WR (hardest counters)
+                        .slice(0, 3)
+                        .map(c => c.id);
+                }
 
-            return {
-                id: s.championId,
-                name: s.championId,
-                role: s.role as any,
-                tier: tier,
-                rank: 0,
-                winRate: parseFloat(winRate.toFixed(2)),
-                pickRate: parseFloat(pickRate.toFixed(1)),
-                banRate: parseFloat(banRate.toFixed(1)),
-                trend: 'stable',
-                matches: s.matches,
-                counters: counters
-            };
-        });
+                return {
+                    id: s.championId,
+                    name: s.championId,
+                    role: s.role as any,
+                    tier: tier,
+                    rank: 0,
+                    winRate: parseFloat(winRate.toFixed(2)),
+                    pickRate: parseFloat(pickRate.toFixed(1)),
+                    banRate: parseFloat(banRate.toFixed(1)),
+                    trend: 'stable',
+                    matches: s.matches,
+                    counters: counters
+                };
+            });
 
         return data;
     }

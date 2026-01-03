@@ -14,9 +14,9 @@ export function useSummonerData(region: string, summonerName: string) {
     const [lpHistory, setLpHistory] = useState<any[]>([]);
     const [version, setVersion] = useState<string>('15.24.1');
 
-    const loadData = async (isUpdate = false) => {
+    const loadData = async (isUpdate = false, isPolling = false) => {
         if (isUpdate) setUpdating(true);
-        else setLoading(true);
+        else if (!isPolling) setLoading(true);
 
         setUpdateError(null);
         const nameParam = decodeURIComponent(summonerName);
@@ -48,7 +48,10 @@ export function useSummonerData(region: string, summonerName: string) {
                 setTeammates(realData.teammates as Teammate[]);
                 setLpHistory(realData.lpHistory || []);
                 setPerformance(realData.performance || null);
+                setPerformance(realData.performance || null);
                 if (realData.version) setVersion(realData.version);
+
+                return (realData.matches as Match[]).length;
             } else {
                 const errJson = await res.json().catch(() => null);
                 if (errJson?.error === 'RIOT_FORBIDDEN') {
@@ -58,19 +61,21 @@ export function useSummonerData(region: string, summonerName: string) {
                 }
                 throw new Error('Fetch summoner failed');
             }
+            return 0;
 
         } catch (e) {
             console.error('Failed to fetch summoner', e);
-            if (!isUpdate) {
+            if (!isUpdate && !isPolling) {
                 setProfile(null);
                 setMatches([]);
                 setHeatmap([]);
                 setChampions([]);
                 setTeammates([]);
             }
+            return 0;
         } finally {
             setLoading(false);
-            setUpdating(false);
+            if (!isPolling) setUpdating(false);
         }
     };
 
@@ -79,7 +84,39 @@ export function useSummonerData(region: string, summonerName: string) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [region, summonerName]);
 
-    const updateData = () => loadData(true);
+    const updateData = async () => {
+        setUpdating(true);
+        // 1. Trigger Update (Backend returns immediately)
+        // We pass isPolling=true to PREVENT loadData from setting updating=false in finally block
+        let lastMatchCount = await loadData(true, true) || 0;
+
+        // 2. Poll for updates with Stability Check
+        let attempts = 0;
+        let stabilityCount = 0; // Number of polls with no change
+        const maxAttempts = 30; // Hard limit ~60s
+        const stabilityThreshold = 5; // Stop after 5 polls (10s) with no new data
+
+        const interval = setInterval(async () => {
+            attempts++;
+            // Pass isPolling=true to avoid full loading state
+            const currentCount = await loadData(false, true) || 0;
+
+            if (currentCount > lastMatchCount) {
+                // New data arrived! Reset stability count
+                stabilityCount = 0;
+                lastMatchCount = currentCount;
+            } else {
+                // No change
+                stabilityCount++;
+            }
+
+            // Stop conditions
+            if (stabilityCount >= stabilityThreshold || attempts >= maxAttempts) {
+                clearInterval(interval);
+                setUpdating(false);
+            }
+        }, 2000);
+    };
 
     return {
         loading,

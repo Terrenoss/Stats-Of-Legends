@@ -7,6 +7,7 @@ import {
     REGION_ROUTING,
 } from './RiotService';
 import { RiotAccount, RiotSummoner } from '@/types';
+import { LeaderboardService } from './LeaderboardService';
 
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 export const QUEUE_SOLO = 'RANKED_SOLO_5x5';
@@ -42,19 +43,20 @@ export class SummonerService {
         let account: RiotAccount | null = null;
         let summoner: RiotSummoner | null = null;
 
-        // 2. Ingest/Update Summoner if missing, stale, or forced
-        const shouldUpdate = !dbSummoner || !this.isCacheValid(dbSummoner.lastMatchFetch) || forceUpdate;
+        // 2. Ingest/Update Summoner if missing or forced
+        // UX CHANGE: Only update if explicitly requested (forceUpdate) or if summoner is new (!dbSummoner)
+        const shouldUpdate = !dbSummoner || forceUpdate;
 
         if (shouldUpdate) {
             try {
                 // Fetch Account if we don't have PUUID
                 if (!puuid) {
-                    account = await fetchRiotAccount(name, tag, routing);
+                    account = await fetchRiotAccount(name, tag, routing, 'INTERACTIVE');
                     puuid = account.puuid;
                 }
 
                 // Fetch Summoner details
-                summoner = await fetchSummonerByPuuid(puuid!, platform);
+                summoner = await fetchSummonerByPuuid(puuid!, platform, 'INTERACTIVE');
 
                 // Upsert Summoner
                 dbSummoner = await prisma.summoner.upsert({
@@ -67,6 +69,7 @@ export class SummonerService {
                         accountId: summoner.accountId,
                         summonerId: summoner.id,
                         updatedAt: new Date(),
+                        revisionDate: summoner.revisionDate, // Save Riot's revisionDate
                     },
                     create: {
                         puuid: puuid!,
@@ -77,12 +80,13 @@ export class SummonerService {
                         accountId: summoner.accountId,
                         summonerId: summoner.id,
                         lastMatchFetch: null,
+                        revisionDate: summoner.revisionDate, // Save Riot's revisionDate
                     },
                     include: { ranks: true, snapshots: { orderBy: { timestamp: 'asc' } } },
                 });
 
                 // Fetch Ranks
-                await this.updateRanks(puuid!, platform);
+                await this.updateRanks(puuid!, platform, dbSummoner);
 
                 // Refresh dbSummoner after rank update
                 dbSummoner = await prisma.summoner.findUnique({
@@ -101,15 +105,31 @@ export class SummonerService {
         return dbSummoner;
     }
 
-    private static async updateRanks(puuid: string, platform: string) {
-        const lRes = await fetchLeagueEntriesByPuuid(puuid, platform);
+    private static async updateRanks(puuid: string, platform: string, summoner: any) {
+        const lRes = await fetchLeagueEntriesByPuuid(puuid, platform, 'INTERACTIVE');
 
         if (lRes.ok) {
             const leagueEntries = JSON.parse(lRes.body || '[]');
 
             for (const entry of leagueEntries) {
                 if (entry.queueType === QUEUE_SOLO || entry.queueType === QUEUE_FLEX) {
-                    // 1. Upsert Current Rank
+                    const rankValue = LeaderboardService.calculateRankValue(entry.tier, entry.rank, entry.leaguePoints);
+
+                    // Calculate Average Legend Score
+                    const matches = await prisma.summonerMatch.findMany({
+                        where: { summonerPuuid: puuid, role: { not: 'UNKNOWN' } },
+                        select: { legendScore: true },
+                        take: 20,
+                        orderBy: { match: { gameCreation: 'desc' } }
+                    });
+
+                    let legendScore = 0;
+                    if (matches.length > 0) {
+                        const totalScore = matches.reduce((sum, m) => sum + (m.legendScore || 0), 0);
+                        legendScore = totalScore / matches.length;
+                    }
+
+                    // 1. Upsert Current Rank with Leaderboard Data
                     await prisma.summonerRank.upsert({
                         where: {
                             summonerPuuid_queueType: {
@@ -123,6 +143,8 @@ export class SummonerService {
                             leaguePoints: entry.leaguePoints,
                             wins: entry.wins,
                             losses: entry.losses,
+                            rankValue: rankValue,
+                            legendScore: legendScore,
                             updatedAt: new Date(),
                         },
                         create: {
@@ -133,6 +155,8 @@ export class SummonerService {
                             leaguePoints: entry.leaguePoints,
                             wins: entry.wins,
                             losses: entry.losses,
+                            rankValue: rankValue,
+                            legendScore: legendScore,
                         },
                     });
 

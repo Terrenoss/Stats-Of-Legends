@@ -73,6 +73,14 @@ model ScannedMatch {
   scannedAt DateTime @default(now())
 }
 
+model ScannedSummoner {
+  puuid     String
+  region    String
+  scannedAt DateTime @default(now())
+
+  @@id([puuid, region])
+}
+
 model MatchupStat {
   id          String   @id @default(cuid())
   championId  String
@@ -140,6 +148,8 @@ model Summoner {
   summonerLevel  Int
   updatedAt      DateTime @updatedAt
   lastMatchFetch DateTime? // Used for incremental updates
+  revisionDate   BigInt?   // Riot's revision date (epoch ms)
+  lastUpdateLog  String?   // Log message from last update (e.g. "3 matches skipped")
 
   ranks          SummonerRank[]
   matches        SummonerMatch[]
@@ -161,7 +171,12 @@ model SummonerRank {
   losses        Int
   updatedAt     DateTime @updatedAt
 
+  // --- Leaderboard Optimization (V7) ---
+  rankValue     BigInt   @default(0)
+  legendScore   Float    @default(0)
+
   @@unique([summonerPuuid, queueType])
+  @@index([queueType, rankValue]) // Critical for Leaderboard Sorting
 }
 
 model Match {
@@ -196,6 +211,7 @@ model SummonerMatch {
   goldEarned                  Int @default(0)
   visionScore                 Int @default(0)
   items                       Json? // Array of item IDs
+  legendScore                 Float   @default(0)
   
   @@id([summonerPuuid, matchId])
   @@index([summonerPuuid])
@@ -225,4 +241,25 @@ model MatchAnalysis {
   version       String   // To invalidate cache if algorithm changes (e.g. "5.0")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// --- Leaderboard Models ---
+
+// LeaderboardEntry REMOVED (Merged into SummonerRank)
+
+model LeaderboardStats {
+  region       String   @id
+  totalPlayers Int
+  updatedAt    DateTime @default(now())
+}
+
+model Job {
+  id        String   @id @default(cuid())
+  type      String   // e.g. "UPDATE_LEADERBOARD", "UPDATE_PRO_PLAYER"
+  payload   Json?
+  status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  priority  Int      @default(0) // Higher = more important
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  error     String?
 }

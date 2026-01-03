@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { LanguageProvider } from "./LanguageContext";
+import Providers from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,13 +33,15 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body suppressHydrationWarning={true} className={`${inter.variable} ${cinzel.variable} antialiased bg-[${MAIN_BG_COLOR}] text-[#A09B8C] selection:bg-lol-red selection:text-white min-h-screen flex flex-col font-sans`}>
-        <LanguageProvider>
-          <Navbar />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-        </LanguageProvider>
+        <Providers>
+          <LanguageProvider>
+            <Navbar />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+          </LanguageProvider>
+        </Providers>
       </body>
     </html>
   );
