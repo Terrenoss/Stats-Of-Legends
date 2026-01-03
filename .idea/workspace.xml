@@ -6,23 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="adb39b5e-2bd8-400f-95b8-a248323af2e1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/summoner/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/summoner/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/leaderboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/leaderboard/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ProfileHeader.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchBuild.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/match/tabs/MatchOther.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hooks/useSummonerData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/hooks/useSummonerData.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/prisma.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/prisma.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/seed_database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/seed_database.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/MatchHistoryService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/MatchHistoryService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/SummonerService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/SummonerService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/TierListGenerationService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/TierListGenerationService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/riotService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/riotService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,7 +152,7 @@
       <workItem from="1766967350862" duration="11842000" />
       <workItem from="1767045113384" duration="33485000" />
       <workItem from="1767309344892" duration="1645000" />
-      <workItem from="1767473622751" duration="508000" />
+      <workItem from="1767473622751" duration="1644000" />
     </task>
     <servers />
   </component>

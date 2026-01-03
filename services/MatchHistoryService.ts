@@ -181,7 +181,7 @@ export class MatchHistoryService {
         return matches;
     }
 
-    private static async saveMatchAndStats(m: any, puuid: string, region: string, dbSummoner: any) {
+    public static async saveMatchAndStats(m: any, puuid: string, region: string, dbSummoner: any, averageRank?: string) {
         const info = m.data.info;
 
         try {
@@ -194,8 +194,11 @@ export class MatchHistoryService {
                     gameMode: info.gameMode,
                     gameVersion: info.gameVersion,
                     jsonData: m.data,
+                    averageRank: averageRank || undefined,
                 },
-                update: {}, // Already exists, do nothing
+                update: {
+                    averageRank: averageRank || undefined,
+                },
             });
         } catch (e: any) {
             // P2002: Unique constraint failed. 
@@ -253,7 +256,7 @@ export class MatchHistoryService {
             const ranks = dbSummoner?.ranks || [];
             const solo = ranks.find((r: any) => r.queueType === 'RANKED_SOLO_5x5');
             const flex = ranks.find((r: any) => r.queueType === 'RANKED_FLEX_SR');
-            const tier = solo?.tier || flex?.tier || 'EMERALD';
+            const tier = averageRank || solo?.tier || flex?.tier || 'EMERALD';
 
             await MatchProcessor.processMatch(m.id, region, tier, m.data);
         } catch (err) {
@@ -267,7 +270,7 @@ export class MatchHistoryService {
     private static async getRunesData(version: string) {
         if (this.runesCache) return this.runesCache;
         try {
-            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/runesReforged.json`, { next: { revalidate: 86400 } });
+            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/runesReforged.json`, { next: { revalidate: 86400 } } as any);
             if (res.ok) {
                 this.runesCache = await res.json();
                 return this.runesCache;
@@ -282,7 +285,7 @@ export class MatchHistoryService {
     private static async getSummonerSpellsData(version: string) {
         if (this.spellsCache) return this.spellsCache;
         try {
-            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`, { next: { revalidate: 86400 } });
+            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/summoner.json`, { next: { revalidate: 86400 } } as any);
             if (res.ok) {
                 const matchData = await res.json();
                 this.spellsCache = matchData.data; // The 'data' property contains the map
@@ -512,7 +515,7 @@ export class MatchHistoryService {
         // Fetch Champion Data for Tags (Classes)
         let championData: any = {};
         try {
-            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, { next: { revalidate: 86400 } });
+            const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/champion.json`, { next: { revalidate: 86400 } } as any);
             if (res.ok) {
                 const json = await res.json();
                 championData = json.data;

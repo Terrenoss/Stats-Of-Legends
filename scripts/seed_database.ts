@@ -42,6 +42,7 @@ process.env.SUPPRESS_RIOT_LOGS = 'true';
 
 import { PrismaClient } from '@prisma/client';
 import { MatchProcessor } from '../services/MatchProcessor';
+import { MatchHistoryService } from '../services/MatchHistoryService';
 import { fetchMatchIds, riotFetchRaw, REGION_ROUTING, PLATFORM_MAP, mapWithConcurrency } from '../services/RiotService';
 import { CURRENT_PATCH } from '../constants/config';
 
@@ -276,29 +277,72 @@ async function processPlayer(entry: any, tier: string, limit: number, onMatchPro
     // If puuid is missing, we must fetch it via summonerId.
 
     let puuid = entry.puuid;
+    let summonerData: any = null;
+    let accountData: any = null;
 
-    if (!puuid) {
-        // Fallback: Fetch Summoner by ID to get PUUID
-        try {
-            // We need to import fetchSummonerById or use raw fetch. 
-            // Since we are inside the script, let's just use a raw fetch helper or similar.
-            // But wait, we have RiotService helpers imported? 
-            // We only imported: fetchMatchIds, riotFetchRaw, REGION_ROUTING, PLATFORM_MAP, mapWithConcurrency
+    // 1. Fetch Summoner Data (for profileIcon, level, etc.)
+    try {
+        const platform = PLATFORM_MAP[CONFIG.REGION] || CONFIG.REGION.toLowerCase();
+        // If we have PUUID, use it (more reliable), else use SummonerId
+        const sumUrl = puuid
+            ? `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`
+            : `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/${entry.summonerId}`;
 
-            // Let's do a quick raw fetch for summoner
-            const platform = PLATFORM_MAP[CONFIG.REGION] || CONFIG.REGION.toLowerCase();
-            const sumUrl = `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/${entry.summonerId}`;
-            const sRes = await riotFetchRaw(sumUrl);
-            if (sRes.ok) {
-                const sData = JSON.parse(sRes.body || '{}');
-                puuid = sData.puuid;
-            }
-        } catch (e) {
-            // console.warn("Failed to fetch PUUID for summonerId:", entry.summonerId);
+        const sRes = await riotFetchRaw(sumUrl);
+        if (sRes.ok) {
+            summonerData = JSON.parse(sRes.body || '{}');
+            puuid = summonerData.puuid;
         }
+    } catch (e) {
+        // console.warn("Failed to fetch Summoner Data:", e);
     }
 
-    if (!puuid) return 0;
+    if (!puuid || !summonerData) return 0;
+
+    // 2. Fetch Account Data (for gameName, tagLine)
+    try {
+        const accountUrl = `https://${CONFIG.ROUTING}.api.riotgames.com/riot/account/v1/accounts/by-puuid/${puuid}`;
+        const aRes = await riotFetchRaw(accountUrl);
+        if (aRes.ok) {
+            accountData = JSON.parse(aRes.body || '{}');
+        }
+    } catch (e) {
+        // console.warn("Failed to fetch Account Data:", e);
+    }
+
+    // Fallback if Account Fetch fails (use PUUID segment to ensure uniqueness)
+    const gameName = accountData?.gameName || summonerData.name || entry.summonerName || 'Unknown';
+    const tagLine = accountData?.tagLine || puuid.substring(0, 5);
+
+    // UPSERT SUMMONER
+    try {
+        await prisma.summoner.upsert({
+            where: { puuid: puuid },
+            create: {
+                puuid: puuid,
+                summonerId: summonerData.id,
+                accountId: summonerData.accountId,
+                gameName: gameName,
+                tagLine: tagLine,
+                profileIconId: summonerData.profileIconId,
+                summonerLevel: summonerData.summonerLevel,
+                revisionDate: BigInt(summonerData.revisionDate),
+                lastMatchFetch: new Date(),
+            },
+            update: {
+                summonerId: summonerData.id,
+                accountId: summonerData.accountId,
+                gameName: gameName,
+                tagLine: tagLine,
+                profileIconId: summonerData.profileIconId,
+                summonerLevel: summonerData.summonerLevel,
+                revisionDate: BigInt(summonerData.revisionDate),
+            }
+        });
+    } catch (err) {
+        console.error(`Failed to upsert summoner ${puuid}`, err);
+        return 0;
+    }
 
     // Get Matches
     // We always fetch up to MATCHES_PER_PLAYER IDs to ensure we have enough candidates,
@@ -335,7 +379,18 @@ async function processPlayer(entry: any, tier: string, limit: number, onMatchPro
         }
 
         try {
-            await MatchProcessor.processMatch(matchId, CONFIG.REGION, tier, matchData);
+
+
+            // Save Match with Average Rank (Tier)
+            // We use MatchHistoryService to ensure consistency, but we don't need full summoner context here
+            // so we pass null for dbSummoner.
+            await MatchHistoryService.saveMatchAndStats(
+                { id: matchId, data: matchData },
+                entry.puuid,
+                CONFIG.REGION,
+                null, // dbSummoner not needed if we just want to save match & stats
+                tier // Pass Tier as Average Rank
+            );
 
             await prisma.scannedMatch.upsert({
                 where: { id: matchId },

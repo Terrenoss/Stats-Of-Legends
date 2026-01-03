@@ -160,7 +160,7 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
                             <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Stats</h5>
                             <div className="flex flex-col gap-3">
                                 {[runes?.statPerks?.offense, runes?.statPerks?.flex, runes?.statPerks?.defense].map((perk, idx) => (
-                                    perk && (
+                                    perk && perk.icon ? (
                                         <div key={idx} className="flex justify-center">
                                             <Image
                                                 src={perk.icon}
@@ -170,7 +170,7 @@ export const MatchBuild: React.FC<MatchBuildProps> = ({ match }) => {
                                                 alt="Stat Perk"
                                             />
                                         </div>
-                                    )
+                                    ) : null
                                 ))}
                             </div>
                         </div>
